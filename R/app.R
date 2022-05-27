@@ -9,8 +9,8 @@ library(shinycssloaders)
 
 library(rlog)
 
-library(tidyverse)
 library(dplyr, warn.conflicts = FALSE)
+library(tidyr)
 
 library(ggplot2)
 library(plotly)
@@ -21,12 +21,20 @@ library(httr)
 library(readxl)
 library(jsonlite)
 
-source("data_loader.R")
-source("projecao.R")
-source("agua_esgoto.R")
 source("app_state.R")
+source("data_loader.R")
+
+source("ui_projecao.R")
+source("server_projecao.R")
+
+source("ui_agua_esgoto.R")
+source("server_agua_esgoto.R")
+
 
 rlog::log_info("Starting")
+
+# checking data folder
+check_and_create_datasets()
 
 painelProjecao <- navbarMenu(
   "Projeção Populacional",
@@ -38,7 +46,7 @@ painelProjecao <- navbarMenu(
 painelAguaEsgoto <- navbarMenu(
   "Água e Esgoto",
   icon = icon("faucet"),
-  tabPanel("Módulo Demográfico", moduloDemografico("demografico")),
+  tabPanel("Módulo Demográfico", modulo_demografico_ui("aguaesgoto")),
   tabPanel("Módulo Tecnológico"),
   tabPanel("Módulo Orçamentário"),
   tabPanel("Módulo Financeiro")
@@ -76,13 +84,11 @@ ui <- fluidPage(
 )
 
 
-# checking data folder
-check_and_create_datasets()
 
 server <- function(input, output, session) {
   rlog::log_info(sprintf('Started new session'))
   projecao_server("projecao")
-  aguaEsgotoServer("aguaesgoto")
+  agua_esgoto_server("aguaesgoto")
 }
 
 shinyApp(ui = ui, server = server)

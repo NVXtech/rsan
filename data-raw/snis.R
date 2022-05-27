@@ -41,6 +41,7 @@ fix_snis_colnames <- function(data){
     new_name <- stringr::str_trim(strsplit(name, '-')[[1]][1])
     new_names <- c(new_names, new_name)
   }
+  new_names[match(new_names,"Código do IBGE")] <- "codigo_municipio"
   colnames(data) <- new_names
   return(data)
 }
