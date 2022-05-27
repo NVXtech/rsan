@@ -40,13 +40,63 @@ modulo_demografico_ui <- function(id) {
       ),
       numericInput(
         inputId = ns("proporcao"),
-        label = strong("Proporção entra a densidade esgoto e abastecimento (%)"),
+        label = strong("Proporção entre a densidade esgoto e abastecimento (%)"),
         value=80,
         min = 0,
         max = 100
       ),
       fluidRow(actionButton(ns("rodar"), label = "Calcular"))
     ),
-    mainPanel(plotOutput(ns("plot1"))),
+    mainPanel(
+      plotlyOutput(ns("grafico_total")),
+      DT::dataTableOutput(ns("tabela")),
+      ),
+  )
+}
+
+modulo_orcamentario_ui <- function(id) {
+  ns <- shiny::NS(id)
+  sidebarLayout(
+    sidebarPanel(
+      titlePanel("Dados de Entrada"),
+      selectInput(
+        inputId = ns("sinapi"),
+        label = strong("Selecione o ano e mês do SINAPI"),
+        choices = get_snis_list(),
+        selected = app_state$orcamentario$snis
+      ),
+      numericInput(
+        inputId = ns("perda_agua"),
+        label = strong("Estimativa de Perda de água (%)"),
+        value=25,
+        min = 0,
+        max = 100
+      ),
+      fluidRow(actionButton(ns("rodar"), label = "Calcular"))
+    ),
+    mainPanel(
+      plotlyOutput(ns("grafico_total")),
+      DT::dataTableOutput(ns("tabela")),
+    ),
+  )
+}
+
+modulo_financeiro_ui <- function(id) {
+  ns <- shiny::NS(id)
+  sidebarLayout(
+    sidebarPanel(
+      titlePanel("Dados de Entrada"),
+      selectInput(
+        inputId = ns("snis"),
+        label = strong("Selecione o ano do SNIS"),
+        choices = get_snis_list(),
+        selected = app_state$demografico$snis
+      ),
+      fluidRow(actionButton(ns("rodar"), label = "Calcular"))
+    ),
+    mainPanel(
+      plotlyOutput(ns("grafico_total")),
+      DT::dataTableOutput(ns("tabela")),
+    ),
   )
 }

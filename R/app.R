@@ -6,6 +6,7 @@
 library(shiny)
 library(shinythemes)
 library(shinycssloaders)
+library(DT)
 
 library(rlog)
 

@@ -101,7 +101,7 @@ calcular_urbana_rural_fonte2 <- function(data) {
 #'
 #' @examples
 calcula_projecao <- function (tabela, ano_inicial, ano_final) {
-  tipo <- c("total", "rural", "urbana")
+  tipo <- c("total", "urbana",  "rural")
   nome_campo <-
     c("populacao_total_fonte2",
       "populacao_urbana_fonte2",
@@ -142,6 +142,10 @@ rodar_projecao_populacional <- function (input) {
   app_state$projecao$resultado <<- calcula_projecao(consolidado, ano2, input$ano)
 }
 
+fator_correcao_perdas <- function (perda) {
+  return(1.0 / (1.0 - perda / 100.0))
+}
+
 projecao_server <- function(id) {
   moduleServer(id, function(input, output, session) {
 
@@ -170,4 +174,6 @@ projecao_server <- function(id) {
 
   })
 }
+
+
 
