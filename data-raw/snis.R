@@ -43,7 +43,7 @@ fix_snis_colnames <- function(data){
   }
   new_names[match(new_names,"Código do IBGE")] <- "codigo_municipio"
   colnames(data) <- new_names
-  data <- mutate(data, across(codigo_municipio, as.character))
+  data <- dplyr::mutate(data, across(codigo_municipio, as.character))
   return(data)
 }
 

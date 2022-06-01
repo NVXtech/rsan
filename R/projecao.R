@@ -4,21 +4,25 @@
 #' codigo_municipio, populacao_total, populacao_urbana e populacao_rural
 #'
 #'
+#' @param df é um tibble contendo os dados de populações total, urbana e rural.
+#'
 #' @return Um tibble() contendo as colunas relativa_urbana e relativa_rural.
 #' @export
 #'
 #' @examples
-#' df <- adicioanr_proporcao_urbana_rural(df)
+#' \dontrun{
+#' df <- adicionar_proporcao_urbana_rural(df)
+#' }
 adicionar_proporcao_urbana_rural <- function(df) {
-  df <- tibble(df)
+  df <- dplyr::as_tibble(df)
   df <-
-    select(df,
+    dplyr::select(df,
            codigo_municipio,
            populacao_urbana,
            populacao_rural,
            populacao_total)
   df <-
-    mutate(
+    dplyr::mutate(
       df,
       relativa_urbana = populacao_urbana / populacao_total,
       relativa_rural = populacao_rural / populacao_total
@@ -35,8 +39,11 @@ adicionar_proporcao_urbana_rural <- function(df) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' df3 <- junta_fontes_populacao(df1, df2)
+#' }
 junta_fontes_populacao <- function(fonte1, fonte2) {
-  return(full_join(
+  return(dplyr::full_join(
     fonte1,
     fonte2,
     by = "codigo_municipio",
@@ -56,7 +63,9 @@ junta_fontes_populacao <- function(fonte1, fonte2) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' df <- calcula_taxa_crescimento(df, 2010, 2021)
+#' }
 calcula_taxa_crescimento <-
   function(tabela, ano_fonte1, ano_fonte2) {
     potencia <- 1.0 / (ano_fonte2 - ano_fonte1)
@@ -80,9 +89,12 @@ calcula_taxa_crescimento <-
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' df <- calcular_urbana_rural_fonte2(df)
+#' }
 calcular_urbana_rural_fonte2 <- function(data) {
   data <-
-    mutate(
+    dplyr::mutate(
       data,
       populacao_urbana_fonte2 = populacao_total_fonte2 * relativa_urbana,
       populacao_rural_fonte2 = populacao_total_fonte2 * relativa_rural
@@ -100,80 +112,54 @@ calcular_urbana_rural_fonte2 <- function(data) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' df <- calcula_projecao(df, 2021, 2033)
+#' }
 calcula_projecao <- function (tabela, ano_inicial, ano_final) {
   tipo <- c("total", "urbana",  "rural")
   nome_campo <-
     c("populacao_total_fonte2",
       "populacao_urbana_fonte2",
       "populacao_rural_fonte2")
-  dfs <- tibble()
+  dfs <- tibble::tibble()
   for (i in 1:length(tipo)) {
     time <- (ano_inicial:ano_final)
     for (t in time) {
-      new_table <- select(tabela, codigo_municipio)
-      new_table <- mutate(new_table, tipo_populacao = tipo[i], ano = t)
+      new_table <- dplyr::select(tabela, codigo_municipio)
+      new_table <- dplyr::mutate(new_table, tipo_populacao = tipo[i], ano = t)
       new_table["populacao"] <-
         tabela[[nome_campo[i]]] * ((1 + tabela$taxa_de_crescimento) ^ (t - ano_inicial))
-      dfs <- bind_rows(dfs, new_table)
+      dfs <- dplyr::bind_rows(dfs, new_table)
     }
   }
   return(dfs)
 }
 
 
+#' Retorna o ano do dataset de população
+#'
+#' @param path Caminho do dataset de população
+#'
+#' @return ano do dataset de populacao
+#' @export
+#'
+#' @examples
+#' ano <- get_year_from_path("populaca_estimada_2021")
 get_year_from_path <- function(path) {
   strtoi(gsub('[^0-9]', '', path))
 }
 
-rodar_projecao_populacional <- function (input) {
-  fonte1 <- as_tibble(load_data(input$fonte1))
-  fonte1 <- adicionar_proporcao_urbana_rural(fonte1)
-  if (grepl(".*censo.*", input$fonte2)){
-    # TODO: implementar para caso a fonte seja outro censo
-    showNotification("Fonte de dados 2 não pode ser censo!", type="error")
-    return()
-  }
-  fonte2 <- as_tibble(load_data(input$fonte2))
-  ano1 <- get_year_from_path(input$fonte1)
-  ano2 <- get_year_from_path(input$fonte2)
-  consolidado <- junta_fontes_populacao(fonte1, fonte2)
-  consolidado <- calcula_taxa_crescimento(consolidado, ano1, ano2)
-  consolidado <- calcular_urbana_rural_fonte2(consolidado)
-  app_state$projecao$resultado <<- calcula_projecao(consolidado, ano2, input$ano)
-}
 
+
+#' Retorna o fator de correção para as perdas no sistema de abastecimento
+#'
+#' @param perda é a porcentagem de perda em decimais (25 = 25%).
+#'
+#' @return o fator de correção devido a perda no sistema de abastecimento
+#' @export
+#'
+#' @examples
+#' fator <- fator_correcao_perdas(25)
 fator_correcao_perdas <- function (perda) {
   return(1.0 / (1.0 - perda / 100.0))
 }
-
-projecao_server <- function(id) {
-  moduleServer(id, function(input, output, session) {
-
-    observeEvent(input$fonte2, {
-      updateSliderInput(session, inputId = "ano", min = get_year_from_path(input$fonte2), value=app_state$projecao$modelar_ate)
-    })
-
-    resultado_projecao <- reactiveVal(app_state$projecao$resultado)
-
-    output$grafico = renderPlotly({
-      df <- drop_na(resultado_projecao())
-      df <- group_by(df, tipo_populacao, ano)
-      df <- summarize(df, populacao=sum(populacao),.groups="drop_last")
-      p <- ggplot(data=df, aes(x=ano, y=populacao, fill=tipo_populacao))
-      p <- p + geom_bar(position="dodge", stat="identity")
-      p <- p + labs(x="tempo (anos)", y="População", fill="Classe")
-      ggplotly(p)
-    })
-
-    observeEvent(input$rodar, {
-      rlog::log_info('Running projeção populacional')
-      rodar_projecao_populacional(input)
-      resultado_projecao(app_state$projecao$resultado)
-      save_projecao_state(input)
-    })
-
-  })
-}
-
-
-

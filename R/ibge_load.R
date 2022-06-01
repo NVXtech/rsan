@@ -2,12 +2,6 @@
 # Funções auxiliarias para criar os datasets do IBGE
 #
 
-library("curl")
-library("httr")
-library("dplyr")
-library("readxl")
-library("jsonlite")
-
 # CONSTANTS --------------------------------------------------------------------
 
 # FTP dados de população
@@ -30,8 +24,10 @@ estimativa_pop_file <- 'estimativa_dou_%s.xls'
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' listFilesFromFTP("ftp.ibge.gov.br")
 #' listFilesFromFTP("ftp.ibge.gov.br/Censos/")
+#' }
 listFilesFromFTP <- function(URL) {
   listFiles <- curl::new_handle()
   curl::handle_setopt(listFiles, ftp_use_epsv = TRUE, dirlistonly = TRUE)
@@ -52,7 +48,9 @@ listFilesFromFTP <- function(URL) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' getCensoYears()
+#' }
 getCensoYears <- function() {
   files <- listFilesFromFTP(censo_url)
   output <- c()
@@ -73,7 +71,9 @@ getCensoYears <- function() {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' downloadCensoRawData()
+#' }
 downloadCensoRawData <- function() {
   years <- getCensoYears()
   # Anos anteriores a 2010 não são suportados
@@ -113,21 +113,21 @@ downloadCensoRawData <- function() {
       destfile <- tempfile()
       tmp_dir <- tempDir()
       curl_download(url_to_download, destfile)
-      unzip(destfile, exdir = tmp_dir)
+      utils::unzip(destfile, exdir = tmp_dir)
       unlink(destfile)
       xls_filename <-  file.path(tmp_dir, gsub("\\.zip$", ".xls", file))
       df <-
-        read_xls(
+        readxl::read_xls(
           xls_filename,
           skip = 1,
           col_names = colNames,
           col_types = colTypes
         )
-      df_censo <- bind_rows(df_censo, df)
+      df_censo <- dplyr::bind_rows(df_censo, df)
       unlink(xls_filename)
     }
     # Remove NA (rodape do xls)
-    df_censo <- df_censo[complete.cases(df_censo), ]
+    df_censo <- df_censo[stats::complete.cases(df_censo), ]
     filename_out <- file.path(data_folder, sprintf("populacao_censo_%s.rda", year))
     save(df_censo, file=filename_out)
     ano <- c(ano, year)
@@ -145,7 +145,9 @@ downloadCensoRawData <- function() {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' load_estimativa_years()
+#' }
 load_estimativa_years <- function() {
   files <- listFilesFromFTP(estimativa_pop_url)
   output <- c()
@@ -162,11 +164,13 @@ load_estimativa_years <- function() {
 
 #' Cria conjunto de dados de estimativas populacionais por município do IBGE
 #'
-#' @return
+#' @return Um data.frame() contendo a lista de estimativas criadas
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' downloadEStimativaPopRawData()
+#' }
 downloadEstimativaPopRawData <- function() {
   nome <- c()
   ano <- c()
@@ -181,9 +185,9 @@ downloadEstimativaPopRawData <- function() {
     if (file.exists(destfile))
       unlink(destfile)
     curl_download(URL, destfile)
-    populacao_estimada <- read_xls(destfile, skip = 1, sheet = 2)
+    populacao_estimada <- readxl::read_xls(destfile, skip = 1, sheet = 2)
     # Remove NA (rodape do xls)
-    populacao_estimada <- populacao_estimada[complete.cases(populacao_estimada),]
+    populacao_estimada <- populacao_estimada[stats::complete.cases(populacao_estimada),]
     filename_out <- file.path(data_folder, sprintf("populacao_estimada_%s.rda", year))
     unlinK(destfile)
     save(populacao_estimada, file =  filename_out)
@@ -195,10 +199,20 @@ downloadEstimativaPopRawData <- function() {
   return(data.frame(nome, tipo, ano, caminho))
 }
 
+#' Baixa e salva os dados de população
+#'
+#' @return 1 quando ok, NULL quando falha
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' create_populacoes()
+#' }
 create_populacoes <- function(){
   df_censo <- downloadCensoRawData()
   df_estimativa <- downloadEstimativaPopRawData()
   populacoes <- rbind(df_censo, df_estimativa)
   save(populacoes, file=file.path(data_folder, "populacoes.rda"))
+  return(1)
 }
 
