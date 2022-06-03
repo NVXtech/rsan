@@ -1,4 +1,5 @@
-
+#' Ferramentas para Cálculo das Necessidades de Investimento
+#' para o Saneamento Água e Esgoto
 
 
 #' Retorna a projecao de população de um tipo e ano
@@ -221,14 +222,18 @@ calculate_geografico <-
       demanda_tratamento_esgoto,
       populacao_total,
       populacao_urbana,
-      populacao_rural
+      populacao_rural,
+      densidade_distribuicao_agua,
+      densidade_producao_agua,
+      densidade_coleta_esgoto,
+      densidade_tratamento_esgoto
     )
   }
 
 
 #' Calcula preços distribuicao de água e coleta de esgoto
 #'
-#' @param df_projeto um tibble() contendo os itens do projeto
+#' @param df_projeto um tibble() contendo os itens do projeto coluna quantidade e codigo sinapi
 #' @param sinapi o tibble() com os preços do SINAPI
 #' @param taxa_servico fator de correção do preço para serviços
 #' @param taxa_materiais fator de correção do preço para materiais
@@ -373,7 +378,156 @@ adiciona_estado <- function(tabela){
   output_cols <- c(original_colnames, "estado")
 
   tabela <- dplyr::left_join(tabela, municipio, by="codigo_municipio")
-  tabela <- dplyr::rename(tabela, estado=UF)
-  tabela <- dplyr::select(tabela, output_cols)
+  tabela <- dplyr::rename(tabela, estado_nome=estado, estado=estado_sigla)
+  tabela <- dplyr::select(tabela, all_of(output_cols))
   return(tabela)
+}
+
+
+#' Calcula reposicação total
+#'
+#' A reposição total refere-se ao investimento em reposição total entre o ano inicial e o ano final.
+#'
+#' @param tabela tabela contendo os dados de capacidade e investimento
+#' @param campo_capacidade nome do campo de capacidade
+#' @param campo_investimento nome do campo de investimento
+#' @param campo_reposicao nome do campo de saida com o valor do custo de reposição total
+#' @param ano_inicial ano da estimativa de capacidade instalada
+#' @param ano_final último ano de projeção
+#' @param vida_util vida útil média dos ativos (anos)
+#'
+#' @return tabela contendo a coluna adiciona de reposição
+#' @export
+#'
+#' @examples
+#' investimento <- c(1,3)
+#' capacidade <-   c(0,1)
+#' df_in <- dplyr::tibble(capacidade, investimento)
+#' df_out <- calcula_reposicao_total(df_in,"capacidade","investimento","reposicao", 2021, 2033, 30)
+calcula_reposicao_total <-
+  function(tabela,
+           campo_capacidade,
+           campo_investimento,
+           campo_reposicao,
+           ano_inicial,
+           ano_final,
+           vida_util) {
+    k1 <- (ano_final - ano_inicial + 1.0)
+    k2 <- ano_final - ano_inicial
+
+    tabela <- dplyr::mutate(tabela, repo = (k1 * .data[[campo_capacidade]] + k2*.data[[campo_investimento]]/2 )/vida_util)
+    colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
+    return(tabela)
+  }
+
+#' Calcula reposicação parcial
+#'
+#' A reposição parcial refere-se ao investimento em resposição entre o ano corrente e o ano final.
+#' Dessa maneira é desconsiderado investimento em reposições que teoricamente já aconteceram.
+#'
+#' @param tabela tabela contendo os dados de capacidade e investimento
+#' @param campo_capacidade nome do campo de capacidade
+#' @param campo_investimento nome do campo de investimento
+#' @param campo_reposicao nome do campo de saida com o valor do custo de reposição total
+#' @param ano_inicial ano da estimativa de capacidade instalada
+#' @param ano_final último ano de projeção
+#' @param ano_corrente ano corrente
+#' @param vida_util vida útil média dos ativos (anos)
+#'
+#' @return tabela contendo a coluna adiciona de reposição
+#' @export
+#'
+#' @examples
+#' investimento <- c(1,3)
+#' capacidade <-   c(0,1)
+#' df_in <- dplyr::tibble(capacidade, investimento)
+#' df_out <- calcula_reposicao_parcial(df_in,"capacidade","investimento","reposicao", 2021, 2033, 2022, 30)
+calcula_reposicao_parcial <-
+  function(tabela,
+           campo_capacidade,
+           campo_investimento,
+           campo_reposicao,
+           ano_inicial,
+           ano_final,
+           ano_corrente,
+           vida_util) {
+    ano1 <- ano_inicial
+    ano3 <- ano_final
+    ano2 <- ano_corrente
+
+    k1 <- ano2 - ano3 - 1
+    k2 <- -2*ano1 + 2*ano3 + 2
+    k3 <- -2*ano1 + ano2 + ano3
+    k4 <- 2*(ano1 - ano3 - 1)
+
+    tabela <- dplyr::mutate(tabela, repo = (k1 *(k2 * .data[[campo_capacidade]] + k3 *.data[[campo_investimento]])/k4 )/vida_util)
+    colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
+    return(tabela)
+  }
+
+#' Calcula custo relativo para produção de água
+#'
+#' Custo relativo é o valor monetário necessário para produzir 1m3 de água tratada por ano R$/(m3/ano).
+#'
+#' @param preco_unidade tabela contendo as colunas estado, unidade e preco
+#' @param projeto_tratamento tabela contendo cenario, unidade e quantidade
+#'
+#' @return tabela com as colunas estado, cenario e custo_relativo
+#' @export
+#'
+#' @examples
+#'  estado  <- c("AC","AC","AC", "AL", "AL", "AL")
+#'  unidade <- c("ETA200", "EEA200", "POÇO40", "ETA200", "EEA200", "POÇO40")
+#'  preco   <- c(3.055, 0.129, 0.69, 2.88, 0.12, 0.66)
+#'  preco_unidade <- dplyr::tibble(estado, unidade, preco)
+#'
+#'  cenario <- c("08", "08", "08", "08", "09", "09", "09", "09")
+#'  unidade <- c("ETA200", "EEA200", "POÇO40", "EEA200","ETA200", "EEA200", "POÇO40", "EEA200")
+#'  tipo	<- c("superficial", "superficial", "subterranea","subterranea","superficial", "superficial", "subterranea","subterranea")
+#'  quantidade <- c(0.854106686284393, 1.3, 1, 1, 0.549559117416313, 1.3, 1, 1)
+#'  projeto_producao <- dplyr::tibble(cenario, unidade, tipo, quantidade)
+#'  df_out <- calcula_custo_relativo_producao(preco_unidade, projeto_producao)
+calcula_custo_relativo_producao <- function(preco_unidade, projeto_producao) {
+  tabela <- dplyr::full_join( projeto_producao,preco_unidade, by="unidade")
+
+  # carrega dados predominancia do tipo de producao de água
+  data("projeto_predominancia_tipo_producao")
+  predominancia <- tidyr::pivot_longer(projeto_predominancia_tipo_producao,
+                      all_of(c("superficial", "subterranea")),
+                      names_to = "tipo",
+                      values_to = "predominancia")
+  tabela <- dplyr::left_join(tabela, predominancia, by=c("estado", "tipo"))
+  tabela <- dplyr::mutate(tabela, custo_relativo=quantidade*preco*predominancia)
+  tabela <- dplyr::group_by(tabela, estado, cenario)
+  tabela <- dplyr::summarise(tabela, custo_relativo = sum(custo_relativo))
+}
+
+#' Calcula custo relativo para tratamento de esgoto
+#'
+#' Custo relativo é o valor monetário necessário para tratar 1m3 de esgoto por ano [R$/(m3/ano)].
+#'
+#' @param preco_unidade tabela contendo as colunas estado, unidade e preco
+#' @param projeto_tratamento tabela contendo cenario, unidade e quantidade
+#'
+#' @return tabela com as colunas estado, cenario e custo_relativo
+#' @export
+#'
+#' @examples
+#' estado  <- c("AC","AC","AC", "AC", "AL", "AL", "AL","AL")
+#' unidade <- c("LAGOA125", "REATORANA180", "EE85", "LODOBAT400", "LAGOA125", "REATORANA180", "EE85", "LODOBAT400")
+#' preco   <- c(2.476, 0.762, 0.209, 2.31, 2.051, 0.4282, 0.2008, 2.2114 )
+#' preco_unidade <- dplyr::tibble(estado, unidade, preco)
+#'
+#' cenario <- c("07", "07", "07", "09", "09")
+#' unidade <- c("LAGOA125", "REATORANA180", "EE85", "LODOBAT400", "EE85")
+#' quantidade <- c(1.2, 1, 1, 2.05*1.71361608179778, 1)
+#' projeto_tratamento <- dplyr::tibble(cenario, unidade, quantidade)
+#'
+#' df_out <- calcula_custo_relativo_tratamento(preco_unidade, projeto_tratamento)
+calcula_custo_relativo_tratamento <- function(preco_unidade, projeto_tratamento) {
+  tabela <- dplyr::full_join( projeto_tratamento,preco_unidade, by="unidade")
+
+  tabela <- dplyr::mutate(tabela, custo_relativo=quantidade*preco)
+  tabela <- dplyr::group_by(tabela, estado, cenario)
+  tabela <- dplyr::summarise(tabela, custo_relativo = sum(custo_relativo))
 }

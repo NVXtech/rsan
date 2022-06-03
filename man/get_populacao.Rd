@@ -2,7 +2,9 @@
 % Please edit documentation in R/aguaesgoto.R
 \name{get_populacao}
 \alias{get_populacao}
-\title{Retorna a projecao de população de um tipo e ano}
+\title{Ferramentas para Cálculo das Necessidades de Investimento
+para o Saneamento Água e Esgoto
+Retorna a projecao de população de um tipo e ano}
 \usage{
 get_populacao(tabela, ano, tipo)
 }
@@ -17,6 +19,8 @@ get_populacao(tabela, ano, tipo)
 dados da projeção para um determinado tipo de população
 }
 \description{
+Ferramentas para Cálculo das Necessidades de Investimento
+para o Saneamento Água e Esgoto
 Retorna a projecao de população de um tipo e ano
 }
 \examples{

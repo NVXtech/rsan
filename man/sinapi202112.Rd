@@ -11,7 +11,7 @@ Um data frame com 12414 items e 31 variáveis
 \item{CODIGO}{código do item}
 \item{DESCRICAO}{descrição do item}
 \item{UNIDADE}{unidade de medida (ex: m)}
-\item{PRECO_XX}{preço do estado com sigla XX}
+\item{PRECO_XX}{27 colunas com preço do estado (sigla XX) ex: PRECO_AC é o preço no ACRE.}
 }
 }
 \source{

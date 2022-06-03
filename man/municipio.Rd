@@ -5,22 +5,23 @@
 \alias{municipio}
 \title{Municípios do Brasil}
 \format{
-Um data frame com 5570 municípios e 16 colunas com as seguintes informações adicionais:
+Um data frame com 5570 municípios e as seguintes 6 colunas:
 \describe{
-\item{TIPO}{tipo do item}
-\item{CODIGO}{código do item}
-\item{DESCRICAO}{descrição do item}
-\item{UNIDADE}{unidade de medida (ex: m)}
-\item{PRECO_XX}{preço do estado com sigla XX}
+\item{codigo_municipio}{código IBGE do munícipio}
+\item{municipio}{Nome do município}
+\item{regiao}{Região do Brasil}
+\item{regiao_sigla}{Sigla da região do Brasil}
+\item{estado}{Unidade federativa}
+\item{estado_sigla}{Sigla da unidade federativa}
 }
 }
 \source{
-\url{https://www.caixa.gov.br/poder-publico/modernizacao-gestao/sinapi/}
+\url{https://servicodados.ibge.gov.br/api/v1/localidades}
 }
 \usage{
 municipio
 }
 \description{
-Dataset contendo lista de municípios, códigos ibge e regiões
+Dataset contendo classificação de localização dos municípios (região e UF).
 }
 \keyword{datasets}

@@ -21,22 +21,79 @@
 #'   \item{CODIGO}{código do item}
 #'   \item{DESCRICAO}{descrição do item}
 #'   \item{UNIDADE}{unidade de medida (ex: m)}
-#'   \item{PRECO_XX}{preço do estado com sigla XX}
+#'   \item{PRECO_XX}{27 colunas com preço do estado (sigla XX) ex: PRECO_AC é o preço no ACRE.}
 #' }
 #' @source \url{https://www.caixa.gov.br/poder-publico/modernizacao-gestao/sinapi/}
 "sinapi202112"
 
 #' Municípios do Brasil
 #'
-#' Dataset contendo lista de municípios, códigos ibge e regiões
+#' Dataset contendo classificação de localização dos municípios (região e UF).
 #'
-#' @format Um data frame com 5570 municípios e 16 colunas com as seguintes informações adicionais:
+#'
+#' @format Um data frame com 5570 municípios e as seguintes 6 colunas:
 #' \describe{
-#'   \item{TIPO}{tipo do item}
-#'   \item{CODIGO}{código do item}
-#'   \item{DESCRICAO}{descrição do item}
-#'   \item{UNIDADE}{unidade de medida (ex: m)}
-#'   \item{PRECO_XX}{preço do estado com sigla XX}
+#'   \item{codigo_municipio}{código IBGE do munícipio}
+#'   \item{municipio}{Nome do município}
+#'   \item{regiao}{Região do Brasil}
+#'   \item{regiao_sigla}{Sigla da região do Brasil}
+#'   \item{estado}{Unidade federativa}
+#'   \item{estado_sigla}{Sigla da unidade federativa}
 #' }
-#' @source \url{https://www.caixa.gov.br/poder-publico/modernizacao-gestao/sinapi/}
+#' @source \url{https://servicodados.ibge.gov.br/api/v1/localidades}
 "municipio"
+
+#' Projeto tipo para coleta de esgoto
+#'
+#' Dataset contendo lista de serviços e materiais para criar infraestrutura de coleta de esgoto.
+#'
+#'
+#' @format Um data frame com 54 items serviços e materiais e 9 colunas, sendo estas:
+#' \describe{
+#'   \item{codigo}{Código do item no SINAPI}
+#'   \item{grupo}{Grupo de custos (ex. serviço ou material)}
+#'   \item{tipo}{Tipo de custo (ex. demolição, excavação)}
+#'   \item{07a}{quantidade de material para cenário população pequena e de alto custo}
+#'   \item{07b}{quantidade de material para cenário população pequena e de baixo custo}
+#'   \item{08a}{quantidade de material para cenário população média e de alto custo}
+#'   \item{08b}{quantidade de material para cenário população média e de baixo custo}
+#'   \item{09a}{quantidade de material para cenário população grande e de alto custo}
+#'   \item{09b}{quantidade de material para cenário população grande e de baixo custo}
+#' }
+#' @source \url{}
+"projeto_coleta_esgoto"
+
+#' Projeto tipo para distribuicao de água
+#'
+#' Dataset contendo lista de serviços e materiais para criar infraestrutura de distribuicao de água.
+#'
+#'
+#' @format Um data frame com 75 items serviços e materiais e  9 colunas, sendo estas:
+#' \describe{
+#'   \item{codigo}{Código do item no SINAPI}
+#'   \item{grupo}{Grupo de custos (ex. serviço ou material)}
+#'   \item{tipo}{Tipo de custo (ex. demolição, excavação)}
+#'   \item{07a}{quantidade de material para cenário população pequena e de alto custo}
+#'   \item{07b}{quantidade de material para cenário população pequena e de baixo custo}
+#'   \item{08a}{quantidade de material para cenário população média e de alto custo}
+#'   \item{08b}{quantidade de material para cenário população média e de baixo custo}
+#'   \item{09a}{quantidade de material para cenário população grande e de alto custo}
+#'   \item{09b}{quantidade de material para cenário população grande e de baixo custo}
+#' }
+#' @source \url{}
+"projeto_distribuicao_agua"
+
+#' Projeto tipo para distribuicao de água
+#'
+#' Dataset contendo lista de serviços e materiais para criar infraestrutura de distribuicao de água.
+#'
+#'
+#' @format Um data frame com 27 estados e 3 colunas, sendo estas:
+#' \describe{
+#'   \item{estado}{Sigal da unidade federativa}
+#'   \item{subterranea}{Predominância em % de extração de água superficial}
+#'   \item{superficial}{Predominância em % de extração de água subterrânea}
+#' }
+#' @source \url{}
+"projeto_predominancia_tipo_producao"
+

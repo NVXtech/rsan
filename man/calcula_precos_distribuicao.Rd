@@ -12,7 +12,7 @@ calcula_precos_distribuicao(
 )
 }
 \arguments{
-\item{df_projeto}{um tibble() contendo os itens do projeto}
+\item{df_projeto}{um tibble() contendo os itens do projeto coluna quantidade e codigo sinapi}
 
 \item{sinapi}{o tibble() com os preços do SINAPI}
 
