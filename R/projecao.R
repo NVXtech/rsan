@@ -150,16 +150,22 @@ get_year_from_path <- function(path) {
 }
 
 
-
-#' Retorna o fator de correção para as perdas no sistema de abastecimento
+#' Retorna a projecao de população de um tipo e ano
 #'
-#' @param perda é a porcentagem de perda em decimais (25 = 25%).
+#' @param tabela projecao da populacao
+#' @param ano é o Ano que se deseja a projeção
+#' @param tipo é o tipo de população (total, rural ou urbana)
 #'
-#' @return o fator de correção devido a perda no sistema de abastecimento
+#' @return dados da projeção para um determinado tipo de população
 #' @export
 #'
 #' @examples
-#' fator <- fator_correcao_perdas(25)
-fator_correcao_perdas <- function (perda) {
-  return(1.0 / (1.0 - perda / 100.0))
+#' \dontrun{
+#' df <- get_populacao(df, 2033, "urbana")
+#' }
+get_populacao <- function(tabela, ano, tipo) {
+  year <- ano
+  pop <- dplyr::filter(tabela, tipo_populacao == tipo & ano == year)
+  return(pop)
 }
+

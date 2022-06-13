@@ -35,7 +35,7 @@ listFilesFromFTP <- function(URL) {
     curl::curl(url = paste0('ftp://', URL), "r", handle = listFiles)
   files <- readLines(con)
   close(con)
-  files
+  return(files)
 }
 
 

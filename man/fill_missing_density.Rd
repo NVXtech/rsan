@@ -4,10 +4,12 @@
 \alias{fill_missing_density}
 \title{Completa os dados faltantes de densidade.}
 \usage{
-fill_missing_density(density)
+fill_missing_density(density, fields)
 }
 \arguments{
 \item{density}{um tibble() contendo os dados de densidades}
+
+\item{fields}{lista dos campos para preencher}
 }
 \value{
 um tibble() com a mesma tabela mas sem dados faltantes
@@ -17,6 +19,6 @@ Completa os dados faltantes de densidade.
 }
 \examples{
 \dontrun{
-df <- fill_missing_density(density)
+df <- fill_missing_density(density, fields)
 }
 }

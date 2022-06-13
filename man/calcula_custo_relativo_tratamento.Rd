@@ -15,7 +15,7 @@ calcula_custo_relativo_tratamento(preco_unidade, projeto_tratamento)
 tabela com as colunas estado, cenario e custo_relativo
 }
 \description{
-Custo relativo é o valor monetário necessário para tratar 1m3 de esgoto por ano \link{R$/(m3/ano)}.
+Custo relativo é o valor monetário necessário para tratar 1m3 de esgoto por ano R$/(m3/ano).
 }
 \examples{
 estado  <- c("AC","AC","AC", "AC", "AL", "AL", "AL","AL")

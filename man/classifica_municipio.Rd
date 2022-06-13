@@ -10,7 +10,7 @@ classifica_municipio(tabela)
 \item{tabela}{Um dataframe contendo as colunas: populacao_total, populacao_rural e populacao_urbana}
 }
 \value{
-Dataframe contendo a coluna adicional \code{classificacao}
+Dataframe contendo a coluna adicional \code{classificacao} e \code{cenario}
 }
 \description{
 A classificação é composta de 3 digitos (XXY)

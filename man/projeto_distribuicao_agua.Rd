@@ -5,7 +5,7 @@
 \alias{projeto_distribuicao_agua}
 \title{Projeto tipo para distribuicao de água}
 \format{
-Um data frame com 75 items serviços e materiais e  9 colunas, sendo estas:
+Um data frame com 75 items serviços e materiais e 9 colunas, sendo estas:
 \describe{
 \item{codigo}{Código do item no SINAPI}
 \item{grupo}{Grupo de custos (ex. serviço ou material)}

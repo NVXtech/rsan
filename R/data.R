@@ -68,7 +68,7 @@
 #' Dataset contendo lista de serviços e materiais para criar infraestrutura de distribuicao de água.
 #'
 #'
-#' @format Um data frame com 75 items serviços e materiais e  9 colunas, sendo estas:
+#' @format Um data frame com 75 items serviços e materiais e 9 colunas, sendo estas:
 #' \describe{
 #'   \item{codigo}{Código do item no SINAPI}
 #'   \item{grupo}{Grupo de custos (ex. serviço ou material)}
@@ -97,3 +97,43 @@
 #' @source \url{}
 "projeto_predominancia_tipo_producao"
 
+#' Áreas territoriais dos municípios brasileiros
+#'
+#' Dataset contendo as áreas dos muncípios brasileiros em km²
+#'
+#'
+#' @format Um data frame com 1 municipios por linha e 2 colunas, sendo estas:
+#' \describe{
+#'   \item{codigo_municipio}{Código IBGE do município}
+#'   \item{area}{Área do município em km²}
+#' }
+#' @source \url{https://geoftp.ibge.gov.br/organizacao_do_territorio/estrutura_territorial/areas_territoriais/}
+"area_municipio"
+
+#' Áreas urbanas dos municípios brasileiros
+#'
+#' Dataset contendo as áreas urbanas dos muncípios brasileiros em km²
+#'
+#' @format Um data frame com 1 municipios por linha e 2 colunas, sendo estas:
+#' \describe{
+#'   \item{codigo_municipio}{Código IBGE do município}
+#'   \item{area_urbana}{Área urbana do município em km²}
+#' }
+#' @source \url{https://biblioteca.ibge.gov.br/index.php/biblioteca-catalogo?view=detalhes&id=2100639}
+"area_urbana_municipio"
+
+#' SNIS - Resíduos sólidos dados por prestador
+#'
+#' Dataset contendo informaçoes das unidades de resíduos sólidos por prestador
+#'
+#' @format Uma lista de data frame indexados por ano de referência.
+#' \describe{
+#'   \item{Código}{Código IBGE do município}
+#'   \item{Nome}{nome do munícipio}
+#'   \item{UF}{estado}
+#'   \item{Ano}{ano de referência}
+#'   \item{UndCod}{código do prestador}
+#'   \item{YYXXXX}{Indicadores e informações}
+#' }
+#' @source \url{http://www.snis.gov.br/}
+"snis_rs"

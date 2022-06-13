@@ -2,7 +2,9 @@
 % Please edit documentation in R/aguaesgoto.R
 \name{get_snis_data}
 \alias{get_snis_data}
-\title{Retorna dados do SNIS}
+\title{Ferramentas para Cálculo das Necessidades de Investimento
+para o Saneamento Água e Esgoto
+Retorna dados do SNIS}
 \usage{
 get_snis_data(snis, fields)
 }
@@ -15,6 +17,8 @@ get_snis_data(snis, fields)
 um tibble() contendo os dados do SNIS
 }
 \description{
+Ferramentas para Cálculo das Necessidades de Investimento
+para o Saneamento Água e Esgoto
 Retorna dados do SNIS
 }
 \examples{

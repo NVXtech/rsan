@@ -15,10 +15,12 @@ Imports:
     httr,
     dplyr,
     tidyr,
+    stringr,
     readxl,
     jsonlite,
     stats,
     utils,
+    ipeadatar,
     tibble
 Depends: 
     R (>= 3.5.0)
