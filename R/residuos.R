@@ -64,7 +64,7 @@ soma_por_estado_faixa <-
       dplyr::summarise(
         tabela,
         across(where(is.numeric), ~ sum(.x, na.rm = TRUE)),
-        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>1,dplyr::first(.x), NA)),
+        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>=1,dplyr::first(.x), NA)),
         .groups="drop")
     tabela <- tabela[,colSums(is.na(tabela))<nrow(tabela)]
     return(tabela)
@@ -121,7 +121,7 @@ media_por_estado_faixa <-
       dplyr::summarise(
         tabela,
         across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
-        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>1,dplyr::first(.x), NA)),
+        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>=1,dplyr::first(.x), NA)),
         .groups="drop")
     tabela <- tabela[,colSums(is.na(tabela))<nrow(tabela)]
     return(tabela)
@@ -152,4 +152,57 @@ quantidade_compostagem_municipio <- function(tabela) {
 }
 
 
+#' Soma todas as variáveis numéricas agrupando por faixa populacional
+#'
+#' @param tabela tabela contendo as colunas de população, estado
+#' @param campo_faixa parâmetro opcional para definir o campo que contém a faixa populaciona (default: "faixa")
+#'
+#' @return tabela contendo todas variáveis somadas por faixa populacional
+#' @export
+#'
+#' @examples
+#' faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
+#' valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+#' input <- dplyr::tibble(faixa, valor)
+#' output <- soma_por_faixa(input)
+soma_por_faixa <-
+  function(tabela,
+           campo_faixa = "faixa") {
+    tabela <- dplyr::group_by(tabela, .data[[campo_faixa]])
+    tabela <-
+      dplyr::summarise(
+        tabela,
+        across(where(is.numeric), ~ sum(.x, na.rm = TRUE)),
+        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>=1,dplyr::first(.x), NA)),
+        .groups="drop")
+    tabela <- tabela[,colSums(is.na(tabela))<nrow(tabela)]
+    return(tabela)
+  }
 
+#' Média de todas as variáveis numéricas agrupando por faixa populacional
+#'
+#' @param tabela tabela contendo as colunas de população, estado
+#' @param campo_faixa parâmetro opcional para definir o campo que contém a faixa populaciona (default: "faixa")
+#'
+#' @return tabela contendo a média de todas variáveis por faixa populacional
+#' @export
+#'
+#' @examples
+#' faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
+#' valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+#' input <- dplyr::tibble(faixa, valor)
+#' output <- media_por_faixa(input)
+media_por_faixa <-
+  function(tabela,
+           campo_faixa = "faixa") {
+    tabela <-
+      dplyr::group_by(tabela, .data[[campo_faixa]])
+    tabela <-
+      dplyr::summarise(
+        tabela,
+        across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>=1,dplyr::first(.x), NA)),
+        .groups="drop")
+    tabela <- tabela[,colSums(is.na(tabela))<nrow(tabela)]
+    return(tabela)
+  }

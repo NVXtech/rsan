@@ -59,3 +59,16 @@ test_that("soma_por_estado_faixa keep character cols", {
   expected <- dplyr::tibble(Estado, faixa, valor, regiao)
   expect_true(dplyr::all_equal(expected, output))
 })
+
+test_that("soma_por_faixa is working", {
+  faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
+  valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+
+  input <- dplyr::tibble(faixa, valor)
+  output <- soma_por_faixa(input)
+
+  faixa <- c(1, 3, 2, 4)
+  valor <- c(2, 4, 6, 8)
+  expected <- dplyr::tibble(faixa, valor)
+  expect_true(dplyr::all_equal(expected, output))
+})
