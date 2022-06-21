@@ -2,24 +2,25 @@
 % Please edit documentation in R/igp.R
 \name{get_taxa_igp}
 \alias{get_taxa_igp}
-\title{Calcula a taxa de correção de preço usando o IGP}
+\title{Calculo da taxa de correção de preço - IGP}
 \usage{
 get_taxa_igp(igp, data_inicial, data_final)
 }
 \arguments{
-\item{igp}{é a tabela do IGP.}
+\item{igp}{é um \code{data.frame} com a série histórica do IGP com as colunas data e igp(taxa).}
 
-\item{data_inicial}{é um date contendo a data inicial}
+\item{data_inicial}{é um \code{date} contendo a data em que o preço foi atribuido}
 
-\item{data_final}{é um date contendo a data final}
+\item{data_final}{é um \code{date} contendo uma data mais recente pra qual se quer corrigir o preço}
 }
 \value{
-a taxa que deve ser multiplicada pelo valor em R$ para corrígi-lo.
+um \code{double} que é a taxa pela qual o preço deve ser multiplicada para corrígi-lo.
 }
 \description{
-A taxa inclui o mês da data inicial
+A função retorna a taxa de correção de preço para um determinado intervalo de datas.
+O algoritmo busca as taxas mais próximas das datas passadas e retorna a taxa de correção.
 }
 \examples{
 data(igp)
-valor <- function(igp, as.Date("2016-01-01"), as.Date("2026-01-01"))
+valor <- function(igp, as.Date("2016-01-01"), as.Date("2021-01-01"))
 }

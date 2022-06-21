@@ -23,23 +23,36 @@ get_igp <- function(){
   return(igp)
 }
 
-#' Calcula a taxa de correção de preço usando o IGP
+#' Calculo da taxa de correção de preço - IGP
 #'
-#' A taxa inclui o mês da data inicial
-#' @param igp é a tabela do IGP.
-#' @param data_inicial é um date contendo a data inicial
-#' @param data_final é um date contendo a data final
+#' A função retorna a taxa de correção de preço para um determinado intervalo de datas.
+#' O algoritmo busca as taxas mais próximas das datas passadas e retorna a taxa de correção.
 #'
-#' @return a taxa que deve ser multiplicada pelo valor em R$ para corrígi-lo.
+#'
+#' @param igp é um `data.frame` com a série histórica do IGP com as colunas data e igp(taxa).
+#' @param data_inicial é um `date` contendo a data em que o preço foi atribuido
+#' @param data_final é um `date` contendo uma data mais recente pra qual se quer corrigir o preço
+#'
+#' @return um `double` que é a taxa pela qual o preço deve ser multiplicada para corrígi-lo.
 #' @export
 #'
 #' @examples
 #' data(igp)
-#' valor <- function(igp, as.Date("2016-01-01"), as.Date("2026-01-01"))
+#' valor <- function(igp, as.Date("2016-01-01"), as.Date("2021-01-01"))
 get_taxa_igp <- function(igp, data_inicial, data_final){
-  i <- which.min(abs(igp$data-data_inicial))
-  f <- which.min(abs(igp$data-data_final))
-  igp_i <- as.double(igp[i-1,2])
-  igp_f <- as.double(igp[f,2])
+  len_ini <- length(data_inicial)
+  len_fin <- length(data_final)
+  if (len_ini != len_fin){
+    stop("data_incial e data_final devem ter mesmo tamanho")
+  }
+  igp_i <- double(len_ini)
+  igp_f <- double(len_ini)
+  for(j in 1:len_ini){
+    i <- which.min(abs(igp$data-data_inicial[j]))
+    f <- which.min(abs(igp$data-data_final[j]))
+    igp_i[j] <- as.double(igp[i-1,2])
+    igp_f[j] <- as.double(igp[f,2])
+  }
   return(igp_f/igp_i)
 }
+

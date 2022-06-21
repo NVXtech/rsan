@@ -137,3 +137,33 @@
 #' }
 #' @source \url{http://www.snis.gov.br/}
 "snis_rs"
+
+
+#' CPRM - dados de pluviometria por município
+#'
+#' Dataset contendo informaçoes sobre a precipitação anual por município
+#'
+#' @format Uma data frame com um muncípio por linhas e as colunas:
+#' \describe{
+#'   \item{codigo_municipio}{Código IBGE do município}
+#'   \item{municipio}{nome do munícipio}
+#'   \item{estado}{estado}
+#'   \item{precipitacao_media}{precipitação anual média}
+#'   \item{precipitacao_moda}{precipitação anual moda}
+#' }
+#' @source \url{http://www.snis.gov.br/}
+"pluviometria"
+
+
+#' PLanos de drenagem municípios brasileiros
+#'
+#' Dataset contendo informaçoes sobre os plano de drenagem
+
+#' @format Uma dataframe com um muncípio por linha e as colunas:
+#' \describe{
+#'   \item{codigo_municipio}{Código IBGE do município}
+#'   \item{ano_plano}{ano do plano}
+#'   \item{investimento}{valor do investimento total previsto para o ano_plano}
+#' }
+#' @source \url{http://www.snis.gov.br/}
+"plano_drenagem"
