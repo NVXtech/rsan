@@ -16,7 +16,7 @@ tabela com uma coluna contendo a palabra "Brasil" em todas linhas
 Adiciona na tabela de entrada uma coluna contendo o nome do País.
 }
 \examples{
-codigo_municipio <- c("1200013","1200054", "1200104", "1200138")
+codigo_municipio <- c("1200013", "1200054", "1200104", "1200138")
 input <- dplyr::tibble(codigo_municipio)
 tabela <- adiciona_pais(input)
 

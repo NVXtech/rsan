@@ -18,5 +18,7 @@ tabela com a  necessidade de investimento para tratamendo de esgoto
 Calcula a necessidade de investimento para tratamendo de esgoto
 }
 \examples{
-\dontrun{custo_relativo <- calcula_custo_expansao_tratamento(demanda, tratamento)}
+\dontrun{
+custo_relativo <- calcula_custo_expansao_tratamento(demanda, tratamento)
+}
 }

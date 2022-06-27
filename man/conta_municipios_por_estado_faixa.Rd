@@ -24,9 +24,9 @@ tabela inicial mais a coluna numero_municipios
 Conta o número de munícipios que se encontram em cada faixa populacional
 }
 \examples{
-Estado <- c(rep("AC",4), rep("AL",4))
-faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
-valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+Estado <- c(rep("AC", 4), rep("AL", 4))
+faixa <- c(rep(1, 2), rep(3, 2), rep(2, 2), rep(4, 2))
+valor <- c(1, 1, 2, 2, 3, 3, 4, 4)
 input <- dplyr::tibble(Estado, faixa, valor)
 output <- conta_municipios_por_estado_faixa(input)
 }

@@ -18,7 +18,7 @@
 #'
 #' @examples
 #' limites <- as.integer(c(0, 10e3, 30e3, 100e3, 250e3, 1e6, 4e6))
-#' POP_TOT <-as.integer(c(0, 10e3, 30e3, 100e3, 250e3, 1e6, 4e6, 5e6))
+#' POP_TOT <- as.integer(c(0, 10e3, 30e3, 100e3, 250e3, 1e6, 4e6, 5e6))
 #' input <- dplyr::tibble(POP_TOT)
 #' output <- classifica_faixa_populacional(input, limites)
 classifica_faixa_populacional <-
@@ -28,12 +28,13 @@ classifica_faixa_populacional <-
            campo_faixa = "faixa") {
     tabela <-
       dplyr::mutate(tabela,
-                    faixa = findInterval(
-                      tabela[[campo_populacao]],
-                      limites,
-                      rightmost.closed = TRUE,
-                      left.open = TRUE
-                    ))
+        faixa = findInterval(
+          tabela[[campo_populacao]],
+          limites,
+          rightmost.closed = TRUE,
+          left.open = TRUE
+        )
+      )
     colnames(tabela)[colnames(tabela) == "faixa"] <- campo_faixa
     return(tabela)
   }
@@ -49,9 +50,9 @@ classifica_faixa_populacional <-
 #' @export
 #'
 #' @examples
-#' Estado <- c(rep("AC",4), rep("AL",4))
-#' faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
-#' valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+#' Estado <- c(rep("AC", 4), rep("AL", 4))
+#' faixa <- c(rep(1, 2), rep(3, 2), rep(2, 2), rep(4, 2))
+#' valor <- c(1, 1, 2, 2, 3, 3, 4, 4)
 #' input <- dplyr::tibble(Estado, faixa, valor)
 #' output <- soma_por_estado_faixa(input)
 soma_por_estado_faixa <-
@@ -61,14 +62,19 @@ soma_por_estado_faixa <-
     tabela <-
       dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
     tabela <-
-      dplyr::summarise(
-        tabela,
-        across(where(is.numeric), ~ sum(.x, na.rm = TRUE)),
-        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>=1,dplyr::first(.x), NA)),
-        .groups="drop")
-    tabela <- tabela[,colSums(is.na(tabela))<nrow(tabela)]
+      dplyr::summarise(tabela,
+        dplyr::across(where(is.numeric), ~ sum(.x, na.rm = TRUE)),
+        dplyr::across(
+          where(is.character),
+          ~ ifelse(length(unique(.x)) == 1 &
+            length(.x) >= 1, dplyr::first(.x), NA)
+        ),
+        .groups = "drop"
+      )
+    tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
     return(tabela)
   }
+
 
 #' Conta o número de munícipios que se encontram em cada faixa populacional
 #'
@@ -80,9 +86,9 @@ soma_por_estado_faixa <-
 #' @export
 #'
 #' @examples
-#' Estado <- c(rep("AC",4), rep("AL",4))
-#' faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
-#' valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+#' Estado <- c(rep("AC", 4), rep("AL", 4))
+#' faixa <- c(rep(1, 2), rep(3, 2), rep(2, 2), rep(4, 2))
+#' valor <- c(1, 1, 2, 2, 3, 3, 4, 4)
 #' input <- dplyr::tibble(Estado, faixa, valor)
 #' output <- conta_municipios_por_estado_faixa(input)
 conta_municipios_por_estado_faixa <-
@@ -92,9 +98,13 @@ conta_municipios_por_estado_faixa <-
     tabela <-
       dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
     tabela <-
-      dplyr::summarise(tabela, numero_municipios = dplyr::n(), .groups="drop")
+      dplyr::summarise(tabela,
+        numero_municipios = dplyr::n(),
+        .groups = "drop"
+      )
     return(tabela)
   }
+
 
 #' Média de todas as variáveis numéricas agrupando por estado e faixa populacional
 #'
@@ -106,9 +116,9 @@ conta_municipios_por_estado_faixa <-
 #' @export
 #'
 #' @examples
-#' Estado <- c(rep("AC",4), rep("AL",4))
-#' faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
-#' valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+#' Estado <- c(rep("AC", 4), rep("AL", 4))
+#' faixa <- c(rep(1, 2), rep(3, 2), rep(2, 2), rep(4, 2))
+#' valor <- c(1, 1, 2, 2, 3, 3, 4, 4)
 #' input <- dplyr::tibble(Estado, faixa, valor)
 #' output <- media_por_estado_faixa(input)
 media_por_estado_faixa <-
@@ -118,12 +128,16 @@ media_por_estado_faixa <-
     tabela <-
       dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
     tabela <-
-      dplyr::summarise(
-        tabela,
-        across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
-        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>=1,dplyr::first(.x), NA)),
-        .groups="drop")
-    tabela <- tabela[,colSums(is.na(tabela))<nrow(tabela)]
+      dplyr::summarise(tabela,
+        dplyr::across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+        dplyr::across(
+          where(is.character),
+          ~ ifelse(length(unique(.x)) == 1 &
+            length(.x) >= 1, dplyr::first(.x), NA)
+        ),
+        .groups = "drop"
+      )
+    tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
     return(tabela)
   }
 
@@ -139,7 +153,9 @@ media_por_estado_faixa <-
 #' @export
 #'
 #' @examples
-#' \dontrun{tabela <- quantidade_compostagem_municipio(tabela)}
+#' \dontrun{
+#' tabela <- quantidade_compostagem_municipio(tabela)
+#' }
 quantidade_compostagem_municipio <- function(tabela) {
   tabela <- dplyr::filter(
     tabela,
@@ -147,7 +163,8 @@ quantidade_compostagem_municipio <- function(tabela) {
   )
   tabela <- codigo6_para_codigo_ibge(tabela, "Código")
   tabela <- dplyr::group_by(tabela, codigo_municipio)
-  tabela <- dplyr::summarise( tabela, quantidade_compostagem=sum(UP080))
+  tabela <-
+    dplyr::summarise(tabela, quantidade_compostagem = sum(UP080))
   return(tabela)
 }
 
@@ -161,23 +178,26 @@ quantidade_compostagem_municipio <- function(tabela) {
 #' @export
 #'
 #' @examples
-#' faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
-#' valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+#' faixa <- c(rep(1, 2), rep(3, 2), rep(2, 2), rep(4, 2))
+#' valor <- c(1, 1, 2, 2, 3, 3, 4, 4)
 #' input <- dplyr::tibble(faixa, valor)
 #' output <- soma_por_faixa(input)
-soma_por_faixa <-
-  function(tabela,
-           campo_faixa = "faixa") {
-    tabela <- dplyr::group_by(tabela, .data[[campo_faixa]])
-    tabela <-
-      dplyr::summarise(
-        tabela,
-        across(where(is.numeric), ~ sum(.x, na.rm = TRUE)),
-        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>=1,dplyr::first(.x), NA)),
-        .groups="drop")
-    tabela <- tabela[,colSums(is.na(tabela))<nrow(tabela)]
-    return(tabela)
-  }
+soma_por_faixa <- function(tabela, campo_faixa = "faixa") {
+  tabela <- dplyr::group_by(tabela, .data[[campo_faixa]])
+  tabela <-
+    dplyr::summarise(tabela,
+      dplyr::across(where(is.numeric), ~ sum(.x, na.rm = TRUE)),
+      dplyr::across(
+        where(is.character),
+        ~ ifelse(length(unique(.x)) == 1 &
+          length(.x) >= 1, dplyr::first(.x), NA)
+      ),
+      .groups = "drop"
+    )
+  tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
+  return(tabela)
+}
+
 
 #' Média de todas as variáveis numéricas agrupando por faixa populacional
 #'
@@ -188,21 +208,23 @@ soma_por_faixa <-
 #' @export
 #'
 #' @examples
-#' faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
-#' valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+#' faixa <- c(rep(1, 2), rep(3, 2), rep(2, 2), rep(4, 2))
+#' valor <- c(1, 1, 2, 2, 3, 3, 4, 4)
 #' input <- dplyr::tibble(faixa, valor)
 #' output <- media_por_faixa(input)
-media_por_faixa <-
-  function(tabela,
-           campo_faixa = "faixa") {
-    tabela <-
-      dplyr::group_by(tabela, .data[[campo_faixa]])
-    tabela <-
-      dplyr::summarise(
-        tabela,
-        across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
-        across(where(is.character), ~ ifelse(length(unique(.x))==1 & length(.x)>=1,dplyr::first(.x), NA)),
-        .groups="drop")
-    tabela <- tabela[,colSums(is.na(tabela))<nrow(tabela)]
-    return(tabela)
-  }
+media_por_faixa <- function(tabela, campo_faixa = "faixa") {
+  tabela <-
+    dplyr::group_by(tabela, .data[[campo_faixa]])
+  tabela <-
+    dplyr::summarise(tabela,
+      dplyr::across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+      dplyr::across(
+        where(is.character),
+        ~ ifelse(length(unique(.x)) == 1 &
+          length(.x) >= 1, dplyr::first(.x), NA)
+      ),
+      .groups = "drop"
+    )
+  tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
+  return(tabela)
+}

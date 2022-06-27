@@ -16,7 +16,7 @@
 #' }
 get_snis_data <- function(snis, fields) {
   df <- load_data(snis)
-  df <- dplyr::select(df, fields)
+  df <- dplyr::select(df, dplyr::all_of(fields))
   return(df)
 }
 
@@ -73,7 +73,7 @@ add_density <- function(df) {
 #' df <- fill_missing_density(density, fields)
 #' }
 fill_missing_density <- function(density, fields) {
-  n <- ncol(density) +  1
+  n <- ncol(density) + 1
   for (i in fields) {
     density[is.infinite(unlist(density[, i])), i] <- NA
     density[is.nan(unlist(density[, i])), i] <- NA
@@ -87,9 +87,9 @@ fill_missing_density <- function(density, fields) {
 
     density <- density %>%
       dplyr::mutate(pred = exp(stats::predict(fit, .)))
-    mask <- as.vector(is.na(density[,i]))
+    mask <- as.vector(is.na(density[, i]))
     density[mask, i] <- density[mask, "pred"]
-    density <- density[,-n]
+    density <- density[, -n]
   }
   return(density)
 }
@@ -121,13 +121,15 @@ consolida_populacao_snis <- function(populacao, ano, snis) {
   )
 
   df <- dplyr::full_join(df,
-                         populacao_rural,
-                         by = "codigo_municipio",)
+    populacao_rural,
+    by = "codigo_municipio",
+  )
   df <- dplyr::rename(df, populacao_rural = populacao)
 
   df <- dplyr::full_join(df,
-                         snis,
-                         by = "codigo_municipio")
+    snis,
+    by = "codigo_municipio"
+  )
   df <-
     dplyr::select(
       df,
@@ -168,18 +170,13 @@ calculate_geografico <-
       df,
       deficit_agua_total = pmax(populacao_total - AG001, 0.0),
       deficit_agua_urbana = pmax(populacao_urbana - AG026, 0.0),
-
       deficit_esgoto_total = pmax(populacao_total - ES001, 0.0),
       deficit_esgoto_urbana = pmax(populacao_urbana - ES026, 0.0),
-
       deficit_agua_rural = pmax(deficit_agua_total - deficit_agua_urbana, 0.0),
       deficit_esgoto_rural = pmax(deficit_esgoto_total - deficit_esgoto_urbana, 0.0),
-
       demanda_distribuicao_agua = meta_agua / 100.0 * deficit_agua_urbana * densidade_distribuicao_agua,
       demanda_producao_agua = meta_agua / 100.0 * deficit_agua_urbana * densidade_producao_agua,
-
       densidade_tratamento_esgoto = proporcao / 100.0 * densidade_producao_agua,
-
       demanda_coleta_esgoto = meta_esgoto / 100.0 * deficit_esgoto_urbana * densidade_coleta_esgoto,
       demanda_tratamento_esgoto = meta_esgoto / 100.0 * deficit_esgoto_urbana * densidade_tratamento_esgoto,
     )
@@ -229,25 +226,26 @@ calcula_precos_distribuicao <-
     lista_projetos <- c("07a", "07b", "08a", "08b", "09a", "09b")
     taxa_servico <- taxa_servico / 100.0 + 1.0
     taxa_materiais <- taxa_materiais / 100.0 + 1.0
-    states <- rsan::states_acronym()
+    states <- states_acronym()
     consolidate <-
       dplyr::left_join(df_projeto, sinapi, by = c("codigo" = "CODIGO"))
     consolidate <-
       dplyr::mutate(consolidate,
-                    fator = ifelse(
-                      grupo == "SERVIÇOS",
-                      taxa_servico,
-                      ifelse(grupo == "MATERIAIS", taxa_materiais, 1.0)
-                    ))
-    df <-
-      tibble(codigo = consolidate$codigo, tipo = consolidate$tipo)
+        fator = ifelse(
+          grupo == "SERVIÇOS",
+          taxa_servico,
+          ifelse(grupo == "MATERIAIS", taxa_materiais, 1.0)
+        )
+      )
+    df <- dplyr::tibble(codigo = consolidate$codigo, tipo = consolidate$tipo)
     porcentagem <-
       dplyr::filter(df_projeto, codigo == "PORCENTAGEM")
     porcentagem <-
       tidyr::pivot_longer(porcentagem,
-                          all_of(lista_projetos),
-                          names_to = "projeto",
-                          values_to = "porcento")
+        all_of(lista_projetos),
+        names_to = "projeto",
+        values_to = "porcento"
+      )
     for (projeto in lista_projetos) {
       for (state in states) {
         name <- paste(projeto, state, sep = "_")
@@ -270,7 +268,7 @@ calcula_precos_distribuicao <-
     for (row in 1:nrow(porcentagem)) {
       tipo_row <- as.character(porcentagem[row, "tipo"])
       projeto_row <- as.character(porcentagem[row, "projeto"])
-      ratio <- as.double(porcentagem[row, 'porcento'])
+      ratio <- as.double(porcentagem[row, "porcento"])
       filtered <-
         dplyr::filter(df, projeto == projeto_row & tipo == tipo_row)
       filtered <- dplyr::group_by(filtered, estado)
@@ -286,7 +284,7 @@ calcula_precos_distribuicao <-
     }
     df <- dplyr::group_by(df, projeto, estado)
     df <-
-      dplyr::summarise(df, across(-c("codigo", "tipo"), sum, na.rm = TRUE))
+      dplyr::summarise(df, dplyr::across(-c("codigo", "tipo"), sum, na.rm = TRUE))
     df <- dplyr::mutate(df, preco = round(preco, 2))
     return(df)
   }
@@ -315,9 +313,9 @@ calcula_precos_distribuicao <-
 #' @export
 #'
 #' @examples
-#' populacao_total =  c(3000, 3000, 300000, 300000, 600000, 600000)
-#' populacao_urbana = c(2999,    1, 299999,      1, 599999,      1)
-#' populacao_rural =  c(   1, 2999,      1, 299999,      1, 599999)
+#' populacao_total <- c(3000, 3000, 300000, 300000, 600000, 600000)
+#' populacao_urbana <- c(2999, 1, 299999, 1, 599999, 1)
+#' populacao_rural <- c(1, 2999, 1, 299999, 1, 599999)
 #' tabela <- dplyr::tibble(populacao_total, populacao_urbana, populacao_rural)
 #' tabela <- classifica_municipio(tabela)
 classifica_municipio <- function(tabela) {
@@ -333,7 +331,7 @@ classifica_municipio <- function(tabela) {
     class_custo = ifelse(populacao_urbana > populacao_rural, "a", "b"),
     classificacao = paste0(cenario, class_custo)
   )
-  tabela <- dplyr::select(tabela,-c("class_custo"))
+  tabela <- dplyr::select(tabela, -c("class_custo"))
   return(tabela)
 }
 
@@ -354,10 +352,10 @@ classifica_municipio <- function(tabela) {
 #' @export
 #'
 #' @examples
-#' investimento <- c(1,3)
-#' capacidade <-   c(0,1)
+#' investimento <- c(1, 3)
+#' capacidade <- c(0, 1)
 #' df_in <- dplyr::tibble(capacidade, investimento)
-#' df_out <- calcula_reposicao_total(df_in,"capacidade","investimento","reposicao", 2021, 2033, 30)
+#' df_out <- calcula_reposicao_total(df_in, "capacidade", "investimento", "reposicao", 2021, 2033, 30)
 calcula_reposicao_total <-
   function(tabela,
            campo_capacidade,
@@ -371,7 +369,7 @@ calcula_reposicao_total <-
 
     tabela <-
       dplyr::mutate(tabela, repo = (k1 * .data[[campo_capacidade]] + k2 * .data[[campo_investimento]] /
-                                      2) / vida_util)
+        2) / vida_util)
     colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
     return(tabela)
   }
@@ -395,10 +393,10 @@ calcula_reposicao_total <-
 #' @export
 #'
 #' @examples
-#' investimento <- c(1,3)
-#' capacidade <-   c(0,1)
+#' investimento <- c(1, 3)
+#' capacidade <- c(0, 1)
 #' df_in <- dplyr::tibble(capacidade, investimento)
-#' df_out <- calcula_reposicao_parcial(df_in,"capacidade","investimento","reposicao", 2021, 2033, 2022, 30)
+#' df_out <- calcula_reposicao_parcial(df_in, "capacidade", "investimento", "reposicao", 2021, 2033, 2022, 30)
 calcula_reposicao_parcial <-
   function(tabela,
            campo_capacidade,
@@ -419,7 +417,7 @@ calcula_reposicao_parcial <-
 
     tabela <-
       dplyr::mutate(tabela, repo = (k1 * (k2 * .data[[campo_capacidade]] + k3 *
-                                            .data[[campo_investimento]]) / k4) / vida_util)
+        .data[[campo_investimento]]) / k4) / vida_util)
     colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
     return(tabela)
   }
@@ -435,17 +433,17 @@ calcula_reposicao_parcial <-
 #' @export
 #'
 #' @examples
-#'  estado  <- c("AC","AC","AC", "AL", "AL", "AL")
-#'  unidade <- c("ETA200", "EEA200", "POÇO40", "ETA200", "EEA200", "POÇO40")
-#'  preco   <- c(3.055, 0.129, 0.69, 2.88, 0.12, 0.66)
-#'  preco_unidade <- dplyr::tibble(estado, unidade, preco)
+#' estado <- c("AC", "AC", "AC", "AL", "AL", "AL")
+#' unidade <- c("ETA200", "EEA200", "POÇO40", "ETA200", "EEA200", "POÇO40")
+#' preco <- c(3.055, 0.129, 0.69, 2.88, 0.12, 0.66)
+#' preco_unidade <- dplyr::tibble(estado, unidade, preco)
 #'
-#'  cenario <- c("08", "08", "08", "08", "09", "09", "09", "09")
-#'  unidade <- c("ETA200", "EEA200", "POÇO40", "EEA200","ETA200", "EEA200", "POÇO40", "EEA200")
-#'  tipo	<- c("superficial", "superficial", "subterranea","subterranea","superficial", "superficial", "subterranea","subterranea")
-#'  quantidade <- c(0.854106686284393, 1.3, 1, 1, 0.549559117416313, 1.3, 1, 1)
-#'  projeto_producao <- dplyr::tibble(cenario, unidade, tipo, quantidade)
-#'  df_out <- calcula_custo_relativo_producao(preco_unidade, projeto_producao)
+#' cenario <- c("08", "08", "08", "08", "09", "09", "09", "09")
+#' unidade <- c("ETA200", "EEA200", "POÇO40", "EEA200", "ETA200", "EEA200", "POÇO40", "EEA200")
+#' tipo <- c("superficial", "superficial", "subterranea", "subterranea", "superficial", "superficial", "subterranea", "subterranea")
+#' quantidade <- c(0.854106686284393, 1.3, 1, 1, 0.549559117416313, 1.3, 1, 1)
+#' projeto_producao <- dplyr::tibble(cenario, unidade, tipo, quantidade)
+#' df_out <- calcula_custo_relativo_producao(preco_unidade, projeto_producao)
 calcula_custo_relativo_producao <-
   function(preco_unidade, projeto_producao) {
     tabela <-
@@ -480,14 +478,14 @@ calcula_custo_relativo_producao <-
 #' @export
 #'
 #' @examples
-#' estado  <- c("AC","AC","AC", "AC", "AL", "AL", "AL","AL")
+#' estado <- c("AC", "AC", "AC", "AC", "AL", "AL", "AL", "AL")
 #' unidade <- c("LAGOA125", "REATORANA180", "EE85", "LODOBAT400", "LAGOA125", "REATORANA180", "EE85", "LODOBAT400")
-#' preco   <- c(2.476, 0.762, 0.209, 2.31, 2.051, 0.4282, 0.2008, 2.2114 )
+#' preco <- c(2.476, 0.762, 0.209, 2.31, 2.051, 0.4282, 0.2008, 2.2114)
 #' preco_unidade <- dplyr::tibble(estado, unidade, preco)
 #'
 #' cenario <- c("07", "07", "07", "09", "09")
 #' unidade <- c("LAGOA125", "REATORANA180", "EE85", "LODOBAT400", "EE85")
-#' quantidade <- c(1.2, 1, 1, 2.05*1.71361608179778, 1)
+#' quantidade <- c(1.2, 1, 1, 2.05 * 1.71361608179778, 1)
 #' projeto_tratamento <- dplyr::tibble(cenario, unidade, quantidade)
 #'
 #' df_out <- calcula_custo_relativo_tratamento(preco_unidade, projeto_tratamento)
@@ -530,7 +528,9 @@ fator_perda_agua <- function(perda) {
 #' @export
 #'
 #' @examples
-#' \dontrun{tabela <- calcula_preco_unidades_producao(df_projeto, sinapi, 26, 18, TRUE)}
+#' \dontrun{
+#' tabela <- calcula_preco_unidades_producao(df_projeto, sinapi, 26, 18, TRUE)
+#' }
 calcula_preco_unidades_producao <-
   function(df_projeto,
            sinapi,
@@ -547,7 +547,7 @@ calcula_preco_unidades_producao <-
     porcentagem <-
       dplyr::filter(df_projeto, codigo == "PORCENTAGEM")
     porcentagem <-
-      dplyr::select(porcentagem,!c("codigo", "observacao"))
+      dplyr::select(porcentagem, !c("codigo", "observacao"))
     porcentagem <- dplyr::group_by(porcentagem, unidade)
     if (sub_total) {
       porcentagem <-
@@ -559,15 +559,14 @@ calcula_preco_unidades_producao <-
 
     df <- dplyr::filter(consolidate, codigo != "PORCENTAGEM")
 
-    fields_to_remove <-
-      c("codigo", "observacao", "DESCRICAO", "UNIDADE")
-    df <- dplyr::select(df, !fields_to_remove)
+    fields_to_remove <- c("codigo", "observacao", "DESCRICAO", "UNIDADE")
+    df <- dplyr::select(df, -dplyr::all_of(fields_to_remove))
 
     fields_to_ignore <- c("unidade", "quantidade", "TIPO", "vazao")
 
     df <-
       tidyr::pivot_longer(
-        df,-fields_to_ignore,
+        df, -dplyr::all_of(fields_to_ignore),
         names_to = "estado",
         names_pattern = "_(.*)",
         values_to = "preco"
@@ -585,11 +584,11 @@ calcula_preco_unidades_producao <-
       )
     df <- dplyr::group_by(df, unidade, estado)
     df <-
-      dplyr::summarise(df, across(-c("TIPO", "fator", "quantidade", "vazao"), sum, na.rm = TRUE))
+      dplyr::summarise(df, dplyr::across(-c("TIPO", "fator", "quantidade", "vazao"), sum, na.rm = TRUE))
 
     df <- dplyr::left_join(df, porcentagem, by = "unidade")
     df <- dplyr::mutate(df, preco = round(preco * percent, 2))
-    df <- dplyr::select(df,!"percent")
+    df <- dplyr::select(df, !"percent")
     return(df)
   }
 
@@ -603,16 +602,20 @@ calcula_preco_unidades_producao <-
 #' @export
 #'
 #' @examples
-#' \dontrun{custo <- calcula_custo_extensao(demanda, extensao, tipo) }
+#' \dontrun{
+#' custo <- calcula_custo_extensao(demanda, extensao, tipo)
+#' }
 calcula_custo_extensao <- function(demanda, extensao, tipo) {
   demanda_name <- paste0("demanda_", tipo)
   preco_name <- paste0("preco_", tipo)
   output_field <- paste0("custo_expansao_", tipo)
   tabela <- dplyr::left_join(demanda,
-                             extensao,
-                             by = c("classificacao" = "projeto", "estado"))
+    extensao,
+    by = c("classificacao" = "projeto", "estado")
+  )
   tabela <- dplyr::mutate(tabela,
-                          cexp = preco * .data[[demanda_name]])
+    cexp = preco * .data[[demanda_name]]
+  )
   colnames(tabela)[colnames(tabela) == "preco"] <- preco_name
   colnames(tabela)[colnames(tabela) == "cexp"] <- output_field
   return(tabela)
@@ -627,7 +630,9 @@ calcula_custo_extensao <- function(demanda, extensao, tipo) {
 #' @export
 #'
 #' @examples
-#' \dontrun{custo_relativo <- calcula_custo_expansao_tratamento(demanda, tratamento)}
+#' \dontrun{
+#' custo_relativo <- calcula_custo_expansao_tratamento(demanda, tratamento)
+#' }
 calcula_custo_expansao_tratamento <- function(demanda, tratamento) {
   data("projeto_tratamento_esgoto")
   custo_relativo <-
@@ -636,7 +641,8 @@ calcula_custo_expansao_tratamento <- function(demanda, tratamento) {
     dplyr::left_join(demanda, custo_relativo, by = c("estado", "cenario"))
   tabela <-
     dplyr::mutate(tabela,
-                  custo_expansao_tratamento_esgoto = custo_relativo * demanda_tratamento_esgoto)
+      custo_expansao_tratamento_esgoto = custo_relativo * demanda_tratamento_esgoto
+    )
   colnames(tabela)[colnames(tabela) == "custo_relativo"] <-
     "custo_relativo_tratamento"
   return(tabela)
@@ -653,7 +659,9 @@ calcula_custo_expansao_tratamento <- function(demanda, tratamento) {
 #' @export
 #'
 #' @examples
-#' \dontrun{ custo <- calcula_custo_expansao_producao(demanda, producao, perda_agua)}
+#' \dontrun{
+#' custo <- calcula_custo_expansao_producao(demanda, producao, perda_agua)
+#' }
 calcula_custo_expansao_producao <-
   function(demanda, producao, perda_agua) {
     fator_perda <- rsan::fator_perda_agua(perda_agua)
@@ -664,8 +672,9 @@ calcula_custo_expansao_producao <-
       dplyr::left_join(demanda, custo_relativo, by = c("estado", "cenario"))
     tabela <-
       dplyr::mutate(tabela,
-                    custo_expansao_producao_agua = custo_relativo * demanda_producao_agua *
-                      fator_perda)
+        custo_expansao_producao_agua = custo_relativo * demanda_producao_agua *
+          fator_perda
+      )
     colnames(tabela)[colnames(tabela) == "custo_relativo"] <-
       "custo_relativo_producao"
     return(tabela)
@@ -685,7 +694,9 @@ calcula_custo_expansao_producao <-
 #' @export
 #'
 #' @examples
-#' \dontrun{ invest <- calcula_custo_expansao(demanda, distribuicao, coleta, producao, tratamento, perda_agua)}
+#' \dontrun{
+#' invest <- calcula_custo_expansao(demanda, distribuicao, coleta, producao, tratamento, perda_agua)
+#' }
 calcula_custo_expansao <-
   function(demanda,
            distribuicao,
@@ -696,7 +707,8 @@ calcula_custo_expansao <-
     tabela <- rsan::classifica_municipio(demanda)
     tabela <-
       dplyr::mutate(tabela,
-                    cenario = stringr::str_trunc(classificacao, 2, "right", ellipsis = ""))
+        cenario = stringr::str_trunc(classificacao, 2, "right", ellipsis = "")
+      )
     tabela <- rsan::adiciona_estado(tabela)
     tabela <-
       rsan::calcula_custo_extensao(tabela, distribuicao, "distribuicao_agua")
@@ -736,12 +748,232 @@ calcula_custo_expansao <-
 #' @export
 #'
 #' @examples
-#' \dontrun{tabela <- consolida_investimentos_agua_esgoto(df_input)}
-consolida_investimentos_agua_esgoto <- function(tabela){
+#' \dontrun{
+#' tabela <- consolida_investimentos_agua_esgoto(df_input)
+#' }
+consolida_investimentos_agua_esgoto <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
     investimento_expansao = custo_expansao_distribuicao_agua + custo_expansao_coleta_esgoto + custo_expansao_producao_agua + custo_expansao_tratamento_esgoto,
     investimento_reposicao = reposicao_producao_agua + reposicao_tratamento_esgoto + reposicao_distribuicao_agua + reposicao_coleta_esgoto,
     investimento_total = investimento_expansao + investimento_reposicao,
   )
+}
+
+################# TODO FIX DOCUMENTATION FROM HERE
+snis_fields <- c(
+  "codigo_municipio",
+  "POP_TOT",
+  "Estado",
+  "AG001",
+  "AG005",
+  "AG006",
+  "AG010",
+  "AG026",
+  "ES001",
+  "ES004",
+  "ES006",
+  "ES026"
+)
+
+#' Title
+#'
+#' @param input
+#' @param projecao
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' rodar_modulo_demografico
+#' }
+rodar_modulo_demografico <- function(input, projecao) {
+  ano <- input$ano
+  tabela <- rsan::get_snis_data(input$snis, snis_fields)
+  tabela <- rsan::add_density(tabela)
+  tabela <- rsan::fill_missing_density(tabela, c("densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"))
+  tabela <- rsan::consolida_populacao_snis(projecao, ano, tabela)
+  tabela <- calculate_geografico(tabela, input$meta_agua, input$meta_esgoto, input$proporcao)
+  return(tabela)
+}
+
+#' Title
+#'
+#' @param input
+#' @param demografico
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+rodar_modulo_orcamentario <- function(input, demografico) {
+  sinapi <- load_data(input$sinapi)
+  data("projeto_distribuicao_agua")
+
+  distribuicao <- calcula_precos_distribuicao(
+    projeto_distribuicao_agua,
+    sinapi,
+    input$fator_servicos,
+    input$fator_materiais
+  )
+
+  data("projeto_coleta_esgoto")
+  coleta <- calcula_precos_distribuicao(
+    projeto_coleta_esgoto,
+    sinapi,
+    input$fator_servicos,
+    input$fator_materiais
+  )
+
+  data("projeto_producao_agua")
+  producao <- calcula_preco_unidades_producao(
+    projeto_producao_agua_unidades,
+    sinapi,
+    input$fator_insumo,
+    input$fator_composicao
+  )
+
+  data("projeto_tratamento_esgoto")
+  tratamento <- calcula_preco_unidades_producao(
+    projeto_tratamento_esgoto_unidades,
+    sinapi,
+    input$fator_insumo,
+    input$fator_composicao
+  )
+
+  custo <- calcula_custo_expansao(
+    demografico,
+    distribuicao,
+    coleta,
+    producao,
+    tratamento,
+    input$perda_agua
+  )
+  resultado <- list(
+    distribuicao = distribuicao,
+    coleta = coleta,
+    producao = producao,
+    tratamento = tratamento,
+    custo = custo
+  )
+  return(resultado)
+}
+
+
+#' Title
+#'
+#' @param snis
+#' @param custo
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+calcula_capacidade_instalada <- function(snis, custo) {
+  # Quando não informada assume extensões igual a 0
+  snis$AG005[is.na(snis$AG005)] <- 0
+  snis$ES004[is.na(snis$ES004)] <- 0
+  snis$AG006[is.na(snis$AG006)] <- 0
+  snis$ES006[is.na(snis$ES006)] <- 0
+
+  tabela <- dplyr::left_join(snis, custo, by = "codigo_municipio")
+  tabela <- dplyr::mutate(
+    tabela,
+    capacidade_instalada_distribuicao = AG005 * 1e3 * preco_distribuicao_agua,
+    capacidade_instalada_coleta = ES004 * 1e3 * preco_coleta_esgoto,
+    capacidade_instalada_producao = AG006 * 1e3 * custo_relativo_producao,
+    capacidade_instalada_tratamento = ES006 * 1e3 * custo_relativo_tratamento
+  )
+  return(tabela)
+}
+
+#' Title
+#'
+#' @param capacidade
+#' @param custo
+#' @param reposicao
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+campos_reposicao <- function(capacidade, custo, reposicao) {
+  return(list(
+    capacidade = capacidade,
+    custo = custo,
+    reposicao = reposicao
+  ))
+}
+
+#' Title
+#'
+#' @param input
+#' @param orcamentario
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+rodar_modulo_financeiro <- function(input, orcamentario) {
+  snis_data <- get_snis_data(input$snis, snis_fields)
+  custo <- orcamentario$custo
+  tabela <- calcula_capacidade_instalada(snis_data, custo)
+  ano_inicial <- 2021
+  ano_final <- 2033
+  ano_corrente <- 2022
+  vida_util <- 30
+
+  vars <- list(
+    campos_reposicao(
+      "capacidade_instalada_distribuicao",
+      "custo_expansao_distribuicao_agua",
+      "reposicao_distribuicao_agua"
+    ),
+    campos_reposicao(
+      "capacidade_instalada_coleta",
+      "custo_expansao_coleta_esgoto",
+      "reposicao_coleta_esgoto"
+    ),
+    campos_reposicao(
+      "capacidade_instalada_producao",
+      "custo_expansao_producao_agua",
+      "reposicao_producao_agua"
+    ),
+    campos_reposicao(
+      "capacidade_instalada_tratamento",
+      "custo_expansao_tratamento_esgoto",
+      "reposicao_tratamento_esgoto"
+    )
+  )
+
+  for (var in vars) {
+    tabela <- rsan::calcula_reposicao_parcial(
+      tabela,
+      var$capacidade,
+      var$custo,
+      var$reposicao,
+      ano_inicial,
+      ano_final,
+      ano_corrente,
+      vida_util
+    )
+  }
+
+  tabela <- rsan::consolida_investimentos_agua_esgoto(tabela)
+  tabela <- rsan::adiciona_pais(tabela)
+  tabela <- rsan::adiciona_regiao(tabela)
+  return(tabela)
 }

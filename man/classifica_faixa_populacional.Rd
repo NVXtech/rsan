@@ -34,7 +34,7 @@ Cria classificação por limites populacionas.
 }
 \examples{
 limites <- as.integer(c(0, 10e3, 30e3, 100e3, 250e3, 1e6, 4e6))
-POP_TOT <-as.integer(c(0, 10e3, 30e3, 100e3, 250e3, 1e6, 4e6, 5e6))
+POP_TOT <- as.integer(c(0, 10e3, 30e3, 100e3, 250e3, 1e6, 4e6, 5e6))
 input <- dplyr::tibble(POP_TOT)
 output <- classifica_faixa_populacional(input, limites)
 }

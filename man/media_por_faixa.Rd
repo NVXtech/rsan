@@ -18,8 +18,8 @@ tabela contendo a média de todas variáveis por faixa populacional
 Média de todas as variáveis numéricas agrupando por faixa populacional
 }
 \examples{
-faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
-valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+faixa <- c(rep(1, 2), rep(3, 2), rep(2, 2), rep(4, 2))
+valor <- c(1, 1, 2, 2, 3, 3, 4, 4)
 input <- dplyr::tibble(faixa, valor)
 output <- media_por_faixa(input)
 }

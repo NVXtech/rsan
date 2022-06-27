@@ -17,5 +17,7 @@ Agrupa por município os dados do SNIS (prestadores)
 e estimar a quantidade de resíduos destinados a compostagem.
 }
 \examples{
-\dontrun{tabela <- quantidade_compostagem_municipio(tabela)}
+\dontrun{
+tabela <- quantidade_compostagem_municipio(tabela)
+}
 }

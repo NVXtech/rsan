@@ -168,4 +168,3 @@ get_populacao <- function(tabela, ano, tipo) {
   pop <- dplyr::filter(tabela, tipo_populacao == tipo & ano == year)
   return(pop)
 }
-

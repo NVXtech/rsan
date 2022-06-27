@@ -20,5 +20,7 @@ tabela com a necessidade de investimento para produção de água
 Calcula a necessidade de investimento para produção de água
 }
 \examples{
-\dontrun{ custo <- calcula_custo_expansao_producao(demanda, producao, perda_agua)}
+\dontrun{
+custo <- calcula_custo_expansao_producao(demanda, producao, perda_agua)
+}
 }

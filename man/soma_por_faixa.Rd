@@ -18,8 +18,8 @@ tabela contendo todas variáveis somadas por faixa populacional
 Soma todas as variáveis numéricas agrupando por faixa populacional
 }
 \examples{
-faixa <- c(rep(1,2), rep(3,2), rep(2,2), rep(4,2))
-valor <- c(1, 1, 2, 2, 3, 3 , 4, 4)
+faixa <- c(rep(1, 2), rep(3, 2), rep(2, 2), rep(4, 2))
+valor <- c(1, 1, 2, 2, 3, 3, 4, 4)
 input <- dplyr::tibble(faixa, valor)
 output <- soma_por_faixa(input)
 }

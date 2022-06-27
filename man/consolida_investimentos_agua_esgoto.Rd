@@ -32,5 +32,7 @@ Totaliza os dados investimento em expansão, reposição e total.
 Adiciona coluna com o país para totalização.
 }
 \examples{
-\dontrun{tabela <- consolida_investimentos_agua_esgoto(df_input)}
+\dontrun{
+tabela <- consolida_investimentos_agua_esgoto(df_input)
+}
 }

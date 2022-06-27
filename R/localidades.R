@@ -1,5 +1,8 @@
-states <- c("AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "MS", "MT", "PA", "PB", "PE",
-            "PI", "PR", "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO")
+states <- c(
+  "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO",
+  "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR",
+  "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO"
+)
 
 #' Lista de siglas do estados mais distrito federal
 #'
@@ -8,7 +11,7 @@ states <- c("AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA", "MG", "M
 #'
 #' @examples
 #' states <- states_acronym()
-states_acronym <- function(){
+states_acronym <- function() {
   return(states)
 }
 
@@ -20,7 +23,7 @@ states_acronym <- function(){
 #' @export
 #'
 #' @examples
-#' codigo_municipio <- c("1200013","1200054", "1200104", "1200138")
+#' codigo_municipio <- c("1200013", "1200054", "1200104", "1200138")
 #' input <- dplyr::tibble(codigo_municipio)
 #' tabela <- adiciona_estado(input)
 #'
@@ -47,7 +50,7 @@ adiciona_estado <- function(tabela) {
 #' @export
 #'
 #' @examples
-#' codigo_municipio <- c("1200013","1200054", "1200104", "1200138")
+#' codigo_municipio <- c("1200013", "1200054", "1200104", "1200138")
 #' input <- dplyr::tibble(codigo_municipio)
 #' tabela <- adiciona_regiao(input)
 #'
@@ -71,13 +74,13 @@ adiciona_regiao <- function(tabela) {
 #' @export
 #'
 #' @examples
-#' codigo_municipio <- c("1200013","1200054", "1200104", "1200138")
+#' codigo_municipio <- c("1200013", "1200054", "1200104", "1200138")
 #' input <- dplyr::tibble(codigo_municipio)
 #' tabela <- adiciona_pais(input)
 #'
 adiciona_pais <- function(tabela) {
   tabela <-
-    dplyr::mutate(tabela, pais="Brasil")
+    dplyr::mutate(tabela, pais = "Brasil")
   return(tabela)
 }
 
@@ -92,10 +95,10 @@ adiciona_pais <- function(tabela) {
 #' @examples
 #' codes <- c("110001", "110002")
 #' tabela <- dplyr::tibble(codes)
-#' tabela <- codigo6_para_codigo_ibge(tabela,"codes")
-codigo6_para_codigo_ibge <- function(tabela, nome_campo){
+#' tabela <- codigo6_para_codigo_ibge(tabela, "codes")
+codigo6_para_codigo_ibge <- function(tabela, nome_campo) {
   data(municipio)
-  municipio <- dplyr::mutate(municipio, codigo6=strtrim(codigo_municipio, 6))
+  municipio <- dplyr::mutate(municipio, codigo6 = strtrim(codigo_municipio, 6))
   municipio <- dplyr::select(municipio, "codigo6", "codigo_municipio")
-  tabela <- dplyr::left_join(tabela, municipio, by=c("Código"="codigo6"))
+  tabela <- dplyr::left_join(tabela, municipio, by = c("Código" = "codigo6"))
 }

@@ -15,8 +15,9 @@ fix_snis_csv <- function(filename, newfilename) {
   connout <- file(newfilename, open = "w")
   linn <- readLines(conn)
   for (i in 1:length(linn)) {
-    if (grepl("^TOTAL", linn[i]))
+    if (grepl("^TOTAL", linn[i])) {
       next
+    }
     writeLines(gsub(";$", "", linn[i]), con = connout)
   }
   close(conn)
@@ -36,14 +37,14 @@ fix_snis_colnames <- function(data) {
   names <- colnames(data)
   new_names <- c()
   for (name in names) {
-    new_name <- stringr::str_trim(strsplit(name, '-')[[1]][1])
+    new_name <- stringr::str_trim(strsplit(name, "-")[[1]][1])
     new_names <- c(new_names, new_name)
   }
   new_names[match(new_names, "Código do IBGE")] <-
     "codigo_municipio"
   colnames(data) <- new_names
   data <-
-    dplyr::mutate(data, across(codigo_municipio, as.character))
+    dplyr::mutate(data, dplyr::across(codigo_municipio, as.character))
   return(data)
 }
 
@@ -56,8 +57,3 @@ fix_snis_csv(file_path, file_path_out)
 snis2020 <- readr::read_csv2(file_path_out)
 snis2020 <- fix_snis_colnames(snis2020)
 usethis::use_data(snis2020, overwrite = TRUE)
-
-
-
-
-

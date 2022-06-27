@@ -30,5 +30,7 @@ uma tabela com os preços das unidades de produção de água por estado e cená
 Calcula o preço das unidades de produção de água
 }
 \examples{
-\dontrun{tabela <- calcula_preco_unidades_producao(df_projeto, sinapi, 26, 18, TRUE)}
+\dontrun{
+tabela <- calcula_preco_unidades_producao(df_projeto, sinapi, 26, 18, TRUE)
+}
 }

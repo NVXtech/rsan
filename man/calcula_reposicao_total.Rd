@@ -36,8 +36,8 @@ tabela contendo a coluna adiciona de reposição
 A reposição total refere-se ao investimento em reposição total entre o ano inicial e o ano final.
 }
 \examples{
-investimento <- c(1,3)
-capacidade <-   c(0,1)
+investimento <- c(1, 3)
+capacidade <- c(0, 1)
 df_in <- dplyr::tibble(capacidade, investimento)
-df_out <- calcula_reposicao_total(df_in,"capacidade","investimento","reposicao", 2021, 2033, 30)
+df_out <- calcula_reposicao_total(df_in, "capacidade", "investimento", "reposicao", 2021, 2033, 30)
 }

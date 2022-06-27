@@ -16,7 +16,7 @@ tabela com coluna adiciona estado
 Adiciona coluna de estados na tabela
 }
 \examples{
-codigo_municipio <- c("1200013","1200054", "1200104", "1200138")
+codigo_municipio <- c("1200013", "1200054", "1200104", "1200138")
 input <- dplyr::tibble(codigo_municipio)
 tabela <- adiciona_estado(input)
 

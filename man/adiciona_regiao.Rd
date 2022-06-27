@@ -16,7 +16,7 @@ tabela com coluna adicional regiao
 Adiciona a tabela de entrada um coluna contendo as sigla da região em que o município se encontra.
 }
 \examples{
-codigo_municipio <- c("1200013","1200054", "1200104", "1200138")
+codigo_municipio <- c("1200013", "1200054", "1200104", "1200138")
 input <- dplyr::tibble(codigo_municipio)
 tabela <- adiciona_regiao(input)
 

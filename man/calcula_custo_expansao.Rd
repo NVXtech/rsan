@@ -33,5 +33,7 @@ tabela com as necessidade de investimento
 Calcula o custo de expansão do sistema de água e esgoto
 }
 \examples{
-\dontrun{ invest <- calcula_custo_expansao(demanda, distribuicao, coleta, producao, tratamento, perda_agua)}
+\dontrun{
+invest <- calcula_custo_expansao(demanda, distribuicao, coleta, producao, tratamento, perda_agua)
+}
 }

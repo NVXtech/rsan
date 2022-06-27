@@ -20,5 +20,5 @@ Converte codigo de munícipio com 6digitos para codigo completo do IBGE
 \examples{
 codes <- c("110001", "110002")
 tabela <- dplyr::tibble(codes)
-tabela <- codigo6_para_codigo_ibge(tabela,"codes")
+tabela <- codigo6_para_codigo_ibge(tabela, "codes")
 }

@@ -29,9 +29,9 @@ Quanto ao custo:
 Exemplo: população 07b é um município com população menor que 40000 e com baixo custo para aquisição de materiais e serviços
 }
 \examples{
-populacao_total =  c(3000, 3000, 300000, 300000, 600000, 600000)
-populacao_urbana = c(2999,    1, 299999,      1, 599999,      1)
-populacao_rural =  c(   1, 2999,      1, 299999,      1, 599999)
+populacao_total <- c(3000, 3000, 300000, 300000, 600000, 600000)
+populacao_urbana <- c(2999, 1, 299999, 1, 599999, 1)
+populacao_rural <- c(1, 2999, 1, 299999, 1, 599999)
 tabela <- dplyr::tibble(populacao_total, populacao_urbana, populacao_rural)
 tabela <- classifica_municipio(tabela)
 }

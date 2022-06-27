@@ -18,14 +18,14 @@ tabela com as colunas estado, cenario e custo_relativo
 Custo relativo é o valor monetário necessário para tratar 1m3 de esgoto por ano R$/(m3/ano).
 }
 \examples{
-estado  <- c("AC","AC","AC", "AC", "AL", "AL", "AL","AL")
+estado <- c("AC", "AC", "AC", "AC", "AL", "AL", "AL", "AL")
 unidade <- c("LAGOA125", "REATORANA180", "EE85", "LODOBAT400", "LAGOA125", "REATORANA180", "EE85", "LODOBAT400")
-preco   <- c(2.476, 0.762, 0.209, 2.31, 2.051, 0.4282, 0.2008, 2.2114 )
+preco <- c(2.476, 0.762, 0.209, 2.31, 2.051, 0.4282, 0.2008, 2.2114)
 preco_unidade <- dplyr::tibble(estado, unidade, preco)
 
 cenario <- c("07", "07", "07", "09", "09")
 unidade <- c("LAGOA125", "REATORANA180", "EE85", "LODOBAT400", "EE85")
-quantidade <- c(1.2, 1, 1, 2.05*1.71361608179778, 1)
+quantidade <- c(1.2, 1, 1, 2.05 * 1.71361608179778, 1)
 projeto_tratamento <- dplyr::tibble(cenario, unidade, quantidade)
 
 df_out <- calcula_custo_relativo_tratamento(preco_unidade, projeto_tratamento)

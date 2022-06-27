@@ -20,5 +20,7 @@ o custo de expansão para o tipo escolhido
 Calcula o custo de expansão para distribuição de água ou coleta de esgoto
 }
 \examples{
-\dontrun{custo <- calcula_custo_extensao(demanda, extensao, tipo) }
+\dontrun{
+custo <- calcula_custo_extensao(demanda, extensao, tipo)
+}
 }
