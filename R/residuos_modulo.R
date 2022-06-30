@@ -263,21 +263,22 @@ preenche_caminhoes_bau <- function(tabela,
     campo_densidade,
     campo_faixa
   )
-  tabela <- dplyr::select(tabela, -campo_densidade)
+  tabela <- dplyr::select(tabela, -dplyr::all_of(campo_densidade))
   tabela <- dplyr::left_join(tabela, tabela_densidade, by = campo_faixa)
 }
 
-#' Title
+#' Mascara de municipios que contém coleta seletiva
 #'
-#' @param tabela
+#' Retorna um vetor de `boolean` sobre a existência (`TRUE`) ou não (`FALSE`) de coleta seletiva.
+#' A análise é baseada no campo CS001 do SNIS.
+#' @param tabela um `data.frame` contendo a coluna CS001.
 #'
-#' @return
+#' @return vetor de boleanos para cada municipio que não contém coleta seletiva
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#'
-#' }
+#' tabela <- dplyr::tibble(CS001 = c("Sim", "Não"))
+#' mask <- mascara_coleta_seletiva(tabela)
 mascara_coleta_seletiva <- function(tabela) {
   mask <- tabela$CS001 == "Sim"
   mask[is.na(mask)] <- FALSE

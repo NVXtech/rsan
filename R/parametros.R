@@ -18,94 +18,38 @@ salva_parametros <- function(state, input, name) {
     state$input <- list()
   }
   params <- shiny::isolate(shiny::reactiveValuesToList(input))
-  params <- remove_shiny_classes(params)
+  params <- rsan:::remove_shiny_classes(params)
   state$input[[name]] <- params
-  save_state(state)
+  rsan:::save_state(state)
   return(state)
 }
 
-#' Salva os parametros do cálculo da projeção populacional
-#'
-#'
-#' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
-#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
-#'
-#' @return a estrutura de dados (`list`) do novo estado atual da aplicação
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' salva_parametros_projecao(state, input)
-#' }
-salva_parametros_projecao <- function(state, input) {
-  projecao_state <-
-    list(
-      fonte1 = input$fonte1,
-      fonte2 = input$fonte2,
-      modelar_ate = input$ano
-    )
-  if (is.null(state[["input"]])) {
-    rlog::log_info("Sem parâmetros anteriores")
-    state$input <- list()
-  }
-  state$input$projecao <- projecao_state
-  save_state(state)
-  return(state)
-}
-
-
-#' Salva os parâmetros do cálculo de investimento em água e esgoto
-#'
-#'
-#' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
-#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
-#'
-#' @return a estrutura de dados (`list`) do novo estado atual da aplicação
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' salva_parametros_agua_esgoto(state, input)
-#' }
-salva_parametros_agua_esgoto <- function(state, input) {
-  agua_esgoto <- list(
-    snis = input$snis,
-    sinapi = input$sinapi,
-    ano = input$ano,
-    meta_agua = input$meta_agua,
-    meta_esgoto = input$meta_esgoto,
-    proporcao = input$proporcao,
-    vida_util = input$vida_util,
-    fator_servicos = input$fator_servicos,
-    fator_materiais = input$fator_materiais,
-    fator_composicao = input$fator_composicao,
-    fator_insumo = input$fator_insumo,
-    perda_agua = input$perda_agua
-  )
-  if (is.null(state[["input"]])) {
-    rlog::log_info("Sem parâmetros anteriores")
-    state$input <- list()
-  }
-  state$input$agua_esgoto <- agua_esgoto
-  save_state(state)
-  return(state)
-}
+geral <- list(ano = 2033)
 
 projecao <- list(
   fonte1 = "populacao_censo_2010",
-  fonte2 = "populacao_estimada_2021",
-  ano = 2033
+  fonte2 = "populacao_estimada_2021"
 )
 
-agua_esgoto <- list(
+agua <- list(
   snis = "snis_2020",
-  ano = 2033,
+  sinapi = "sinapi_202112",
   meta_agua = 99,
+  perda_agua = 25,
+  fator_servicos = 26,
+  fator_materiais = 18,
+  vida_util = 30
+)
+
+esgoto <- list(
+  snis = "snis_2020",
+  sinapi = "sinapi_202112",
   meta_esgoto = 90,
   proporcao = 80,
-  sinapi = "sinapi_202112",
-  perda_agua = 25,
-  snis = "snis_2020",
+  fator_servicos = 26,
+  fator_materiais = 18,
+  fator_composicao = 26,
+  fator_insumo = 18,
   vida_util = 30
 )
 
@@ -140,7 +84,6 @@ valores_triagem <- c(
 )
 
 residuos <- list(
-  ano = 2033,
   snis = "snis_2020",
   # coleta comum
   valor_caminhao = 484709.23,
@@ -175,8 +118,10 @@ drenagem <- list(
 #' get_default_input()
 get_default_input <- function() {
   default_input <- list(
+    geral = geral,
     projecao = projecao,
-    agua_esgoto = agua_esgoto,
+    agua = agua,
+    esgoto = esgoto,
     residuos = residuos,
     drenagem = drenagem
   )

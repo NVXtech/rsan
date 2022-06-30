@@ -1,6 +1,6 @@
 #' Calcula a projeção populacional
 #'
-#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
 #'
 #' @return estado da aplicação (`list`) que guarda todos os resultado e parâmetros dos cálculos
 #' @export
@@ -32,40 +32,16 @@ rodar_projecao_populacional <- function(state) {
   consolidado <- calcular_urbana_rural_fonte2(consolidado)
 
   rlog::log_info("calculando projecao")
-  state$projecao <- calcula_projecao(consolidado, ano2, input$ano)
+  state$projecao <- calcula_projecao(consolidado, ano2, state$input$geral$ano)
   return(state)
 }
 
 
-#' Title
-#'
-#' @param state
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' investimento_agua_esgoto(state)
-#' }
-investimento_agua_esgoto <- function(state) {
-  rlog::log_info("pegando projecao populacional")
-  projecao <- state$projecao
-  rlog::log_info("pegando projecao populacional")
-  input <- state$input$agua_esgoto
-  rlog::log_info("demografico")
-  state$agua_esgoto$demografico <- rsan::rodar_modulo_demografico(input, projecao)
-  rlog::log_info("orcamentario")
-  state$agua_esgoto$orcamentario <- rsan::rodar_modulo_orcamentario(input, state$agua_esgoto$demografico)
-  rlog::log_info("financeiro")
-  state$agua_esgoto$finaceiro <- rsan::rodar_modulo_financeiro(input, state$agua_esgoto$orcamentario)
-  return(state)
-}
 
 
 #' Cálculo da Necessidade de Investimento para Drenagem Urbana
 #'
-#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
 #'
 #' @return estado da aplicação (`list`) que guarda todos os resultado e parâmetros dos cálculos
 #' @export
@@ -116,9 +92,10 @@ residuos_snis_fields <- c(
   "CO063", "CO064", "CO065", "CO066", "CO067", "CO068",
   "CS001", "CS009", "CS050"
 )
+
 #' Title
 #'
-#' @param input
+#' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
 #'
 #' @return
 #' @export
@@ -128,9 +105,9 @@ residuos_snis_fields <- c(
 #' app_state <- investimento_residuos(app_state)
 #' }
 investimento_residuos <- function(state) {
+  ano <- state$input$geral$ano
   input <- state$input$residuos
   # parâmetros de entradar (TODO: colocar como parametros da funcao)
-  ano <- input$ano
   valor_caminhao <- input$valor_caminhao
   valor_caminhao_bau <- input$valor_caminhao_bau
   preco_unidade_aterro <- tabela_preco_unidade_residuos(input, "aterro")
@@ -140,7 +117,7 @@ investimento_residuos <- function(state) {
   preco_unidade_triagem <- tabela_preco_unidade_residuos(input, "triagem")
   vida_util_triagem <- input$vida_util_triagem
   ano_inicial <- 2021
-  ano_final <- 2033
+  ano_final <- ano
   ano_corrente <- 2022
 
   # Consolida os dados de Unidades de Processamento (SNIS-prestadores)
@@ -284,9 +261,52 @@ investimento_residuos <- function(state) {
   return(state)
 }
 
+#' Consolida as necessidade de investimento em saneamento
+#'
+#' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' state <- consolida_investimentos(state)
+#' }
+consolida_investimentos <- function(state) {
+  vars <- c("codigo_municipio", "investimento_total")
+  by <- "codigo_municipio"
+  tipos <- c("agua", "esgoto", "drenagem")
+  state$geral <- dplyr::tibble(
+    codigo_municipio = character(),
+    investimento_total = double()
+  )
+  col_names <- c()
+  for (tipo in tipos) {
+    suffix <- paste0("_", tipo)
+    col_names <- c(col_names, paste0("investimento_total", suffix))
+    tbl <- dplyr::select(state[[tipo]], dplyr::all_of(vars))
+    state$geral <- dplyr::full_join(
+      state$geral, tbl,
+      suffix = c("", suffix),
+      by = by
+    )
+  }
+  state$geral <- dplyr::mutate(
+    state$geral,
+    investimento_total = rowSums(
+      dplyr::select(state$geral, dplyr::all_of(col_names)),
+      na.rm = TRUE
+    )
+  )
+  state$geral <- rsan:::adiciona_pais(state$geral)
+  state$geral <- rsan:::adiciona_estado(state$geral)
+  state$geral <- rsan:::adiciona_regiao(state$geral)
+  return(state)
+}
+
 #' Roda todos os modelos de cálculo de investimento
 #'
-#' @param state
+#' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
 #'
 #' @return
 #' @export
@@ -299,14 +319,20 @@ rodar_modelo <- function(state) {
   rlog::log_info("iniciando módulo de projecao populacional")
   state <- rodar_projecao_populacional(state)
 
-  rlog::log_info("iniciando módulo água e esgoto")
-  state <- investimento_agua_esgoto(state)
+  rlog::log_info("iniciando módulo água")
+  state <- rsan:::investimento_agua(state)
+
+  rlog::log_info("iniciando módulo esgoto")
+  state <- rsan:::investimento_esgoto(state)
 
   rlog::log_info("iniciando módulo drenagem")
   state <- investimento_drenagem(state)
 
   rlog::log_info("iniciando módulo residuos")
   state <- investimento_residuos(state)
+
+  rlog::log_info("consolidando investimentos")
+  state <- consolida_investimentos(state)
 
   rlog::log_info("rodada terminada")
   return(state)

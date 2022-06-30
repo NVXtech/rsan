@@ -2,18 +2,21 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{mascara_coleta_seletiva}
 \alias{mascara_coleta_seletiva}
-\title{Title}
+\title{Mascara de municipios que contém coleta seletiva}
 \usage{
 mascara_coleta_seletiva(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} contendo a coluna CS001.}
+}
+\value{
+vetor de boleanos para cada municipio que não contém coleta seletiva
 }
 \description{
-Title
+Retorna um vetor de \code{boolean} sobre a existência (\code{TRUE}) ou não (\code{FALSE}) de coleta seletiva.
+A análise é baseada no campo CS001 do SNIS.
 }
 \examples{
-\dontrun{
-
-}
+tabela <- dplyr::tibble(CS001 = c("Sim", "Não"))
+mask <- mascara_coleta_seletiva(tabela)
 }

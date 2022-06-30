@@ -1,55 +1,20 @@
-#' Ferramentas para Cálculo das Necessidades de Investimento
-#' para o Saneamento Água e Esgoto
+#' Necessidade de Investimento - Água
 
 
-#' Retorna dados do SNIS
+#' Calcula as necessidades produção e distribuição
 #'
-#' @param snis caminho do SNIS
-#' @param fields lista com campos a serem retornados
+#' Calcula as necessidades para distribuição de água ($m/hab$) e para produção de água ($m^3/hab$).
 #'
-#' @return um tibble() contendo os dados do SNIS
+#' @param data um `data.frame` contendo os dados do SNIS
+#'
+#' @return um `data.frame` contendo as densidades
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' df <- get_snis_data("snis_2020", c("AG001", "AG010"))
+#' df <- necessidade_agua_esgoto(df)
 #' }
-get_snis_data <- function(snis, fields) {
-  df <- load_data(snis)
-  df <- dplyr::select(df, dplyr::all_of(fields))
-  return(df)
-}
-
-
-#' Retorna dados do SINAPI
-#'
-#' @param sinapi caminho do dados do SINAPI
-#'
-#' @return um tibble() com dados do SINAPI
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' df <- get_sinapi_data(sinapi)
-#' }
-get_sinapi_data <- function(sinapi) {
-  df <- load_data(sinapi)
-  return(df)
-}
-
-
-#' Calcula as densidades
-#'
-#' @param data um tibble() contendo os dados do SNIS
-#'
-#' @return um tibble() contendo as densidades
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' df <- add_density(df)
-#' }
-add_density <- function(df) {
+necessidade_agua_esgoto <- function(df) {
   df <- dplyr::mutate(
     df,
     densidade_distribuicao_agua = AG005 * 1000 / AG001,
@@ -62,10 +27,10 @@ add_density <- function(df) {
 
 #' Completa os dados faltantes de densidade.
 #'
-#' @param density um tibble() contendo os dados de densidades
+#' @param density um `data.frame` contendo os dados de densidades
 #' @param fields lista dos campos para preencher
 #'
-#' @return um tibble() com a mesma tabela mas sem dados faltantes
+#' @return um `data.frame` com a mesma tabela mas sem dados faltantes
 #' @export
 #'
 #' @examples
@@ -109,109 +74,132 @@ fill_missing_density <- function(density, fields) {
 #' df <- consolida_populacao_snis(fonte1, fonte2, snis2020)
 #' }
 consolida_populacao_snis <- function(populacao, ano, snis) {
-  populacao_total <- get_populacao(populacao, ano, "total")
-  populacao_urbana <- get_populacao(populacao, ano, "urbana")
-  populacao_rural <- get_populacao(populacao, ano, "rural")
+  populacao_total <- rsan:::get_populacao(populacao, ano, "total")
+  populacao_urbana <- rsan:::get_populacao(populacao, ano, "urbana")
+  populacao_rural <- rsan:::get_populacao(populacao, ano, "rural")
 
-  df <- dplyr::full_join(
+  tabela <- dplyr::full_join(
     populacao_total,
     populacao_urbana,
     by = "codigo_municipio",
     suffix = c("_total", "_urbana")
   )
 
-  df <- dplyr::full_join(df,
+  tabela <- dplyr::full_join(tabela,
     populacao_rural,
     by = "codigo_municipio",
   )
-  df <- dplyr::rename(df, populacao_rural = populacao)
+  tabela <- dplyr::rename(tabela, populacao_rural = populacao)
 
-  df <- dplyr::full_join(df,
+  tabela <- dplyr::full_join(
+    tabela,
     snis,
     by = "codigo_municipio"
   )
-  df <-
-    dplyr::select(
-      df,
-      -c(
-        "tipo_populacao_total",
-        "tipo_populacao_urbana",
-        "tipo_populacao",
-        "ano",
-        "ano_total",
-        "ano_urbana"
-      )
-    )
-  return(df)
+  fields_to_remove <- c(
+    "tipo_populacao_total",
+    "tipo_populacao_urbana",
+    "tipo_populacao",
+    "ano",
+    "ano_total",
+    "ano_urbana"
+  )
+  tabela <- dplyr::select(
+    tabela,
+    -all_of(fields_to_remove)
+  )
+  return(tabela)
 }
 
 
-#' Calcula deficits e demandas para água e esgoto
+#' Calcula deficits e demandas para água
 #'
-#' @param df um tibble() contendo os dados do SNIS e de população
+#' @param df um `data.frame` contendo os dados do SNIS e de população
 #' @param meta_agua meta em % de atendimento para abastecimento de água
-#' @param meta_esgoto meta em % de atendimento para tratamento de esgoto
-#' @param proporcao proporção da densidade de água que equivale a densiade de esgoto
 #'
-#' @return um tibble() contendo os dados de deficits e demandas
+#' @return um `data.frame` contendo os dados de deficits e demandas
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' df <- calculate_geografico(df, 99, 90, 80)
+#' df <- calculate_demografico_agua(df, 99, 90, 80)
 #' }
-calculate_geografico <-
-  function(df, meta_agua, meta_esgoto, proporcao) {
-    df$AG001[is.na(df$AG001)] <- 0
-    df$AG026[is.na(df$AG026)] <- 0
-    df$ES001[is.na(df$ES001)] <- 0
-    df$ES026[is.na(df$ES026)] <- 0
-    df <- dplyr::mutate(
-      df,
-      deficit_agua_total = pmax(populacao_total - AG001, 0.0),
-      deficit_agua_urbana = pmax(populacao_urbana - AG026, 0.0),
-      deficit_esgoto_total = pmax(populacao_total - ES001, 0.0),
-      deficit_esgoto_urbana = pmax(populacao_urbana - ES026, 0.0),
-      deficit_agua_rural = pmax(deficit_agua_total - deficit_agua_urbana, 0.0),
-      deficit_esgoto_rural = pmax(deficit_esgoto_total - deficit_esgoto_urbana, 0.0),
-      demanda_distribuicao_agua = meta_agua / 100.0 * deficit_agua_urbana * densidade_distribuicao_agua,
-      demanda_producao_agua = meta_agua / 100.0 * deficit_agua_urbana * densidade_producao_agua,
-      densidade_tratamento_esgoto = proporcao / 100.0 * densidade_producao_agua,
-      demanda_coleta_esgoto = meta_esgoto / 100.0 * deficit_esgoto_urbana * densidade_coleta_esgoto,
-      demanda_tratamento_esgoto = meta_esgoto / 100.0 * deficit_esgoto_urbana * densidade_tratamento_esgoto,
-    )
-    df <- dplyr::select(
-      df,
-      codigo_municipio,
-      deficit_agua_total,
-      deficit_agua_urbana,
-      deficit_agua_rural,
-      deficit_esgoto_total,
-      deficit_esgoto_urbana,
-      deficit_esgoto_rural,
-      demanda_distribuicao_agua,
-      demanda_producao_agua,
-      demanda_coleta_esgoto,
-      demanda_tratamento_esgoto,
-      populacao_total,
-      populacao_urbana,
-      populacao_rural,
-      densidade_distribuicao_agua,
-      densidade_producao_agua,
-      densidade_coleta_esgoto,
-      densidade_tratamento_esgoto
-    )
-  }
+calculate_demografico_agua <- function(df, meta_agua) {
+  df$AG001[is.na(df$AG001)] <- 0
+  df$AG026[is.na(df$AG026)] <- 0
+  df <- dplyr::mutate(
+    df,
+    deficit_total = pmax(populacao_total - AG001, 0.0),
+    deficit_urbana = pmax(populacao_urbana - AG026, 0.0),
+    deficit_rural = pmax(deficit_total - deficit_urbana, 0.0),
+    demanda_distribuicao_agua = meta_agua / 100.0 * deficit_urbana * densidade_distribuicao_agua,
+    demanda_producao_agua = meta_agua / 100.0 * deficit_urbana * densidade_producao_agua
+  )
+  df <- dplyr::select(
+    df,
+    codigo_municipio,
+    deficit_total,
+    deficit_urbana,
+    deficit_rural,
+    demanda_distribuicao_agua,
+    demanda_producao_agua,
+    populacao_total,
+    populacao_urbana,
+    populacao_rural,
+    densidade_distribuicao_agua,
+    densidade_producao_agua
+  )
+}
 
+#' Calcula deficits e demandas para esgoto
+#'
+#' @param df um `data.frame` contendo os dados do SNIS e de população
+#' @param meta_esgoto meta em % de atendimento para tratamento de esgoto
+#' @param proporcao proporção da densidade de água que equivale a densiade de esgoto
+#'
+#' @return um `data.frame` contendo os dados de deficits e demandas
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' df <- calculate_demografico_esgoto(df, 99, 90, 80)
+#' }
+calculate_demografico_esgoto <- function(df, meta_esgoto, proporcao) {
+  df$ES001[is.na(df$ES001)] <- 0
+  df$ES026[is.na(df$ES026)] <- 0
+  df <- dplyr::mutate(
+    df,
+    deficit_total = pmax(populacao_total - ES001, 0.0),
+    deficit_urbana = pmax(populacao_urbana - ES026, 0.0),
+    deficit_rural = pmax(deficit_total - deficit_urbana, 0.0),
+    densidade_tratamento_esgoto = proporcao / 100.0 * densidade_producao_agua,
+    demanda_coleta_esgoto = meta_esgoto / 100.0 * deficit_urbana * densidade_coleta_esgoto,
+    demanda_tratamento_esgoto = meta_esgoto / 100.0 * deficit_urbana * densidade_tratamento_esgoto
+  )
+  df <- dplyr::select(
+    df,
+    codigo_municipio,
+    deficit_total,
+    deficit_urbana,
+    deficit_rural,
+    demanda_coleta_esgoto,
+    demanda_tratamento_esgoto,
+    populacao_total,
+    populacao_urbana,
+    populacao_rural,
+    densidade_coleta_esgoto,
+    densidade_tratamento_esgoto
+  )
+}
 
 #' Calcula preços distribuicao de água e coleta de esgoto
 #'
-#' @param df_projeto um tibble() contendo os itens do projeto coluna quantidade e codigo sinapi
-#' @param sinapi o tibble() com os preços do SINAPI
+#' @param df_projeto um `data.frame` contendo os itens do projeto coluna quantidade e codigo sinapi
+#' @param sinapi o `data.frame` com os preços do SINAPI
 #' @param taxa_servico fator de correção do preço para serviços
 #' @param taxa_materiais fator de correção do preço para materiais
 #'
-#' @return um tibble() com preços por projeto e por estado
+#' @return um `data.frame` com preços por projeto e por estado
 #' @export
 #'
 #' @examples
@@ -226,26 +214,30 @@ calcula_precos_distribuicao <-
     lista_projetos <- c("07a", "07b", "08a", "08b", "09a", "09b")
     taxa_servico <- taxa_servico / 100.0 + 1.0
     taxa_materiais <- taxa_materiais / 100.0 + 1.0
-    states <- states_acronym()
-    consolidate <-
-      dplyr::left_join(df_projeto, sinapi, by = c("codigo" = "CODIGO"))
-    consolidate <-
-      dplyr::mutate(consolidate,
-        fator = ifelse(
-          grupo == "SERVIÇOS",
-          taxa_servico,
-          ifelse(grupo == "MATERIAIS", taxa_materiais, 1.0)
-        )
+    states <- rsan:::states_acronym()
+
+    consolidate <- dplyr::left_join(
+      df_projeto,
+      sinapi,
+      by = c("codigo" = "CODIGO")
+    )
+
+    consolidate <- dplyr::mutate(
+      consolidate,
+      fator = ifelse(
+        grupo == "SERVIÇOS",
+        taxa_servico,
+        ifelse(grupo == "MATERIAIS", taxa_materiais, 1.0)
       )
+    )
     df <- dplyr::tibble(codigo = consolidate$codigo, tipo = consolidate$tipo)
-    porcentagem <-
-      dplyr::filter(df_projeto, codigo == "PORCENTAGEM")
-    porcentagem <-
-      tidyr::pivot_longer(porcentagem,
-        all_of(lista_projetos),
-        names_to = "projeto",
-        values_to = "porcento"
-      )
+    porcentagem <- dplyr::filter(df_projeto, codigo == "PORCENTAGEM")
+    porcentagem <- tidyr::pivot_longer(
+      porcentagem,
+      all_of(lista_projetos),
+      names_to = "projeto",
+      values_to = "porcento"
+    )
     for (projeto in lista_projetos) {
       for (state in states) {
         name <- paste(projeto, state, sep = "_")
@@ -254,23 +246,25 @@ calcula_precos_distribuicao <-
           consolidate[[projeto]] * consolidate[[price_column]] * consolidate$fator
       }
     }
+
     df <- dplyr::filter(df, codigo != "PORCENTAGEM")
-    df <-
-      tidyr::pivot_longer(
-        df,
-        -c("codigo", "tipo"),
-        names_to = c("projeto", "estado"),
-        names_pattern = "(.*)_(.*)",
-        values_to = "preco"
-      )
+    df <- tidyr::pivot_longer(
+      df,
+      -c("codigo", "tipo"),
+      names_to = c("projeto", "estado"),
+      names_pattern = "(.*)_(.*)",
+      values_to = "preco"
+    )
 
     # Calcula porcentagems por tipo
     for (row in 1:nrow(porcentagem)) {
       tipo_row <- as.character(porcentagem[row, "tipo"])
       projeto_row <- as.character(porcentagem[row, "projeto"])
       ratio <- as.double(porcentagem[row, "porcento"])
-      filtered <-
-        dplyr::filter(df, projeto == projeto_row & tipo == tipo_row)
+      filtered <- dplyr::filter(
+        df,
+        projeto == projeto_row & tipo == tipo_row
+      )
       filtered <- dplyr::group_by(filtered, estado)
       filtered <- dplyr::summarise(filtered, preco = sum(preco))
       filtered <- dplyr::mutate(
@@ -335,92 +329,6 @@ classifica_municipio <- function(tabela) {
   return(tabela)
 }
 
-
-#' Calcula reposicação total
-#'
-#' A reposição total refere-se ao investimento em reposição total entre o ano inicial e o ano final.
-#'
-#' @param tabela tabela contendo os dados de capacidade e investimento
-#' @param campo_capacidade nome do campo de capacidade
-#' @param campo_investimento nome do campo de investimento
-#' @param campo_reposicao nome do campo de saida com o valor do custo de reposição total
-#' @param ano_inicial ano da estimativa de capacidade instalada
-#' @param ano_final último ano de projeção
-#' @param vida_util vida útil média dos ativos (anos)
-#'
-#' @return tabela contendo a coluna adiciona de reposição
-#' @export
-#'
-#' @examples
-#' investimento <- c(1, 3)
-#' capacidade <- c(0, 1)
-#' df_in <- dplyr::tibble(capacidade, investimento)
-#' df_out <- calcula_reposicao_total(df_in, "capacidade", "investimento", "reposicao", 2021, 2033, 30)
-calcula_reposicao_total <-
-  function(tabela,
-           campo_capacidade,
-           campo_investimento,
-           campo_reposicao,
-           ano_inicial,
-           ano_final,
-           vida_util) {
-    k1 <- (ano_final - ano_inicial + 1.0)
-    k2 <- ano_final - ano_inicial
-
-    tabela <-
-      dplyr::mutate(tabela, repo = (k1 * .data[[campo_capacidade]] + k2 * .data[[campo_investimento]] /
-        2) / vida_util)
-    colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
-    return(tabela)
-  }
-
-
-#' Calcula reposicação parcial
-#'
-#' A reposição parcial refere-se ao investimento em resposição entre o ano corrente e o ano final.
-#' Dessa maneira é desconsiderado investimento em reposições que teoricamente já aconteceram.
-#'
-#' @param tabela tabela contendo os dados de capacidade e investimento
-#' @param campo_capacidade nome do campo de capacidade
-#' @param campo_investimento nome do campo de investimento
-#' @param campo_reposicao nome do campo de saida com o valor do custo de reposição total
-#' @param ano_inicial ano da estimativa de capacidade instalada
-#' @param ano_final último ano de projeção
-#' @param ano_corrente ano corrente
-#' @param vida_util vida útil média dos ativos (anos)
-#'
-#' @return tabela contendo a coluna adiciona de reposição
-#' @export
-#'
-#' @examples
-#' investimento <- c(1, 3)
-#' capacidade <- c(0, 1)
-#' df_in <- dplyr::tibble(capacidade, investimento)
-#' df_out <- calcula_reposicao_parcial(df_in, "capacidade", "investimento", "reposicao", 2021, 2033, 2022, 30)
-calcula_reposicao_parcial <-
-  function(tabela,
-           campo_capacidade,
-           campo_investimento,
-           campo_reposicao,
-           ano_inicial,
-           ano_final,
-           ano_corrente,
-           vida_util) {
-    ano1 <- ano_inicial
-    ano3 <- ano_final
-    ano2 <- ano_corrente
-
-    k1 <- ano2 - ano3 - 1
-    k2 <- -2 * ano1 + 2 * ano3 + 2
-    k3 <- -2 * ano1 + ano2 + ano3
-    k4 <- 2 * (ano1 - ano3 - 1)
-
-    tabela <-
-      dplyr::mutate(tabela, repo = (k1 * (k2 * .data[[campo_capacidade]] + k3 *
-        .data[[campo_investimento]]) / k4) / vida_util)
-    colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
-    return(tabela)
-  }
 
 #' Calcula custo relativo para produção de água
 #'
@@ -609,11 +517,13 @@ calcula_custo_extensao <- function(demanda, extensao, tipo) {
   demanda_name <- paste0("demanda_", tipo)
   preco_name <- paste0("preco_", tipo)
   output_field <- paste0("custo_expansao_", tipo)
-  tabela <- dplyr::left_join(demanda,
+  tabela <- dplyr::left_join(
+    demanda,
     extensao,
     by = c("classificacao" = "projeto", "estado")
   )
-  tabela <- dplyr::mutate(tabela,
+  tabela <- dplyr::mutate(
+    tabela,
     cexp = preco * .data[[demanda_name]]
   )
   colnames(tabela)[colnames(tabela) == "preco"] <- preco_name
@@ -681,13 +591,11 @@ calcula_custo_expansao_producao <-
   }
 
 
-#' Calcula o custo de expansão do sistema de água e esgoto
+#' Calcula o custo de expansão do sistema de água
 #'
 #' @param demanda tabela com as demandas de distribuição e produção de água, coleta e tratamento de egoto.
 #' @param distribuicao tabela com custos relativos (R$/m) de distribuição de água por estado
-#' @param coleta tabela com custos relativos (R$/m) de coleta de esgoto por estado
 #' @param producao tabela com custos relativos R$/(m3/ano) de produção de água
-#' @param tratamento tabela com custos relativos R$/(m3/ano) de tratamento de esgoto
 #' @param perda_agua Parâmetro de correção de perda de água em (%)
 #'
 #' @return tabela com as necessidade de investimento
@@ -695,33 +603,37 @@ calcula_custo_expansao_producao <-
 #'
 #' @examples
 #' \dontrun{
-#' invest <- calcula_custo_expansao(demanda, distribuicao, coleta, producao, tratamento, perda_agua)
+#' invest <- calcula_custo_expansao_agua(demanda, distribuicao, coleta, producao, tratamento, perda_agua)
 #' }
-calcula_custo_expansao <-
-  function(demanda,
-           distribuicao,
-           coleta,
-           producao,
-           tratamento,
-           perda_agua) {
-    tabela <- rsan::classifica_municipio(demanda)
-    tabela <-
-      dplyr::mutate(tabela,
-        cenario = stringr::str_trunc(classificacao, 2, "right", ellipsis = "")
-      )
-    tabela <- rsan::adiciona_estado(tabela)
-    tabela <-
-      rsan::calcula_custo_extensao(tabela, distribuicao, "distribuicao_agua")
-    tabela <-
-      rsan::calcula_custo_extensao(tabela, coleta, "coleta_esgoto")
-    tabela <-
-      rsan::calcula_custo_expansao_tratamento(tabela, tratamento)
-    tabela <-
-      rsan::calcula_custo_expansao_producao(tabela, producao, perda_agua)
-    return(tabela)
-  }
+calcula_custo_expansao_agua <- function(demanda,
+                                        distribuicao,
+                                        producao,
+                                        perda_agua) {
+  tabela <- calcula_custo_extensao(demanda, distribuicao, "distribuicao_agua")
+  tabela <- calcula_custo_expansao_producao(tabela, producao, perda_agua)
+  return(tabela)
+}
 
-#' Consolida os dados de investimentos para água e esgoto
+#' Calcula o custo de expansão do sistema de esgoto
+#'
+#' @param demanda tabela com as demandas de distribuição e produção de água, coleta e tratamento de egoto.
+#' @param coleta tabela com custos relativos (R$/m) de coleta de esgoto por estado
+#' @param tratamento tabela com custos relativos R$/(m3/ano) de tratamento de esgoto
+#'
+#' @return tabela com as necessidade de investimento
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' invest <- calcula_custo_expansao_esgoto(demanda, distribuicao, coleta, producao, tratamento, perda_agua)
+#' }
+calcula_custo_expansao_esgoto <- function(demanda, coleta, tratamento) {
+  tabela <- rsan::calcula_custo_extensao(demanda, coleta, "coleta_esgoto")
+  tabela <- rsan::calcula_custo_expansao_tratamento(tabela, tratamento)
+  return(tabela)
+}
+
+#' Consolida os dados de investimentos para água
 #'
 #' Totaliza os dados investimento em expansão, reposição e total.
 #' Adiciona coluna com o país para totalização.
@@ -729,12 +641,43 @@ calcula_custo_expansao <-
 #' @param tabela contendo as colunas:
 #' \itemize{
 #' \item{custo_expansao_distribuicao_agua}
-#' \item{custo_expansao_coleta_esgoto}
 #' \item{custo_expansao_producao_agua}
-#' \item{custo_expansao_tratamento_esgoto}
 #' \item{reposicao_producao_agua}
-#' \item{reposicao_tratamento_esgoto}
 #' \item{reposicao_distribuicao_agua}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{investimento_expansao}
+#'  \item{investimento_reposicao}
+#'  \item{investimento_total}
+#' }
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- consolida_investimentos_agua(tabela)
+#' }
+consolida_investimentos_agua <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    investimento_expansao = custo_expansao_distribuicao_agua + custo_expansao_producao_agua,
+    investimento_reposicao = reposicao_producao_agua + reposicao_distribuicao_agua,
+    investimento_total = investimento_expansao + investimento_reposicao,
+  )
+}
+
+#' Consolida os dados de investimentos esgoto
+#'
+#' Totaliza os dados investimento em expansão, reposição e total.
+#' Adiciona coluna com o país para totalização.
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{custo_expansao_coleta_esgoto}
+#' \item{custo_expansao_tratamento_esgoto}
+#' \item{reposicao_tratamento_esgoto}
 #' \item{reposicao_coleta_esgoto}
 #' }
 #'
@@ -749,13 +692,13 @@ calcula_custo_expansao <-
 #'
 #' @examples
 #' \dontrun{
-#' tabela <- consolida_investimentos_agua_esgoto(df_input)
+#' tabela <- consolida_investimentos_esgoto(tabela)
 #' }
-consolida_investimentos_agua_esgoto <- function(tabela) {
+consolida_investimentos_esgoto <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_expansao = custo_expansao_distribuicao_agua + custo_expansao_coleta_esgoto + custo_expansao_producao_agua + custo_expansao_tratamento_esgoto,
-    investimento_reposicao = reposicao_producao_agua + reposicao_tratamento_esgoto + reposicao_distribuicao_agua + reposicao_coleta_esgoto,
+    investimento_expansao = custo_expansao_coleta_esgoto + custo_expansao_tratamento_esgoto,
+    investimento_reposicao = reposicao_tratamento_esgoto + reposicao_coleta_esgoto,
     investimento_total = investimento_expansao + investimento_reposicao,
   )
 }
@@ -776,10 +719,13 @@ snis_fields <- c(
   "ES026"
 )
 
-#' Title
+#' Módulo demográfico
+#'
+#' Calcula as necessidades
 #'
 #' @param input
 #' @param projecao
+#' @param tema define qual tema será caculado (`agua` ou `esgoto`)
 #'
 #' @return
 #' @export
@@ -788,78 +734,110 @@ snis_fields <- c(
 #' \dontrun{
 #' rodar_modulo_demografico
 #' }
-rodar_modulo_demografico <- function(input, projecao) {
-  ano <- input$ano
-  tabela <- rsan::get_snis_data(input$snis, snis_fields)
-  tabela <- rsan::add_density(tabela)
-  tabela <- rsan::fill_missing_density(tabela, c("densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"))
-  tabela <- rsan::consolida_populacao_snis(projecao, ano, tabela)
-  tabela <- calculate_geografico(tabela, input$meta_agua, input$meta_esgoto, input$proporcao)
+rodar_modulo_demografico <- function(input, projecao, tema) {
+  ano <- input$geral$ano
+  tabela <- rsan:::get_snis_data(input$agua$snis, snis_fields)
+  tabela <- rsan:::necessidade_agua_esgoto(tabela)
+  tabela <- rsan:::fill_missing_density(tabela, c("densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"))
+  tabela <- rsan:::consolida_populacao_snis(projecao, ano, tabela)
+  if (tema == "agua") {
+    tabela <- calculate_demografico_agua(tabela, input$agua$meta_agua)
+  }
+  if (tema == "esgoto") {
+    tabela <- calculate_demografico_esgoto(tabela, input$esgoto$meta_esgoto, input$esgoto$proporcao)
+  }
+  tabela <- rsan::adiciona_estado(tabela)
+  tabela <- rsan::classifica_municipio(tabela)
   return(tabela)
 }
 
-#' Title
+#' Módulo orçamentário para água
 #'
-#' @param input
-#' @param demografico
+#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param demografico estrutura de dados (`data.frame`) que armazena os resultados do módulo demográfico
 #'
-#' @return
+#' @return  estrutura de dados (`data.frame`) que armazenas os resultados do módulo orçamentário
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'
+#' orca <- rodar_modulo_orcamentario_agua(input, demografico)
 #' }
-rodar_modulo_orcamentario <- function(input, demografico) {
-  sinapi <- load_data(input$sinapi)
-  data("projeto_distribuicao_agua")
+rodar_modulo_orcamentario_agua <- function(input, demografico) {
+  sinapi <- rsan:::load_data(input$agua$sinapi)
 
+  data("projeto_distribuicao_agua")
   distribuicao <- calcula_precos_distribuicao(
     projeto_distribuicao_agua,
     sinapi,
-    input$fator_servicos,
-    input$fator_materiais
+    input$agua$fator_servicos,
+    input$agua$fator_materiais
   )
+  data("projeto_producao_agua")
+  producao <- calcula_preco_unidades_producao(
+    projeto_producao_agua_unidades,
+    sinapi,
+    input$agua$fator_insumo,
+    input$agua$fator_composicao
+  )
+  custo <- calcula_custo_expansao_agua(
+    demografico,
+    distribuicao,
+    producao,
+    input$agua$perda_agua
+  )
+  resultado <- list(
+    distribuicao = distribuicao,
+    producao = producao,
+    custo = custo
+  )
+
+  return(resultado)
+}
+
+
+#' Módulo orçamentário para esgoto
+#'
+#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param demografico estrutura de dados (`data.frame`) que armazena os resultados do módulo demográfico
+#'
+#' @return  estrutura de dados (`data.frame`) que armazenas os resultados do módulo orçamentário
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' orca <- rodar_modulo_orcamentario_esgoto(input, demografico)
+#' }
+rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
+  sinapi <- rsan:::load_data(input$esgoto$sinapi)
 
   data("projeto_coleta_esgoto")
   coleta <- calcula_precos_distribuicao(
     projeto_coleta_esgoto,
     sinapi,
-    input$fator_servicos,
-    input$fator_materiais
-  )
-
-  data("projeto_producao_agua")
-  producao <- calcula_preco_unidades_producao(
-    projeto_producao_agua_unidades,
-    sinapi,
-    input$fator_insumo,
-    input$fator_composicao
+    input$esgoto$fator_servicos,
+    input$esgoto$fator_materiais
   )
 
   data("projeto_tratamento_esgoto")
   tratamento <- calcula_preco_unidades_producao(
     projeto_tratamento_esgoto_unidades,
     sinapi,
-    input$fator_insumo,
-    input$fator_composicao
+    input$esgoto$fator_insumo,
+    input$esgoto$fator_composicao
   )
 
-  custo <- calcula_custo_expansao(
+  custo <- calcula_custo_expansao_esgoto(
     demografico,
-    distribuicao,
     coleta,
-    producao,
-    tratamento,
-    input$perda_agua
+    tratamento
   )
   resultado <- list(
-    distribuicao = distribuicao,
     coleta = coleta,
-    producao = producao,
     tratamento = tratamento,
     custo = custo
   )
+
   return(resultado)
 }
 
@@ -876,29 +854,23 @@ rodar_modulo_orcamentario <- function(input, demografico) {
 #' \dontrun{
 #'
 #' }
-calcula_capacidade_instalada <- function(snis, custo) {
+capacidade_instalada_agua <- function(snis, custo) {
   # Quando não informada assume extensões igual a 0
   snis$AG005[is.na(snis$AG005)] <- 0
-  snis$ES004[is.na(snis$ES004)] <- 0
   snis$AG006[is.na(snis$AG006)] <- 0
-  snis$ES006[is.na(snis$ES006)] <- 0
 
   tabela <- dplyr::left_join(snis, custo, by = "codigo_municipio")
   tabela <- dplyr::mutate(
     tabela,
     capacidade_instalada_distribuicao = AG005 * 1e3 * preco_distribuicao_agua,
-    capacidade_instalada_coleta = ES004 * 1e3 * preco_coleta_esgoto,
-    capacidade_instalada_producao = AG006 * 1e3 * custo_relativo_producao,
-    capacidade_instalada_tratamento = ES006 * 1e3 * custo_relativo_tratamento
+    capacidade_instalada_producao = AG006 * 1e3 * custo_relativo_producao
   )
   return(tabela)
 }
-
 #' Title
 #'
-#' @param capacidade
+#' @param snis
 #' @param custo
-#' @param reposicao
 #'
 #' @return
 #' @export
@@ -907,12 +879,69 @@ calcula_capacidade_instalada <- function(snis, custo) {
 #' \dontrun{
 #'
 #' }
-campos_reposicao <- function(capacidade, custo, reposicao) {
-  return(list(
-    capacidade = capacidade,
-    custo = custo,
-    reposicao = reposicao
-  ))
+capacidade_instalada_esgoto <- function(snis, custo) {
+  # Quando não informada assume extensões igual a 0
+  snis$ES004[is.na(snis$ES004)] <- 0
+  snis$ES006[is.na(snis$ES006)] <- 0
+
+  tabela <- dplyr::left_join(snis, custo, by = "codigo_municipio")
+  tabela <- dplyr::mutate(
+    tabela,
+    capacidade_instalada_coleta = ES004 * 1e3 * preco_coleta_esgoto,
+    capacidade_instalada_tratamento = ES006 * 1e3 * custo_relativo_tratamento
+  )
+  return(tabela)
+}
+
+
+#' Title
+#'
+#' @param input
+#' @param orcamentario
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+rodar_modulo_financeiro_agua <- function(input, orcamentario, tipo = "agua") {
+  snis_data <- rsan::get_snis_data(input$agua$snis, snis_fields)
+  custo <- orcamentario$custo
+  tabela <- capacidade_instalada_agua(snis_data, custo)
+  ano_final <- input$geral$ano
+  ano_inicial <- 2021
+  ano_corrente <- 2022
+
+  vars <- list(
+    campos_reposicao(
+      "capacidade_instalada_distribuicao",
+      "custo_expansao_distribuicao_agua",
+      "reposicao_distribuicao_agua",
+      input$agua$vida_util
+    ),
+    campos_reposicao(
+      "capacidade_instalada_producao",
+      "custo_expansao_producao_agua",
+      "reposicao_producao_agua",
+      input$agua$vida_util
+    )
+  )
+
+  for (var in vars) {
+    tabela <- rsan::calcula_reposicao_parcial(
+      tabela,
+      var$capacidade,
+      var$custo,
+      var$reposicao,
+      ano_inicial,
+      ano_final,
+      ano_corrente,
+      var$vida_util
+    )
+  }
+  return(tabela)
 }
 
 #' Title
@@ -927,35 +956,26 @@ campos_reposicao <- function(capacidade, custo, reposicao) {
 #' \dontrun{
 #'
 #' }
-rodar_modulo_financeiro <- function(input, orcamentario) {
-  snis_data <- get_snis_data(input$snis, snis_fields)
+rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
+  snis_data <- rsan::get_snis_data(input$esgoto$snis, snis_fields)
   custo <- orcamentario$custo
-  tabela <- calcula_capacidade_instalada(snis_data, custo)
+  tabela <- capacidade_instalada_esgoto(snis_data, custo)
+  ano_final <- input$geral$ano
   ano_inicial <- 2021
-  ano_final <- 2033
   ano_corrente <- 2022
-  vida_util <- 30
 
   vars <- list(
     campos_reposicao(
-      "capacidade_instalada_distribuicao",
-      "custo_expansao_distribuicao_agua",
-      "reposicao_distribuicao_agua"
-    ),
-    campos_reposicao(
       "capacidade_instalada_coleta",
       "custo_expansao_coleta_esgoto",
-      "reposicao_coleta_esgoto"
-    ),
-    campos_reposicao(
-      "capacidade_instalada_producao",
-      "custo_expansao_producao_agua",
-      "reposicao_producao_agua"
+      "reposicao_coleta_esgoto",
+      input$esgoto$vida_util
     ),
     campos_reposicao(
       "capacidade_instalada_tratamento",
       "custo_expansao_tratamento_esgoto",
-      "reposicao_tratamento_esgoto"
+      "reposicao_tratamento_esgoto",
+      input$esgoto$vida_util
     )
   )
 
@@ -968,12 +988,71 @@ rodar_modulo_financeiro <- function(input, orcamentario) {
       ano_inicial,
       ano_final,
       ano_corrente,
-      vida_util
+      var$vida_util
     )
   }
 
-  tabela <- rsan::consolida_investimentos_agua_esgoto(tabela)
+  return(tabela)
+}
+
+
+#' Calcula a necessidade de investimento para água
+#'
+#' @param state estado da aplicação
+#'
+#' @return estado da aplicação
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' app_state <- investimento_agua(state)
+#' }
+investimento_agua <- function(state) {
+  rlog::log_info("carregando projecao populacional")
+  projecao <- state$projecao
+  rlog::log_info("carregando parâmetros")
+  input <- state$input
+  rlog::log_info("rodando módulo demografico")
+  demografico <- rodar_modulo_demografico(input, projecao, "agua")
+  rlog::log_info("rodando módulo orcamentario")
+  orcamentario <- rodar_modulo_orcamentario_agua(input, demografico)
+  rlog::log_info("rodando módulo financeiro")
+  financeiro <- rodar_modulo_financeiro_agua(input, orcamentario)
+  tabela <- consolida_investimentos_agua(financeiro)
   tabela <- rsan::adiciona_pais(tabela)
   tabela <- rsan::adiciona_regiao(tabela)
-  return(tabela)
+  state$agua <- tabela
+
+  return(state)
+}
+
+#' Calcula a necessidade de investimento para esgoto
+#'
+#' @param state estado da aplicação
+#'
+#' @return estado da aplicação
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' app_state <- investimento_esgoto(state)
+#' }
+investimento_esgoto <- function(state) {
+  rlog::log_info("carregando projecao populacional")
+  projecao <- state$projecao
+  rlog::log_info("carregando parâmetros")
+  input <- state$input
+  rlog::log_info("rodando módulo demografico")
+  demografico <- rodar_modulo_demografico(input, projecao, "esgoto")
+  rlog::log_info("rodando módulo orcamentario")
+  orcamentario <- rodar_modulo_orcamentario_esgoto(input, demografico)
+  rlog::log_info("rodando módulo financeiro")
+  financeiro <- rodar_modulo_financeiro_esgoto(input, orcamentario)
+
+  tabela <- consolida_investimentos_esgoto(financeiro)
+  tabela <- rsan::adiciona_pais(tabela)
+  tabela <- rsan::adiciona_regiao(tabela)
+  state$esgoto <- tabela
+
+  return(state)
 }

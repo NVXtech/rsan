@@ -7,7 +7,7 @@
 investimento_residuos(state)
 }
 \arguments{
-\item{input}{}
+\item{state}{estrutura de dados (\code{list}) que guarda o estado atual da aplicação}
 }
 \description{
 Title

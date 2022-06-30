@@ -7,7 +7,7 @@
 investimento_drenagem(state)
 }
 \arguments{
-\item{input}{estrutura de dados (\code{reactive}) que guarda os parâmetros da interface gráfica}
+\item{state}{estrutura de dados (\code{list}) que guarda o estado atual da aplicação}
 }
 \value{
 estado da aplicação (\code{list}) que guarda todos os resultado e parâmetros dos cálculos

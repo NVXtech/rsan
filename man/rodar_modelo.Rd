@@ -7,7 +7,7 @@
 rodar_modelo(state)
 }
 \arguments{
-\item{state}{}
+\item{state}{estrutura de dados (\code{list}) que guarda o estado atual da aplicação}
 }
 \description{
 Roda todos os modelos de cálculo de investimento
