@@ -13,7 +13,7 @@ censo_file <- "^total_populacao_.*.zip"
 
 # Estimativas de população
 estimativa_pop_url <- "ftp.ibge.gov.br/Estimativas_de_Populacao/"
-estimativa_pop_suffix <- "/Estimativas_%s/"
+estimativa_pop_suffix <- "Estimativas_%s/"
 estimativa_pop_file <- "estimativa_dou_%s.xls"
 
 # FUNÇÕES ----------------------------------------------------------------------
@@ -115,9 +115,11 @@ download_censo_raw <- function() {
       curl::curl_download(url_to_download, destfile)
       utils::unzip(destfile, exdir = tmp_dir)
       base::unlink(destfile)
-      xls_filename <-
-        file.path(tmp_dir, gsub("\\.zip$", ".xls", file))
-      df <- read_xls(
+      xls_filename <- file.path(
+        tmp_dir,
+        gsub("\\.zip$", ".xls", file)
+      )
+      df <- readxl::read_xls(
         xls_filename,
         skip = 1,
         col_names = col_names,
@@ -134,7 +136,7 @@ download_censo_raw <- function() {
       codigo_municipio = as.character(codigo_municipio)
     )
     filename_out <- file.path(
-      (get_data_dir()),
+      get_data_dir(),
       sprintf("populacao_censo_%s.rda", year)
     )
     save(df_censo, file = filename_out)
@@ -185,6 +187,7 @@ download_estimativa_populacao <- function() {
   caminho <- c()
   tipo <- c()
   for (year in c(2021)) {
+    rlog::log_info(sprintf("baixando estimativa população %s", year))
     # for (year in load_estimativa_years()) {
     url <- paste0(
       estimativa_pop_url,
@@ -193,23 +196,28 @@ download_estimativa_populacao <- function() {
     )
     url <- sprintf(url, year, year)
     destfile <- tempfile()
+    rlog::log_info(sprintf("url %s", url))
     curl::curl_download(url, destfile)
-    populacao_estimada <-
-      read_xls(
-        destfile,
-        skip = 2,
-        sheet = 2,
-        col_names = col_names,
-        col_types = col_types
-      )
+    if (file.info(destfile)$size <= 0) {
+      rlog::log_warn(sprintf("could not download file for %s", year))
+      next
+    }
+    populacao_estimada <- readxl::read_xls(
+      destfile,
+      skip = 2,
+      sheet = 2,
+      col_names = col_names,
+      col_types = col_types
+    )
     base::unlink(destfile)
     # Arruma populacoes com notas de rodapé e remove separador de milhar
     populacao_estimada$populacao_total <- as.numeric(
       gsub("\\.", "", gsub("\\([^)]*\\)", "", populacao_estimada$populacao_str))
     )
     # Remove NA (rodape do xls)
-    populacao_estimada <-
-      populacao_estimada[complete.cases(populacao_estimada), ]
+    populacao_estimada <- populacao_estimada[
+      complete.cases(populacao_estimada),
+    ]
     # Arruma Codigo Municipio
     populacao_estimada$codigo_municipio <- paste0(
       populacao_estimada$codigo_UF,
@@ -220,9 +228,10 @@ download_estimativa_populacao <- function() {
       select = -c(codigo, populacao_str)
     )
     filename_out <- file.path(
-      (get_data_dir()),
+      get_data_dir(),
       sprintf("populacao_estimada_%s.rda", year)
     )
+    rlog::log_info(sprintf("salvando em %s", filename_out))
     save(populacao_estimada, file = filename_out)
     ano <- c(ano, year)
     caminho <- c(caminho, sprintf("populacao_estimada_%s", year))
@@ -242,9 +251,13 @@ download_estimativa_populacao <- function() {
 #' create_populacao()
 #' }
 create_populacao <- function() {
+  rlog::log_info("baixando estimativa populacao ibge")
   df_estimativa <- download_estimativa_populacao()
+  rlog::log_info("baixando censo ibge")
   df_censo <- download_censo_raw()
+  rlog::log_info("juntando estimativas")
   populacao <- rbind(df_censo, df_estimativa)
+  rlog::log_info("salvando")
   save(populacao, file = file.path(rsan::get_data_dir(), "populacao.rda"))
 }
 

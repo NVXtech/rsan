@@ -2,10 +2,10 @@
 % Please edit documentation in R/data_snis.R
 \name{integrity_snis}
 \alias{integrity_snis}
-\title{Verifica a integridade dos}
+\title{Verifica a integridade dos dados do SNIS}
 \usage{
 integrity_snis()
 }
 \description{
-Verifica a integridade dos
+Verifica a integridade dos dados do SNIS
 }

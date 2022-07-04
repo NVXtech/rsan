@@ -167,3 +167,16 @@
 #' }
 #' @source \url{http://www.snis.gov.br/}
 "plano_drenagem"
+
+
+#' Índices de Drenagem Urbana
+#'
+#' Dataset contendo os índices de caracteristícas físicas e infraestrutura
+
+#' @format Uma dataframe com um muncípio por linha e as colunas:
+#' \describe{
+#'   \item{codigo_municipio}{Código IBGE do município}
+#'   \item{caracteristicas_fisicas}{índice de caracteristica físicas}
+#'   \item{infraestrutura}{índice de infraestrutura}
+#' }
+"indices_drenagem"

@@ -1,4 +1,5 @@
 .Rproj.user
+/.Rproj.user
 *.csv
 *.zip
 *.xls
@@ -6,3 +7,6 @@
 *.txt
 R/data
 .Rhistory
+.RData
+.Ruserdata
+/*.sqlite

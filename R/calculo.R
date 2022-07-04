@@ -170,21 +170,21 @@ investimento_residuos <- function(state) {
   tabela$densidade_caminhoes <- media$densidade_caminhoes
   tabela$densidade_caminhoes_bau <- media$densidade_caminhoes_bau
 
-  # Coleta comum
+  # Coleta regular
   rlog::log_info("residuos: investimento em coleta comum")
   tabela <- meta_plansab_residuo(tabela)
-  tabela <- deficit_coleta_comum(tabela)
-  tabela <- investimento_coleta_comum(tabela, valor_caminhao)
-  tabela <- capacidade_instalada_coleta_comum(tabela, valor_caminhao)
+  tabela <- deficit_coleta_regular(tabela)
+  tabela <- investimento_coleta_regular(tabela, valor_caminhao)
+  tabela <- capacidade_instalada_coleta_regular(tabela, valor_caminhao)
   tabela <- rsan::calcula_reposicao_parcial(
     tabela,
-    "capacidade_instalada_coleta_comum",
-    "investimento_coleta_comum",
-    "reposicao_coleta_comum",
+    "capacidade_instalada_coleta_regular",
+    "investimento_coleta_regular",
+    "reposicao_coleta_regular",
     ano_inicial,
     ano_final,
     ano_corrente,
-    rsan::depreciacao_para_vida_util(input$deprec_coleta_comum)
+    rsan::depreciacao_para_vida_util(input$deprec_coleta_regular)
   )
 
   # Coleta seletiva

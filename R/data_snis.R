@@ -21,7 +21,7 @@ create_snis <- function() {
 }
 
 
-#' Verifica a integridade dos
+#' Verifica a integridade dos dados do SNIS
 #'
 #' @return
 #' @export

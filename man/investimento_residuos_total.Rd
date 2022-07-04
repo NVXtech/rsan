@@ -12,12 +12,12 @@ investimento_residuos_total(tabela)
 \item\link{resposicao_aterro}
 \item\link{resposicao_compostagem}
 \item\link{resposicao_triagem}
-\item\link{resposicao_coleta_comum}
+\item\link{resposicao_coleta_regular}
 \item\link{resposicao_coleta_seletiva}
 \item\link{investimento_aterro}
 \item\link{investimento_compostagem}
 \item\link{investimento_triagem}
-\item\link{investimento_coleta_comum}
+\item\link{investimento_coleta_regular}
 \item\link{investimento_coleta_seletiva}
 }}
 }

@@ -21,7 +21,8 @@ get_data_path <- function(name) {
 #' @examples
 #' path <- get_data_dir("populacao")
 get_data_dir <- function() {
-  return(file.path(getwd(), data_root))
+  root <- system.file("data", package = "rsan")
+  return(root)
 }
 
 #' load app dataset

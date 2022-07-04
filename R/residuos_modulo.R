@@ -31,12 +31,12 @@ preco_unidade_faixa <- function(tabela1, tabela2) {
 #' \item[resposicao_aterro]
 #' \item[resposicao_compostagem]
 #' \item[resposicao_triagem]
-#' \item[resposicao_coleta_comum]
+#' \item[resposicao_coleta_regular]
 #' \item[resposicao_coleta_seletiva]
 #' \item[investimento_aterro]
 #' \item[investimento_compostagem]
 #' \item[investimento_triagem]
-#' \item[investimento_coleta_comum]
+#' \item[investimento_coleta_regular]
 #' \item[investimento_coleta_seletiva]
 #' }
 #'
@@ -50,8 +50,8 @@ preco_unidade_faixa <- function(tabela1, tabela2) {
 investimento_residuos_total <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_reposicao =  reposicao_aterro + reposicao_compostagem + reposicao_triagem + reposicao_coleta_comum + reposicao_coleta_seletiva,
-    investimento_expansao = investimento_aterro + investimento_compostagem + investimento_triagem + investimento_coleta_comum + investimento_coleta_seletiva,
+    investimento_reposicao =  reposicao_aterro + reposicao_compostagem + reposicao_triagem + reposicao_coleta_regular + reposicao_coleta_seletiva,
+    investimento_expansao = investimento_aterro + investimento_compostagem + investimento_triagem + investimento_coleta_regular + investimento_coleta_seletiva,
     investimento_total = investimento_reposicao + investimento_expansao
   )
 }
@@ -359,7 +359,7 @@ capacidade_instalada_coleta_seletiva <- function(tabela, valor) {
   )
 }
 
-# COLETA COMUM -----------------------------------------------------------------
+# COLETA REGULAR -----------------------------------------------------------------
 
 #' Title
 #'
@@ -390,10 +390,10 @@ numero_caminhoes <- function(tabela) {
 #' \dontrun{
 #'
 #' }
-deficit_coleta_comum <- function(tabela) {
+deficit_coleta_regular <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    deficit_coleta_comum = pmax(meta_coleta / 100.0 * populacao_total - CO164, 0),
+    deficit_coleta_regular = pmax(meta_coleta / 100.0 * populacao_total - CO164, 0),
   )
 }
 
@@ -409,10 +409,10 @@ deficit_coleta_comum <- function(tabela) {
 #' \dontrun{
 #'
 #' }
-investimento_coleta_comum <- function(tabela, valor) {
+investimento_coleta_regular <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_coleta_comum = deficit_coleta_comum / densidade_caminhoes * valor
+    investimento_coleta_regular = deficit_coleta_regular / densidade_caminhoes * valor
   )
 }
 
@@ -428,10 +428,10 @@ investimento_coleta_comum <- function(tabela, valor) {
 #' \dontrun{
 #'
 #' }
-capacidade_instalada_coleta_comum <- function(tabela, valor) {
+capacidade_instalada_coleta_regular <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
-    capacidade_instalada_coleta_comum = CO164 / densidade_caminhoes * valor
+    capacidade_instalada_coleta_regular = CO164 / densidade_caminhoes * valor
   )
 }
 
