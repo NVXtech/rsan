@@ -2,13 +2,13 @@
 % Please edit documentation in R/data_zhelper.R
 \name{clean_dataset}
 \alias{clean_dataset}
-\title{Title}
+\title{Limpa o armazenamendo do conjunto de dados}
 \usage{
 clean_dataset(name)
 }
 \arguments{
-\item{name}{}
+\item{name}{é um \code{character} com o nome do conjunto de dados}
 }
 \description{
-Title
+Limpa o armazenamendo do conjunto de dados
 }

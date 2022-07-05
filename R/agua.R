@@ -71,29 +71,28 @@ fill_missing_density <- function(density, fields) {
 #'
 #' @examples
 #' \dontrun{
-#' df <- consolida_populacao_snis(fonte1, fonte2, snis2020)
+#' df <- adiciona_projecao_populacao(populacao, ano, tabela)
 #' }
-consolida_populacao_snis <- function(populacao, ano, snis) {
+adiciona_projecao_populacao <- function(populacao, ano, tabela) {
   populacao_total <- rsan:::get_populacao(populacao, ano, "total")
   populacao_urbana <- rsan:::get_populacao(populacao, ano, "urbana")
   populacao_rural <- rsan:::get_populacao(populacao, ano, "rural")
 
-  tabela <- dplyr::full_join(
+  pop <- dplyr::full_join(
     populacao_total,
     populacao_urbana,
     by = "codigo_municipio",
     suffix = c("_total", "_urbana")
   )
 
-  tabela <- dplyr::full_join(tabela,
+  pop <- dplyr::full_join(pop,
     populacao_rural,
     by = "codigo_municipio",
   )
-  tabela <- dplyr::rename(tabela, populacao_rural = populacao)
-
+  pop <- dplyr::rename(pop, populacao_rural = populacao)
   tabela <- dplyr::full_join(
+    pop,
     tabela,
-    snis,
     by = "codigo_municipio"
   )
   fields_to_remove <- c(
@@ -358,7 +357,7 @@ calcula_custo_relativo_producao <-
       dplyr::full_join(projeto_producao, preco_unidade, by = "unidade")
 
     # carrega dados predominancia do tipo de producao de água
-    data("projeto_predominancia_tipo_producao")
+    data("projeto_predominancia_tipo_producao", package = "rsan")
     predominancia <-
       tidyr::pivot_longer(
         projeto_predominancia_tipo_producao,
@@ -544,7 +543,7 @@ calcula_custo_extensao <- function(demanda, extensao, tipo) {
 #' custo_relativo <- calcula_custo_expansao_tratamento(demanda, tratamento)
 #' }
 calcula_custo_expansao_tratamento <- function(demanda, tratamento) {
-  data("projeto_tratamento_esgoto")
+  data("projeto_tratamento_esgoto", package = "rsan")
   custo_relativo <-
     calcula_custo_relativo_tratamento(tratamento, projeto_tratamento_esgoto)
   tabela <-
@@ -575,7 +574,7 @@ calcula_custo_expansao_tratamento <- function(demanda, tratamento) {
 calcula_custo_expansao_producao <-
   function(demanda, producao, perda_agua) {
     fator_perda <- rsan::fator_perda_agua(perda_agua)
-    data("projeto_producao_agua")
+    data("projeto_producao_agua", package = "rsan")
     custo_relativo <-
       calcula_custo_relativo_producao(producao, projeto_producao_agua)
     tabela <-
@@ -737,17 +736,23 @@ snis_fields <- c(
 rodar_modulo_demografico <- function(input, projecao, tema) {
   ano <- input$geral$ano
   tabela <- rsan:::get_snis_data(input$agua$snis, snis_fields)
+  rlog::log_info(sprintf("%s: carregado snis (%s, %s)", tema, nrow(tabela), ncol(tabela)))
   tabela <- rsan:::necessidade_agua_esgoto(tabela)
+  rlog::log_info(sprintf("%s: preenchendo dados de densidade", tema))
   tabela <- rsan:::fill_missing_density(tabela, c("densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"))
-  tabela <- rsan:::consolida_populacao_snis(projecao, ano, tabela)
+  rlog::log_info(sprintf("%s: adicionando projecao", tema))
+  tabela <- rsan:::adiciona_projecao_populacao(projecao, ano, tabela)
+  rlog::log_info(sprintf("%s: calculando demandas", tema))
   if (tema == "agua") {
     tabela <- calculate_demografico_agua(tabela, input$agua$meta_agua)
   }
   if (tema == "esgoto") {
     tabela <- calculate_demografico_esgoto(tabela, input$esgoto$meta_esgoto, input$esgoto$proporcao)
   }
-  tabela <- rsan::adiciona_estado(tabela)
-  tabela <- rsan::classifica_municipio(tabela)
+  rlog::log_info(sprintf("%s: adicionando estado", tema))
+  tabela <- rsan:::adiciona_estado(tabela)
+  rlog::log_info(sprintf("%s: classificando municipios", tema))
+  tabela <- rsan:::classifica_municipio(tabela)
   return(tabela)
 }
 
@@ -766,14 +771,14 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
 rodar_modulo_orcamentario_agua <- function(input, demografico) {
   sinapi <- rsan:::load_data(input$agua$sinapi)
 
-  data("projeto_distribuicao_agua")
+  data("projeto_distribuicao_agua", package = "rsan")
   distribuicao <- calcula_precos_distribuicao(
     projeto_distribuicao_agua,
     sinapi,
     input$agua$fator_servicos,
     input$agua$fator_materiais
   )
-  data("projeto_producao_agua")
+  data("projeto_producao_agua", package = "rsan")
   producao <- calcula_preco_unidades_producao(
     projeto_producao_agua_unidades,
     sinapi,
@@ -811,7 +816,7 @@ rodar_modulo_orcamentario_agua <- function(input, demografico) {
 rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
   sinapi <- rsan:::load_data(input$esgoto$sinapi)
 
-  data("projeto_coleta_esgoto")
+  data("projeto_coleta_esgoto", package = "rsan")
   coleta <- calcula_precos_distribuicao(
     projeto_coleta_esgoto,
     sinapi,
@@ -819,7 +824,7 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
     input$esgoto$fator_materiais
   )
 
-  data("projeto_tratamento_esgoto")
+  data("projeto_tratamento_esgoto", package = "rsan")
   tratamento <- calcula_preco_unidades_producao(
     projeto_tratamento_esgoto_unidades,
     sinapi,
@@ -1008,15 +1013,15 @@ rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
 #' app_state <- investimento_agua(state)
 #' }
 investimento_agua <- function(state) {
-  rlog::log_info("carregando projecao populacional")
+  rlog::log_info("água: carregando projecao populacional")
   projecao <- state$projecao
-  rlog::log_info("carregando parâmetros")
+  rlog::log_info("água: carregando parâmetros")
   input <- state$input
-  rlog::log_info("rodando módulo demografico")
+  rlog::log_info("água: rodando módulo demografico")
   demografico <- rodar_modulo_demografico(input, projecao, "agua")
-  rlog::log_info("rodando módulo orcamentario")
+  rlog::log_info("água: rodando módulo orcamentario")
   orcamentario <- rodar_modulo_orcamentario_agua(input, demografico)
-  rlog::log_info("rodando módulo financeiro")
+  rlog::log_info("água: rodando módulo financeiro")
   financeiro <- rodar_modulo_financeiro_agua(input, orcamentario)
   tabela <- consolida_investimentos_agua(financeiro)
   tabela <- rsan::adiciona_pais(tabela)
@@ -1038,15 +1043,15 @@ investimento_agua <- function(state) {
 #' app_state <- investimento_esgoto(state)
 #' }
 investimento_esgoto <- function(state) {
-  rlog::log_info("carregando projecao populacional")
+  rlog::log_info("esgoto: carregando projecao populacional")
   projecao <- state$projecao
-  rlog::log_info("carregando parâmetros")
+  rlog::log_info("esgoto: carregando parâmetros")
   input <- state$input
-  rlog::log_info("rodando módulo demografico")
+  rlog::log_info("esgoto: rodando módulo demografico")
   demografico <- rodar_modulo_demografico(input, projecao, "esgoto")
-  rlog::log_info("rodando módulo orcamentario")
+  rlog::log_info("esgoto: rodando módulo orcamentario")
   orcamentario <- rodar_modulo_orcamentario_esgoto(input, demografico)
-  rlog::log_info("rodando módulo financeiro")
+  rlog::log_info("esgoto: rodando módulo financeiro")
   financeiro <- rodar_modulo_financeiro_esgoto(input, orcamentario)
 
   tabela <- consolida_investimentos_esgoto(financeiro)

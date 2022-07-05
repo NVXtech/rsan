@@ -50,8 +50,8 @@ download_sinapi <- function(year, month) {
 #' @examples
 create_sinapi <- function() {
   data("sinapi202112")
-  # sinapi <- sinapi202112
-  # save(sinapi_202112, file = get_data_path("sinapi_202112"))
+  sinapi_202112 <- sinapi202112
+  save(sinapi_202112, file = rsan:::get_data_path("sinapi_202112"))
 
   nome <- c("SINAPI 2021-12")
   ano <- c(2020)

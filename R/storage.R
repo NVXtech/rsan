@@ -19,9 +19,9 @@ get_data_path <- function(name) {
 #' @export
 #'
 #' @examples
-#' path <- get_data_dir("populacao")
+#' path <- get_data_dir()
 get_data_dir <- function() {
-  root <- system.file("data", package = "rsan")
+  root <- file.path(getwd(), "data")
   return(root)
 }
 

@@ -493,7 +493,7 @@ densidade_caminhoes <- function(tabela) {
 #'
 #' }
 meta_plansab_residuo <- function(tabela) {
-  data("plansab")
+  data("plansab", package = "rsan")
   tabela <- dplyr::left_join(
     tabela,
     plansab,

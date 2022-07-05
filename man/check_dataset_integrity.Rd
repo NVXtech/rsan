@@ -2,13 +2,13 @@
 % Please edit documentation in R/data_zhelper.R
 \name{check_dataset_integrity}
 \alias{check_dataset_integrity}
-\title{Title}
+\title{Verifica a integridade do conjunto de dados}
 \usage{
 check_dataset_integrity(name)
 }
 \arguments{
-\item{name}{}
+\item{name}{é um \code{character} com o nome do conjunto de dados}
 }
 \description{
-Title
+Verifica a integridade do conjunto de dados
 }

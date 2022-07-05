@@ -22,22 +22,30 @@ rodar_projecao_populacional <- function(state) {
   ano1 <- get_year_from_path(input$fonte1)
   ano2 <- get_year_from_path(input$fonte2)
 
-  rlog::log_info("consolidando fontes")
+  rlog::log_info("projecao: consolidando fontes")
   consolidado <- junta_fontes_populacao(fonte1, fonte2)
 
-  rlog::log_info("calculando taxa de crescimento")
+  rlog::log_info("projecao: calculando taxa de crescimento")
   consolidado <- calcula_taxa_crescimento(consolidado, ano1, ano2)
 
-  rlog::log_info("calculando crescimento_urbano_rural")
+  rlog::log_info("projecao: calculando crescimento_urbano_rural")
   consolidado <- calcular_urbana_rural_fonte2(consolidado)
 
-  rlog::log_info("calculando projecao")
+  rlog::log_info("projecao: calculando projecao")
   state$projecao <- calcula_projecao(consolidado, ano2, state$input$geral$ano)
+  rlog::log_info(sprintf(
+    "projecao: dimensao %s x %s",
+    nrow(state$projecao), ncol(state$projecao)
+  ))
   return(state)
 }
 
 
-
+estimar_parametros_drenagem <- function() {
+  plano <- corrige_plano_drenagem("2021-12-01")
+  plano <- prepara_regressao(plano, tabela)
+  modelo <- regressao_drenagem(plano)
+}
 
 #' Cálculo da Necessidade de Investimento para Drenagem Urbana
 #'
@@ -52,22 +60,25 @@ rodar_projecao_populacional <- function(state) {
 #' }
 investimento_drenagem <- function(state) {
   input <- state$input$drenagem
-  data("snis_ap")
-  ano <- "2020"
+  data("snis_ap", package = "rsan")
+  ano <- get_year_from_path(input$snis_ap)
   ano_inicial <- 2021
   ano_final <- 2033
   ano_corrente <- 2022
   depreciacao <- rsan::depreciacao_para_vida_util(input$deprec_drenagem)
 
   tabela <- snis_ap[[paste0("ano", ano)]]
-  tabela <- densidade_urbana(tabela)
-  tabela <- precipitacao(tabela)
-  tabela <- coeficiente_pd(tabela)
+  tabela <- rsan:::densidade_urbana(tabela)
+  tabela <- rsan:::precipitacao(tabela)
+  tabela <- rsan:::adiciona_indices_drenagem(tabela)
+  tabela <- rsan:::adiciona_projecao_populacao(state$projecao, ano_final, tabela)
+  tabela <- rsan:::area_urbana(tabela)
 
-  plano <- corrige_plano_drenagem("2021-12-01")
-  plano <- prepara_regressao(plano, tabela)
-  modelo <- regressao_drenagem(plano)
-  tabela <- aplica_regressao_drenagem(tabela, modelo)
+  if (input$modo == 1) { # Investimento per capita constante
+    tabela <- investimento_constante(tabela, input$investimento_per_capita)
+  } else { # Investimento per capita por regressão
+    tabela <- aplica_regressao_multipla_drenagem(tabela, input)
+  }
   tabela <- capacidade_instalada_drenagem(tabela)
   tabela <- rsan::calcula_reposicao_parcial(
     tabela,
@@ -79,7 +90,8 @@ investimento_drenagem <- function(state) {
     ano_corrente,
     depreciacao
   )
-  tabela <- investimento_total(tabela)
+  tabela <- rsan:::investimento_cadastro(tabela, input$custo_cadastro)
+  tabela <- investimento_total_drenagem(tabela)
   tabela <- rsan::adiciona_pais(tabela)
   state$drenagem <- tabela
   return(state)
@@ -122,13 +134,13 @@ investimento_residuos <- function(state) {
 
   # Consolida os dados de Unidades de Processamento (SNIS-prestadores)
   rlog::log_info("residuos: carregando snis-rs data")
-  data(snis_rs)
+  data(snis_rs, package = "rsan")
   compostagem <- rsan::quantidade_compostagem_municipio(snis_rs$ano2020)
 
   # Consolidação dos dados para classificação
   rlog::log_info("residuos: consolidando dados para classificação")
   tabela <- rsan::get_snis_data(input$snis, residuos_snis_fields)
-  tabela <- rsan::consolida_populacao_snis(state$projecao, ano, tabela)
+  tabela <- rsan::adiciona_projecao_populacao(state$projecao, ano, tabela)
   tabela <- dplyr::left_join(tabela, compostagem, by = "codigo_municipio")
   tabela <- rsan::adiciona_pais(tabela)
   tabela <- rsan::adiciona_estado(tabela)
@@ -319,16 +331,16 @@ rodar_modelo <- function(state) {
   rlog::log_info("iniciando módulo de projecao populacional")
   state <- rodar_projecao_populacional(state)
 
-  rlog::log_info("iniciando módulo água")
+  rlog::log_info("água: iniciando módulo ")
   state <- rsan:::investimento_agua(state)
 
-  rlog::log_info("iniciando módulo esgoto")
+  rlog::log_info("esgoto: iniciando módulo")
   state <- rsan:::investimento_esgoto(state)
 
-  rlog::log_info("iniciando módulo drenagem")
+  rlog::log_info("drenagem: iniciando módulo")
   state <- investimento_drenagem(state)
 
-  rlog::log_info("iniciando módulo residuos")
+  rlog::log_info("residuos: iniciando módulo")
   state <- investimento_residuos(state)
 
   rlog::log_info("consolidando investimentos")

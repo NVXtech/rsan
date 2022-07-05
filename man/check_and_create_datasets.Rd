@@ -2,10 +2,10 @@
 % Please edit documentation in R/data_zhelper.R
 \name{check_and_create_datasets}
 \alias{check_and_create_datasets}
-\title{Title}
+\title{Verifica a integridade e cria amarzenamento de conjunto de dados}
 \usage{
 check_and_create_datasets()
 }
 \description{
-Title
+Verifica a integridade e cria amarzenamento de conjunto de dados
 }

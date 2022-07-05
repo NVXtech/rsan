@@ -28,7 +28,7 @@ states_acronym <- function() {
 #' tabela <- adiciona_estado(input)
 #'
 adiciona_estado <- function(tabela) {
-  data(municipio)
+  data(municipio, package = "rsan")
   original_colnames <- colnames(tabela)
   output_cols <- c(original_colnames, "estado")
   municipio <- dplyr::select(municipio, c("codigo_municipio", "estado", "estado_sigla"))
@@ -55,7 +55,7 @@ adiciona_estado <- function(tabela) {
 #' tabela <- adiciona_regiao(input)
 #'
 adiciona_regiao <- function(tabela) {
-  data(municipio)
+  data(municipio, package = "rsan")
   original_colnames <- colnames(tabela)
   output_cols <- c(original_colnames, "regiao")
   municipio <- dplyr::select(municipio, c("codigo_municipio", "regiao"))
@@ -97,7 +97,7 @@ adiciona_pais <- function(tabela) {
 #' tabela <- dplyr::tibble(codes)
 #' tabela <- codigo6_para_codigo_ibge(tabela, "codes")
 codigo6_para_codigo_ibge <- function(tabela, nome_campo) {
-  data(municipio)
+  data(municipio, package = "rsan")
   municipio <- dplyr::mutate(municipio, codigo6 = strtrim(codigo_municipio, 6))
   municipio <- dplyr::select(municipio, "codigo6", "codigo_municipio")
   tabela <- dplyr::left_join(tabela, municipio, by = c("Código" = "codigo6"))

@@ -2,13 +2,13 @@
 % Please edit documentation in R/data_zhelper.R
 \name{create_dataset}
 \alias{create_dataset}
-\title{Title}
+\title{Cria um dataset}
 \usage{
 create_dataset(name)
 }
 \arguments{
-\item{name}{}
+\item{name}{é um \code{character} com o nome do conjunto de dados}
 }
 \description{
-Title
+Cria um dataset
 }

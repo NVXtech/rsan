@@ -104,7 +104,15 @@ residuos <- list(
 
 drenagem <- list(
   snis_ap = "snis_2020",
-  deprec_drenagem = 2
+  modo = 2,
+  deprec_drenagem = 2,
+  investimento_per_capita = 10000,
+  custo_cadastro = 7738.89,
+  peso_pluviometria = 0.063933104088543,
+  peso_densidade = -0.189155004725778,
+  peso_fisicas = 3477.79720206452,
+  peso_infraestrutura = 519.474326911018,
+  peso_constante = 791.359914329392
 )
 
 #' Valores padrões da aplicação

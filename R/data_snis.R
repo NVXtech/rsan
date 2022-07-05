@@ -8,7 +8,7 @@
 #' create_snis()
 #' }
 create_snis <- function() {
-  data("snis2020")
+  data("snis2020", package = "rsan")
   df_snis <- snis2020
   save(df_snis, file = rsan:::get_data_path("snis_2020"))
 

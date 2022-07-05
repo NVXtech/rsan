@@ -13,5 +13,5 @@ The directory where dataset is stored
 get dataset dir
 }
 \examples{
-path <- get_data_dir("populacao")
+path <- get_data_dir()
 }

@@ -9,11 +9,9 @@ corrige_plano_drenagem(data)
 \arguments{
 \item{data}{um \code{Date} contendo a data para correção do preço}
 }
+\value{
+o \code{data.frame} do plano drenagem com os preços corrigidos
+}
 \description{
 Realiza a correção dos preços para data passada.
-}
-\examples{
-\dontrun{
-
-}
 }

@@ -6,16 +6,11 @@
 #'
 #' @return tabela com a soma dos investimento no campo `investimento_total`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
-investimento_total <- function(tabela) {
-  # TODO: fazer capacidade intalada
+investimento_total_drenagem <- function(tabela) {
+  # TODO: retirar capacidade intalada
   tabela <- dplyr::mutate(
     tabela,
-    investimento_total = investimento_expansao + investimento_reposicao
+    investimento_total = investimento_expansao + investimento_reposicao + investimento_cadastro
   )
   return(tabela)
 }
@@ -40,17 +35,30 @@ capacidade_instalada_drenagem <- function(tabela) {
   return(tabela)
 }
 
+#' Investimento constante
 #'
+#' Valor
 #'
-#' @param
+#' @param tabela um `data.frame` contendo a projeção da população urbana
+#' @param valor um `double` contendo o custo de expansão per capita (R$/hab)
 #'
-#' @return
+#' @return tabela com os valores de investimento
 #' @export
+investimento_constante <- function(tabela, valor) {
+  tabela <- dplyr::mutate(
+    tabela,
+    investimento_expansao = populacao_urbana * valor
+  )
+  return(tabela)
+}
+
+#' Aplica regressao simples drenagem
 #'
-#' @examples
-#' \dontrun{
+#' @param tabela um `data.frame` contendo as colunas GE006
+#' @param modelo um objeto da classe `lm` contendo os parâmetros do modelo de regressão
 #'
-#' }
+#' @return tabela com os valores de investimento
+#' @export
 aplica_regressao_drenagem <- function(tabela, modelo) {
   tabela <- dplyr::mutate(
     tabela,
@@ -60,6 +68,31 @@ aplica_regressao_drenagem <- function(tabela, modelo) {
   )
   return(tabela)
 }
+
+#' Aplica regressao multipla drenagem
+#'
+#' @param tabela um `data.frame` contendo as colunas `precipitacao`, `densidade_urbana`, `caracteristicas_fisicas` e `infrestrutura`
+#' @param parametros um `list` contendo os parâmetros do modelo de regressão
+#'
+#' @return tabela com a coluna adicional `investimento_expansao`
+#' @export
+aplica_regressao_multipla_drenagem <- function(tabela, parametros) {
+  fp <- parametros$peso_pluviometria
+  fd <- parametros$peso_densidade
+  fc <- parametros$peso_fisicas
+  fi <- parametros$peso_infraestrutura
+  c <- parametros$peso_constante
+  tabela <- dplyr::mutate(
+    tabela,
+    investimento_expansao = pmax((c +
+      precipitacao_moda * fp +
+      densidade_urbana * fd +
+      caracteristicas_fisicas * fc +
+      infraestrutura * fi) * populacao_urbana, 0.0)
+  )
+  return(tabela)
+}
+
 
 #' Regressão Investimento em Drenagem
 #'
@@ -75,12 +108,37 @@ aplica_regressao_drenagem <- function(tabela, modelo) {
 #' equacao <- regressao_drenagem(plano)
 #' }
 regressao_drenagem <- function(plano) {
-  # TODO: corrigir com investimento anterior
   plano <- dplyr::mutate(
     plano,
     densidade_investimento = investimento_corrigido / GE006
   )
   return(stats::lm(formula = densidade_investimento ~ pd, plano))
+}
+
+#' Regressão Múltipla Investimento em Drenagem
+#'
+#' Calcula a regressão linear entre densidade de investimento em drenagem e o índice PD
+#'
+#' @param plano é um `data.frame` contendo os valores do plano
+#'
+#' @return objeto da classe `lm` contendo os parâmetros da regressão
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' equacao <- regressao_multipla_drenagem(plano)
+#' }
+regressao_multipla_drenagem <- function(plano) {
+  plano <- dplyr::mutate(
+    plano,
+    densidade_investimento = investimento_corrigido / GE006
+  )
+  return(stats::lm(
+    formula =
+      densidade_investimento ~ pluviometria + densidade_urbana +
+        caracteristicas_fisicas + infraestrutura,
+    plano
+  ))
 }
 
 #' Concatena dados para regressão
@@ -106,15 +164,10 @@ prepara_regressao <- function(plano, tabela) {
 #'
 #' @param data um `Date` contendo a data para correção do preço
 #'
-#' @return
+#' @return o `data.frame` do plano drenagem com os preços corrigidos
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 corrige_plano_drenagem <- function(data) {
-  data(plano_drenagem)
+  data(plano_drenagem, package = "rsan")
   igp <- rsan::get_igp()
   plano_drenagem <- dplyr::mutate(
     plano_drenagem,
@@ -161,7 +214,7 @@ coeficiente_pd <- function(tabela) {
 #' tabela <- precipitacao(tabela)
 #' }
 precipitacao <- function(tabela) {
-  data(pluviometria)
+  data(pluviometria, package = "rsan")
   pluviometria <- dplyr::select(
     pluviometria,
     codigo_municipio,
@@ -194,3 +247,54 @@ densidade_urbana <- function(tabela) {
   return(tabela)
 }
 
+#' Área urbana
+#'
+#'
+#' @param tabela contendo as colunas do SNIS `GE002`
+#'
+#' @return uma tabela contendo a densidade urbana
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- area_urbana(tabela)
+#' }
+area_urbana <- function(tabela) {
+  # TODO: preencher com dados de área municipal
+  tabela <- dplyr::mutate(
+    tabela,
+    area_urbana = GE002
+  )
+  return(tabela)
+}
+
+#' Índices de drenagem
+#'
+#' Adiciona a tabela os índices de drenagem relativos as caracteristicas físicas e infraestrutura.
+#'
+#' @param tabela contendo a coluna código do município
+#'
+#' @return a tabela de entrada com os campos adicionais dos índices (`caracteriticas_fisicas` e `infraestrutura`)
+#' @export
+adiciona_indices_drenagem <- function(tabela) {
+  data("indices_drenagem", package = "rsan")
+  tabela <- dplyr::left_join(tabela, indices_drenagem, by = "codigo_municipio")
+  return(tabela)
+}
+
+#' Investimento em Cadastro Técnico
+#'
+#' Calcula o valor necessário para investir em cadastro técnico.
+#'
+#' @param tabela contendo a coluna código do município
+#'
+#' @return a tabela de entrada com os campos adicionais dos índices (`caracteriticas_fisicas` e `infraestrutura`)
+#' @export
+investimento_cadastro <- function(tabela, valor) {
+  tabela <- dplyr::mutate(
+    tabela,
+    cadastro_tecnico = ifelse(IE012 == "Sim", 0.0, 1.0),
+    investimento_cadastro = cadastro_tecnico * valor * area_urbana
+  )
+  return(tabela)
+}

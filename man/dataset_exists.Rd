@@ -2,13 +2,16 @@
 % Please edit documentation in R/data_zhelper.R
 \name{dataset_exists}
 \alias{dataset_exists}
-\title{Title}
+\title{Verifica se o conjunto de dados existe}
 \usage{
 dataset_exists(name)
 }
 \arguments{
-\item{name}{}
+\item{name}{é um \code{character} com o nome do conjunto de dados}
+}
+\value{
+boleano sendo TRUE conjunto de dados encontrado e FALSE conjunto inexistente
 }
 \description{
-Title
+Verifica se o conjunto de dados existe
 }

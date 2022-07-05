@@ -16,39 +16,33 @@ integrity_functions <- list(
   "projeto" = rsan:::integrity_projeto
 )
 
-#' Title
+#' Verifica se o conjunto de dados existe
 #'
-#' @param name
+#' @param name é um `character` com o nome do conjunto de dados
 #'
-#' @return
+#' @return boleano sendo TRUE conjunto de dados encontrado e FALSE conjunto inexistente
 #' @export
-#'
-#' @examples
 dataset_exists <- function(name) {
-  file.exists(get_data_path(name))
+  file.exists(rsan:::get_data_path(name))
 }
 
-#' Title
+#' Cria um dataset
 #'
-#' @param name
+#' @param name é um `character` com o nome do conjunto de dados
 #'
 #' @return
 #' @export
-#'
-#' @examples
 create_dataset <- function(name) {
   rlog::log_info(sprintf("Creating %s dataset..", name))
   create_functions[[name]]()
 }
 
-#' Title
+#' Limpa o armazenamendo do conjunto de dados
 #'
-#' @param name
+#' @param name é um `character` com o nome do conjunto de dados
 #'
 #' @return
 #' @export
-#'
-#' @examples
 clean_dataset <- function(name) {
   rlog::log_info(sprintf("Cleaning %s dataset..", name))
   files <- list.files(get_data_dir())
@@ -59,25 +53,21 @@ clean_dataset <- function(name) {
   }
 }
 
-#' Title
+#' Verifica a integridade do conjunto de dados
 #'
-#' @param name
+#' @param name é um `character` com o nome do conjunto de dados
 #'
 #' @return
 #' @export
-#'
-#' @examples
 check_dataset_integrity <- function(name) {
   rlog::log_info(sprintf("Checking %s dataset..", name))
   return(integrity_functions[[name]]())
 }
 
-#' Title
+#' Verifica a integridade e cria amarzenamento de conjunto de dados
 #'
 #' @return
 #' @export
-#'
-#' @examples
 check_and_create_datasets <- function() {
   for (dataset in datasets) {
     if (!dataset_exists(dataset)) {
