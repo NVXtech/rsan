@@ -146,8 +146,8 @@ investimento_residuos <- function(state) {
   tabela <- rsan::adiciona_estado(tabela)
   tabela <- rsan::adiciona_regiao(tabela)
 
-  # Dados coleta comum
-  rlog::log_info("residuos: preparando dados para coleta comum")
+  # Dados coleta indiferenciada
+  rlog::log_info("residuos: preparando dados para coleta indiferenciada")
   tabela <- atendimento_relativo_residuos(tabela)
   tabela <- geracao_residuos(tabela)
   tabela <- numero_caminhoes(tabela)
@@ -183,20 +183,20 @@ investimento_residuos <- function(state) {
   tabela$densidade_caminhoes_bau <- media$densidade_caminhoes_bau
 
   # Coleta regular
-  rlog::log_info("residuos: investimento em coleta comum")
+  rlog::log_info("residuos: investimento em coleta indiferenciada")
   tabela <- meta_plansab_residuo(tabela)
-  tabela <- deficit_coleta_regular(tabela)
-  tabela <- investimento_coleta_regular(tabela, valor_caminhao)
-  tabela <- capacidade_instalada_coleta_regular(tabela, valor_caminhao)
+  tabela <- deficit_coleta_indiferenciada(tabela)
+  tabela <- investimento_coleta_indiferenciada(tabela, valor_caminhao)
+  tabela <- capacidade_instalada_coleta_indiferenciada(tabela, valor_caminhao)
   tabela <- rsan::calcula_reposicao_parcial(
     tabela,
-    "capacidade_instalada_coleta_regular",
-    "investimento_coleta_regular",
-    "reposicao_coleta_regular",
+    "capacidade_instalada_coleta_indiferenciada",
+    "investimento_coleta_indiferenciada",
+    "reposicao_coleta_indiferenciada",
     ano_inicial,
     ano_final,
     ano_corrente,
-    rsan::depreciacao_para_vida_util(input$deprec_coleta_regular)
+    rsan::depreciacao_para_vida_util(input$deprec_coleta_indiferenciada)
   )
 
   # Coleta seletiva

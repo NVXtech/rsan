@@ -87,7 +87,7 @@ residuos <- list(
   snis = "snis_2020",
   # coleta comum
   valor_caminhao = 484709.23,
-  deprec_coleta_regular = 10,
+  deprec_coleta_indiferenciada = 10,
   # coleta seletiva
   valor_caminhao_bau = 336490.00,
   deprec_coleta_seletiva = 10,
