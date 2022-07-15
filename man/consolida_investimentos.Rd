@@ -9,6 +9,9 @@ consolida_investimentos(state)
 \arguments{
 \item{state}{estrutura de dados (\code{list}) que guarda o estado atual da aplicação}
 }
+\value{
+estado da aplicação (\code{list}) que guarda todos os resultado e parâmetros dos cálculos
+}
 \description{
 Consolida as necessidade de investimento em saneamento
 }

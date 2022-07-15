@@ -36,6 +36,7 @@ preco_unidade_faixa <- function(tabela1, tabela2) {
 #' \item[investimento_aterro]
 #' \item[investimento_compostagem]
 #' \item[investimento_triagem]
+#' \item[investimento_transbordo]
 #' \item[investimento_coleta_indiferenciada]
 #' \item[investimento_coleta_seletiva]
 #' }
@@ -50,20 +51,46 @@ preco_unidade_faixa <- function(tabela1, tabela2) {
 investimento_residuos_total <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_reposicao =  reposicao_aterro + reposicao_compostagem + reposicao_triagem + reposicao_coleta_indiferenciada + reposicao_coleta_seletiva,
-    investimento_expansao = investimento_aterro + investimento_compostagem + investimento_triagem + investimento_coleta_indiferenciada + investimento_coleta_seletiva,
+    investimento_reposicao = reposicao_aterro +
+      reposicao_compostagem +
+      reposicao_triagem +
+      reposicao_coleta_indiferenciada +
+      reposicao_coleta_seletiva,
+    investimento_expansao = investimento_aterro +
+      investimento_compostagem +
+      investimento_triagem +
+      investimento_transbordo +
+      investimento_coleta_indiferenciada +
+      investimento_coleta_seletiva,
     investimento_total = investimento_reposicao + investimento_expansao
   )
 }
 
 # ATERRO -----------------------------------------------------------------------
 
+#' Demanda por aterro
+#'
+#' @param tabela um `data.frame` contendo a coluna `total_residuos_projecao`
+#' @param vida_util valor em anos da vida util do aterro
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+demanda_aterro <- function(tabela, vida_util) {
+  tabela <- dplyr::mutate(
+    tabela,
+    demanda_aterro = total_residuos_projecao * vida_util
+  )
+}
+
 #' Investimento em Aterros
 #'
 #' Estima o investimento necessários em aterro como a multiplicação de: total de residuos, preço unitario por massa e vida útil do aterro.
 #'
-#' @param tabela um `data.frame` contendo as colunas `total_residuos_projecao` e `preco_unidade_aterro`
-#' @param vida_util valor em anos da vida util do aterro
+#' @param tabela um `data.frame` contendo as colunas `demanda_aterro` e `preco_unidade_aterro`
 #'
 #' @return um `data.frame` contendo a coluna `investimento_aterro`
 #' @export
@@ -72,10 +99,10 @@ investimento_residuos_total <- function(tabela) {
 #' \dontrun{
 #'
 #' }
-investimento_aterro <- function(tabela, vida_util) {
+investimento_aterro <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_aterro =  total_residuos_projecao * preco_unidade_aterro * vida_util
+    investimento_aterro = demanda_aterro * preco_unidade_aterro
   )
 }
 
@@ -260,8 +287,12 @@ preenche_caminhoes_bau <- function(tabela,
                                    campo_faixa = "faixa") {
   tabela_densidade <- dplyr::select(
     tabela_densidade,
-    campo_densidade,
-    campo_faixa
+    dplyr::all_of(
+      c(
+        campo_densidade,
+        campo_faixa
+      )
+    )
   )
   tabela <- dplyr::select(tabela, -dplyr::all_of(campo_densidade))
   tabela <- dplyr::left_join(tabela, tabela_densidade, by = campo_faixa)
@@ -481,7 +512,7 @@ densidade_caminhoes <- function(tabela) {
   )
 }
 
-#' Title
+#' Adiciona metas de atendimento por região
 #'
 #' @param tabela
 #'
@@ -586,4 +617,360 @@ adiciona_preco_unidade_residuos <- function(input, name, precos) {
     input[[id]] <- precos[i]
   }
   return(input)
+}
+
+#' Regionaliza 100% da demanda
+#'
+#' @param tabela é um `data.frame` contendo as colunas `demanda_triagem`, `estado` e `faixa` populacional
+#' @param campo é um `character` com o nome da coluna de demanda
+#'
+#' @return um `data.frame` onde a `demanda_triagem esta regionalizada`
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- regionalizacao_triagem(tabela, potencial)
+#' }
+regionaliza100 <- function(tabela, campo) {
+  tabela <- dplyr::group_by(tabela, estado)
+  regionaliza <- function(group, group_name) {
+    group <- dplyr::arrange(group, faixa)
+    group[[campo]][6] <- sum(group[[campo]][5:6])
+    group[[campo]][5] <- sum(group[[campo]][1:4])
+    group[[campo]][1:4] <- 0
+    return(group)
+  }
+  tabela <- dplyr::group_modify(tabela, regionaliza)
+  tabela <- dplyr::ungroup(tabela)
+  return(tabela)
+}
+
+#' Regionaliza faixa populacional 1
+#'
+#' @param tabela é um `data.frame` contendo as colunas `demanda_triagem`, `regiao`, `estado` e `faixa` populacional
+#' @param potencial é um `data.frame`contendo as colunas `regiao` e `potencial_regionalização`
+#' @param campo_demanda é um `character` com o nome da coluna de demanda
+#' @param campo_potencial é um `character` com o nome da coluna do potencial
+#'
+#' @return um `data.frame` onde a coluna de demanda esta regionalizada
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- regionaliza_faixa1(tabela, potencial)
+#' }
+regionaliza_faixa1 <- function(tabela, potencial, campo_demanda, campo_potencial) {
+  potencial <- dplyr::select(potencial, all_of(c("regiao", campo_potencial)))
+  tabela <- dplyr::left_join(tabela, potencial, by = "regiao")
+  print(names(tabela))
+  print(campo_potencial)
+  tabela <- dplyr::mutate(
+    tabela,
+    sem_potencial = 1.0 - .data[[campo_potencial]],
+  )
+  tabela <- dplyr::group_by(tabela, estado)
+  regionaliza <- function(group, group_name) {
+    group <- dplyr::arrange(group, faixa)
+    group[[campo_demanda]][2] <- group[[campo_demanda]][1] *
+      group[[campo_potencial]][1] + group[[campo_demanda]][2]
+    group[[campo_demanda]][1] <- group[[campo_demanda]][1] * group$sem_potencial[1]
+    return(group)
+  }
+  tabela <- dplyr::group_modify(tabela, regionaliza)
+  tabela <- dplyr::ungroup(tabela)
+  tabela <- dplyr::select(tabela, -all_of(c(campo_potencial, "sem_potencial")))
+  return(tabela)
+}
+
+#' Regionaliza faixa populacional 2 e 6
+#'
+#' @param tabela é um `data.frame` contendo as colunas `demanda_triagem`, `regiao`, `estado` e `faixa` populacional
+#' @param potencial é um `data.frame`contendo as colunas `regiao` e `potencial_regionalização`
+#' @param campo_demanda é um `character` com o nome da coluna de demanda
+#' @param campo_potencial é um `character` com o nome da coluna do potencial
+#'
+#' @return um `data.frame` onde a coluna de demanda esta regionalizada
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- regionaliza_faixa2e6(tabela, potencial)
+#' }
+regionaliza_faixa2e6 <- function(tabela, potencial, campo_demanda, campo_potencial) {
+  potencial <- dplyr::select(potencial, all_of(c("regiao", campo_potencial)))
+  tabela <- dplyr::left_join(tabela, potencial, by = "regiao")
+  tabela <- dplyr::mutate(
+    tabela,
+    sem_potencial = 1.0 - .data[[campo_potencial]],
+  )
+  tabela <- dplyr::group_by(tabela, estado)
+  regionaliza <- function(group, group_name) {
+    group <- dplyr::arrange(group, faixa)
+    group[[campo_demanda]][6] <- group[[campo_demanda]][5] *
+      group[[campo_potencial]][5] + group[[campo_demanda]][6]
+    group[[campo_demanda]][5] <- group[[campo_demanda]][5] * group$sem_potencial[5]
+    group[[campo_demanda]][2] <- group[[campo_demanda]][1] *
+      group[[campo_potencial]][1] + group[[campo_demanda]][2]
+    group[[campo_demanda]][1] <- group[[campo_demanda]][1] * group$sem_potencial[1]
+    return(group)
+  }
+  tabela <- dplyr::group_modify(tabela, regionaliza)
+  tabela <- dplyr::ungroup(tabela)
+  tabela <- dplyr::select(tabela, -all_of(c(campo_potencial, "sem_potencial")))
+  return(tabela)
+}
+
+#' Regionaliza faixa populacional 5 e 6
+#'
+#' @param tabela é um `data.frame` contendo as colunas `demanda_triagem`, `regiao`, `estado` e `faixa` populacional
+#' @param potencial é um `data.frame`contendo as colunas `regiao` e `potencial_regionalização`
+#' @param campo é um `character` com o nome da coluna de demanda
+#'
+#' @return um `data.frame` onde a coluna de demanda esta regionalizada
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- regionaliza_faixa5e6(tabela, potencial)
+#' }
+regionaliza_faixa5e6 <- function(tabela, potencial, campo_demanda, campo_potencial) {
+  potencial <- dplyr::select(potencial, all_of(c("regiao", campo_potencial)))
+  tabela <- dplyr::left_join(tabela, potencial, by = "regiao")
+  tabela <- dplyr::mutate(
+    tabela,
+    sem_potencial = 1.0 - .data[[campo_potencial]],
+  )
+  tabela <- dplyr::group_by(tabela, estado)
+  regionaliza <- function(group, group_name) {
+    group <- dplyr::arrange(group, faixa)
+    group[[campo_demanda]][6] <- group[[campo_potencial]][5] *
+      group[[campo_demanda]][5] + group[[campo_demanda]][6]
+    group[[campo_demanda]][5] <- group[[campo_potencial]][5] *
+      sum(group[[campo_demanda]][1:4]) + group$sem_potencial[5] * group[[campo_demanda]][5]
+    for (i in seq(4, 1)) {
+      group[[campo_demanda]][i] <- group[[campo_demanda]][i] * group$sem_potencial[i]
+    }
+    return(group)
+  }
+  tabela <- dplyr::group_modify(tabela, regionaliza)
+  tabela <- dplyr::ungroup(tabela)
+  tabela <- dplyr::select(tabela, -all_of(c(campo_potencial, "sem_potencial")))
+  return(tabela)
+}
+
+#' Demanda por transbordo
+#'
+#' A demanda por transbordo é considerada 1 estacao de transbordo e 1 caminhao por municipio
+#'
+#' @param tabela um `data.frame` contendo numero_municipio
+#'
+#' @return um `data.frame` contendo a coluna `demanda_tranbordo`
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+demanda_transbordo <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    demanda_transbordo = numero_municipios
+  )
+
+  return(tabela)
+}
+
+#' Regionaliza demanda por transbordo
+#'
+#' Regionaliza a demanda dependendo do cenario de regionalização
+#'
+#' @param tabela um `data.frame` contendo numero_municipio
+#' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
+#' @return um `data.frame` contendo a coluna `demanda_tranbordo`
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+regionaliza_transbordo <- function(tabela, cenario) {
+  if (cenario == "C") {
+    data("potencial_regionalizacao", package = "rsan")
+    pesos <- dplyr::select(
+      potencial_regionalizacao,
+      all_of(c("regiao", "potencial_transbordo_c"))
+    )
+    tabela <- dplyr::left_join(tabela, pesos, by = "regiao")
+    tabela <- dplyr::rename(tabela, peso = potencial_transbordo_c)
+  } else if (cenario == "B") {
+    data("potencial_regionalizacao", package = "rsan")
+    pesos <- dplyr::select(
+      potencial_regionalizacao,
+      all_of(c("regiao", "potencial_transbordo_b"))
+    )
+    tabela <- dplyr::left_join(tabela, pesos, by = "regiao")
+    tabela <- dplyr::rename(tabela, peso = potencial_transbordo_b)
+  } else {
+    tabela <- dplyr::mutate(tabela, peso = 0.0)
+  }
+  tabela <- dplyr::mutate(
+    tabela,
+    demanda_transbordo = peso * demanda_transbordo
+  )
+  tabela <- dplyr::select(tabela, -peso)
+  return(tabela)
+}
+
+#' Investimento em transbordo
+#'
+#' Estima o investimento necessários em transbordo como a multiplicação da demanda pelo custo.
+#'
+#' @param tabela um `data.frame` contendo a coluna `demanda_transbordo`
+#' @param vida_util valor em anos da vida util do aterro
+#'
+#' @return um `data.frame` contendo a coluna `investimento_transbordo`
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- investimento_transbordo(tabela, 1000)
+#' }
+investimento_transbordo <- function(tabela, custo) {
+  tabela <- dplyr::mutate(
+    tabela,
+    investimento_transbordo = demanda_transbordo * custo
+  )
+  return(tabela)
+}
+
+#' Regionaliza demanda por triagem
+#'
+#' Faz a regionalização da demanda em acordo com o cenário de regionalização.
+#'
+#' @param tabela um `data.frame` contendo numero_municipio
+#' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
+#' @return um `data.frame` contendo a coluna `demanda_tranbordo`
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+regionaliza_triagem <- function(tabela, cenario) {
+  rlog::log_info(sprintf("residuos: regionalizando cenario %s", cenario))
+  if (cenario == "C") {
+    tabela <- regionaliza100(tabela, campo = "demanda_triagem")
+    return(tabela)
+  } else if (cenario == "B") {
+    data("potencial_regionalizacao", package = "rsan")
+    potencial <- get("potencial_regionalizacao")
+    tabela <- regionaliza_faixa1(
+      tabela,
+      potencial,
+      campo_demanda = "demanda_triagem",
+      campo_potencial = "potencial_triagem"
+    )
+    return(tabela)
+  } else {
+    return(tabela)
+  }
+}
+
+#' Regionaliza demanda por compostagem
+#'
+#' Faz a regionalização da demanda em acordo com o cenário de regionalização.
+#'
+#' @param tabela um `data.frame` contendo numero_municipio
+#' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
+#' @return um `data.frame` contendo a coluna `demanda_tranbordo`
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+regionaliza_compostagem <- function(tabela, cenario) {
+  rlog::log_info(sprintf("residuos: regionalizando cenario %s", cenario))
+  if (cenario == "C") {
+    tabela <- regionaliza100(tabela, campo = "demanda_compostagem")
+    return(tabela)
+  } else if (cenario == "B") {
+    data("potencial_regionalizacao", package = "rsan")
+    potencial <- get("potencial_regionalizacao")
+    tabela <- regionaliza_faixa2e6(
+      tabela,
+      potencial,
+      campo_demanda = "demanda_compostagem",
+      campo_potencial = "potencial_compostagem"
+    )
+    return(tabela)
+  } else {
+    return(tabela)
+  }
+}
+
+#' Regionaliza demanda por compostagem
+#'
+#' Faz a regionalização da demanda em acordo com o cenário de regionalização.
+#'
+#' @param tabela um `data.frame` contendo numero_municipio
+#' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
+#' @return um `data.frame` contendo a coluna `demanda_tranbordo`
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+regionaliza_compostagem <- function(tabela, cenario) {
+  rlog::log_info(sprintf("residuos: regionalizando cenario %s", cenario))
+  if (cenario == "C") {
+    tabela <- regionaliza100(tabela, campo = "demanda_compostagem")
+    return(tabela)
+  } else if (cenario == "B") {
+    data("potencial_regionalizacao", package = "rsan")
+    potencial <- get("potencial_regionalizacao")
+    tabela <- regionaliza_faixa2e6(
+      tabela,
+      potencial,
+      campo_demanda = "demanda_compostagem",
+      campo_potencial = "potencial_compostagem"
+    )
+    return(tabela)
+  } else {
+    return(tabela)
+  }
+}
+
+#' Regionaliza demanda por aterro
+#'
+#' Faz a regionalização da demanda em acordo com o cenário de regionalização.
+#'
+#' @param tabela um `data.frame` contendo numero_municipio
+#' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
+#' @return um `data.frame` contendo a coluna `demanda_tranbordo`
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+regionaliza_aterro <- function(tabela, cenario) {
+  rlog::log_info(sprintf("residuos: regionalizando cenario %s", cenario))
+  if (cenario == "C") {
+    tabela <- regionaliza100(tabela, campo = "demanda_aterro")
+    return(tabela)
+  } else if (cenario == "B") {
+    data("potencial_regionalizacao", package = "rsan")
+    potencial <- get("potencial_regionalizacao")
+    tabela <- regionaliza_faixa2e6(
+      tabela,
+      potencial,
+      campo_demanda = "demanda_aterro",
+      campo_potencial = "potencial_aterro"
+    )
+    return(tabela)
+  } else {
+    return(tabela)
+  }
 }

@@ -9,6 +9,9 @@ rodar_modelo(state)
 \arguments{
 \item{state}{estrutura de dados (\code{list}) que guarda o estado atual da aplicação}
 }
+\value{
+estado da aplicação (\code{list}) que guarda todos os resultado e parâmetros dos cálculos
+}
 \description{
 Roda todos os modelos de cálculo de investimento
 }

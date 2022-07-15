@@ -99,7 +99,11 @@ residuos <- list(
   deprec_compostagem = 5,
   # triagem
   deprec_triagem = 20,
-  vida_util_triagem = 20
+  vida_util_triagem = 20,
+  # regionalização
+  cenario_regionalizacao = "A", # A, B ou C
+  # transbordo
+  custo_transbordo = 857816.82
 )
 
 drenagem <- list(

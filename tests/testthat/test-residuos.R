@@ -77,7 +77,6 @@ test_that("adiciona preco unidade", {
   input <- list()
   precos <- c(1, 2, 3, 4, 5, 6, 7)
   output <- adiciona_preco_unidade_residuos(input, "aterro", precos)
-  print(output)
   expected <- list(
     aterro_faixa1 = 1,
     aterro_faixa2 = 2,
@@ -87,5 +86,153 @@ test_that("adiciona preco unidade", {
     aterro_faixa6 = 6,
     aterro_faixa7 = 7
   )
+  expect_equal(output, expected)
+})
+
+test_that("regionaliza faixa 1 tem resultados consistentes", {
+  # Entrada
+  demanda_triagem <- c(rep(1000, 7), rep(500, 7))
+  faixa <- c(seq(1, 7), seq(1, 7))
+  regiao <- c(rep("Norte", 7), rep("Sul", 7))
+  estado <- c(rep("AC", 7), rep("RS", 7))
+  tabela <- dplyr::tibble(demanda_triagem, faixa, regiao, estado)
+
+  # Saida experada
+  expected_demanda <- demanda_triagem
+  expected_demanda[1] <- 800
+  expected_demanda[2] <- 1200
+  expected_demanda[8] <- 250
+  expected_demanda[9] <- 750
+  expected <- dplyr::tibble(
+    estado,
+    demanda_triagem = expected_demanda, faixa, regiao
+  )
+  # Potencial de regionalização
+  potencial_regionalizacao <- c(0.2, 0.5)
+  regiao <- c("Norte", "Sul")
+  potencial <- dplyr::tibble(potencial_regionalizacao, regiao)
+
+  # Testing
+  output <- regionaliza_faixa1(tabela, potencial, "demanda_triagem", "potencial_regionalizacao")
+  expect_equal(output, expected)
+})
+
+test_that("regionalizacao 100% tem resultados consistentes", {
+  # Entrada
+  demanda <- c(rep(1000, 7), rep(500, 7))
+  faixa <- c(seq(1, 7), seq(1, 7))
+  regiao <- c(rep("Norte", 7), rep("Sul", 7))
+  estado <- c(rep("AC", 7), rep("RS", 7))
+  tabela <- dplyr::tibble(demanda, faixa, regiao, estado)
+
+  # Saida experada
+  expected_demanda <- rep(0, 14)
+  expected_demanda[5] <- 4000
+  expected_demanda[6] <- 2000
+  expected_demanda[7] <- 1000
+  expected_demanda[12] <- 2000
+  expected_demanda[13] <- 1000
+  expected_demanda[14] <- 500
+  expected <- dplyr::tibble(
+    estado,
+    demanda = expected_demanda, faixa, regiao
+  )
+
+  # Testing
+  output <- regionaliza100(tabela, "demanda")
+  expect_equal(output, expected)
+})
+
+test_that("regionaliza faixa 2 e 6 tem resultados consistentes", {
+  # Entrada
+  demanda_triagem <- c(rep(1000, 7), rep(500, 7))
+  faixa <- c(seq(1, 7), seq(1, 7))
+  regiao <- c(rep("Norte", 7), rep("Sul", 7))
+  estado <- c(rep("AC", 7), rep("RS", 7))
+  tabela <- dplyr::tibble(demanda_triagem, faixa, regiao, estado)
+
+  # Saida experada
+  expected_demanda <- demanda_triagem
+  expected_demanda[1] <- 800
+  expected_demanda[2] <- 1200
+  expected_demanda[5] <- 800
+  expected_demanda[6] <- 1200
+  expected_demanda[8] <- 250
+  expected_demanda[9] <- 750
+  expected_demanda[12] <- 250
+  expected_demanda[13] <- 750
+  expected <- dplyr::tibble(
+    estado,
+    demanda_triagem = expected_demanda, faixa, regiao
+  )
+  # Potencial de regionalização
+  potencial_regionalizacao <- c(0.2, 0.5)
+  regiao <- c("Norte", "Sul")
+  potencial <- dplyr::tibble(potencial_regionalizacao, regiao)
+
+  # Testing
+  output <- regionaliza_faixa2e6(
+    tabela, potencial, "demanda_triagem", "potencial_regionalizacao"
+  )
+  expect_equal(output, expected)
+})
+
+test_that("regionaliza faixa 5 e 6 tem resultados consistentes", {
+  # Entrada
+  demanda_triagem <- c(rep(1000, 7), rep(500, 7))
+  faixa <- c(seq(1, 7), seq(1, 7))
+  regiao <- c(rep("Norte", 7), rep("Sul", 7))
+  estado <- c(rep("AC", 7), rep("RS", 7))
+  tabela <- dplyr::tibble(demanda_triagem, faixa, regiao, estado)
+
+  # Saida experada
+  expected_demanda <- demanda_triagem
+  expected_demanda[1] <- 800
+  expected_demanda[2] <- 800
+  expected_demanda[3] <- 800
+  expected_demanda[4] <- 800
+  expected_demanda[5] <- 1600
+  expected_demanda[6] <- 1200
+  expected_demanda[7] <- 1000
+
+  expected_demanda[8] <- 250
+  expected_demanda[9] <- 250
+  expected_demanda[10] <- 250
+  expected_demanda[11] <- 250
+  expected_demanda[12] <- 1250
+  expected_demanda[13] <- 750
+  expected_demanda[14] <- 500
+  expected <- dplyr::tibble(
+    estado,
+    demanda_triagem = expected_demanda, faixa, regiao
+  )
+  # Potencial de regionalização
+  potencial_regionalizacao <- c(0.2, 0.5)
+  regiao <- c("Norte", "Sul")
+  potencial <- dplyr::tibble(potencial_regionalizacao, regiao)
+
+  # Testing
+  output <- regionaliza_faixa5e6(tabela, potencial, "demanda_triagem", "potencial_regionalizacao")
+  expect_equal(output, expected)
+})
+
+test_that("preenche faixa vazia", {
+  # Entrada
+  demanda <- c(rep(1000, 5), rep(500, 5))
+  teste <- c(rep(1000, 5), rep(500, 5))
+  faixa <- c(seq(1, 5), seq(1, 5))
+  regiao <- c(rep("Norte", 5), rep("Sul", 5))
+  estado <- c(rep("AC", 5), rep("RS", 5))
+  tabela <- dplyr::tibble(demanda, teste, faixa, regiao, estado)
+
+  demanda <- c(rep(1000, 5), rep(NA, 2), rep(500, 5), rep(NA, 2))
+  teste <- c(rep(1000, 5), rep(NA, 2), rep(500, 5), rep(NA, 2))
+  faixa <- c(seq(1, 7), seq(1, 7))
+  regiao <- c(rep("Norte", 7), rep("Sul", 7))
+  estado <- c(rep("AC", 7), rep("RS", 7))
+  expected <- dplyr::tibble(estado, demanda, teste, faixa, regiao)
+
+  # Testing
+  output <- cria_faixas_vazias(tabela)
   expect_equal(output, expected)
 })

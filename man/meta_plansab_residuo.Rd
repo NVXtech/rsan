@@ -2,7 +2,7 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{meta_plansab_residuo}
 \alias{meta_plansab_residuo}
-\title{Title}
+\title{Adiciona metas de atendimento por região}
 \usage{
 meta_plansab_residuo(tabela)
 }
@@ -10,7 +10,7 @@ meta_plansab_residuo(tabela)
 \item{tabela}{}
 }
 \description{
-Title
+Adiciona metas de atendimento por região
 }
 \examples{
 \dontrun{

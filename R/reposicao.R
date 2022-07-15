@@ -34,7 +34,6 @@ depreciacao_para_vida_util <- function(valor) {
   return(100.0 / valor)
 }
 
-
 #' Calcula reposicação total
 #'
 #' A reposição total refere-se ao investimento em reposição total entre o ano inicial e o ano final.
@@ -55,24 +54,22 @@ depreciacao_para_vida_util <- function(valor) {
 #' capacidade <- c(0, 1)
 #' df_in <- dplyr::tibble(capacidade, investimento)
 #' df_out <- calcula_reposicao_total(df_in, "capacidade", "investimento", "reposicao", 2021, 2033, 30)
-calcula_reposicao_total <-
-  function(tabela,
-           campo_capacidade,
-           campo_investimento,
-           campo_reposicao,
-           ano_inicial,
-           ano_final,
-           vida_util) {
-    k1 <- (ano_final - ano_inicial + 1.0)
-    k2 <- ano_final - ano_inicial
+calcula_reposicao_total <- function(tabela,
+                                    campo_capacidade,
+                                    campo_investimento,
+                                    campo_reposicao,
+                                    ano_inicial,
+                                    ano_final,
+                                    vida_util) {
+  k1 <- (ano_final - ano_inicial + 1.0)
+  k2 <- ano_final - ano_inicial
 
-    tabela <-
-      dplyr::mutate(tabela, repo = (k1 * .data[[campo_capacidade]] + k2 * .data[[campo_investimento]] /
-        2) / vida_util)
-    colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
-    return(tabela)
-  }
-
+  tabela <-
+    dplyr::mutate(tabela, repo = (k1 * .data[[campo_capacidade]] + k2 * .data[[campo_investimento]] /
+      2) / vida_util)
+  colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
+  return(tabela)
+}
 
 #' Calcula reposicação parcial
 #'
@@ -96,27 +93,26 @@ calcula_reposicao_total <-
 #' capacidade <- c(0, 1)
 #' df_in <- dplyr::tibble(capacidade, investimento)
 #' df_out <- calcula_reposicao_parcial(df_in, "capacidade", "investimento", "reposicao", 2021, 2033, 2022, 30)
-calcula_reposicao_parcial <-
-  function(tabela,
-           campo_capacidade,
-           campo_investimento,
-           campo_reposicao,
-           ano_inicial,
-           ano_final,
-           ano_corrente,
-           vida_util) {
-    ano1 <- ano_inicial
-    ano3 <- ano_final
-    ano2 <- ano_corrente
+calcula_reposicao_parcial <- function(tabela,
+                                      campo_capacidade,
+                                      campo_investimento,
+                                      campo_reposicao,
+                                      ano_inicial,
+                                      ano_final,
+                                      ano_corrente,
+                                      vida_util) {
+  ano1 <- ano_inicial
+  ano3 <- ano_final
+  ano2 <- ano_corrente
 
-    k1 <- ano2 - ano3 - 1
-    k2 <- -2 * ano1 + 2 * ano3 + 2
-    k3 <- -2 * ano1 + ano2 + ano3
-    k4 <- 2 * (ano1 - ano3 - 1)
+  k1 <- ano2 - ano3 - 1
+  k2 <- -2 * ano1 + 2 * ano3 + 2
+  k3 <- -2 * ano1 + ano2 + ano3
+  k4 <- 2 * (ano1 - ano3 - 1)
 
-    tabela <-
-      dplyr::mutate(tabela, repo = (k1 * (k2 * .data[[campo_capacidade]] + k3 *
-        .data[[campo_investimento]]) / k4) / vida_util)
-    colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
-    return(tabela)
-  }
+  tabela <-
+    dplyr::mutate(tabela, repo = (k1 * (k2 * .data[[campo_capacidade]] + k3 *
+      .data[[campo_investimento]]) / k4) / vida_util)
+  colnames(tabela)[colnames(tabela) == "repo"] <- campo_reposicao
+  return(tabela)
+}

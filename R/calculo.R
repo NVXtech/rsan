@@ -105,11 +105,11 @@ residuos_snis_fields <- c(
   "CS001", "CS009", "CS050"
 )
 
-#' Title
+#' Investimento em residuos
 #'
 #' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
 #'
-#' @return
+#' @return estado da aplicação (`list`) que guarda todos os resultado e parâmetros dos cálculos
 #' @export
 #'
 #' @examples
@@ -122,15 +122,19 @@ investimento_residuos <- function(state) {
   # parâmetros de entradar (TODO: colocar como parametros da funcao)
   valor_caminhao <- input$valor_caminhao
   valor_caminhao_bau <- input$valor_caminhao_bau
+  custo_transbordo <- input$custo_transbordo
+
   preco_unidade_aterro <- tabela_preco_unidade_residuos(input, "aterro")
   vida_util_aterro <- input$vida_util_aterro
   preco_unidade_compostagem <- tabela_preco_unidade_residuos(input, "compostagem")
   vida_util_compostagem <- input$vida_util_compostagem
   preco_unidade_triagem <- tabela_preco_unidade_residuos(input, "triagem")
   vida_util_triagem <- input$vida_util_triagem
+
   ano_inicial <- 2021
   ano_final <- ano
   ano_corrente <- 2022
+  cenario_regionalizacao <- "B"
 
   # Consolida os dados de Unidades de Processamento (SNIS-prestadores)
   rlog::log_info("residuos: carregando snis-rs data")
@@ -162,12 +166,7 @@ investimento_residuos <- function(state) {
   tabela <- rsan::classifica_faixa_populacional(tabela, limites)
   antes <- tabela
 
-  # Agrupamento por região e faixa populacional
-  rlog::log_info("residuos: agrupando por região e faixa populacional")
-  media_regiao <- rsan::media_por_estado_faixa(tabela, campo_estado = "regiao")
-  soma_regiao <- rsan::soma_por_estado_faixa(tabela, campo_estado = "regiao")
-
-  # Agrupamento por faixa
+  # Agrupamento por faixa nao usado
   rlog::log_info("residuos: agrupando somente por faixa populacional")
   media_faixa <- rsan::media_por_faixa(tabela)
   soma_faixa <- rsan::soma_por_faixa(tabela)
@@ -178,17 +177,27 @@ investimento_residuos <- function(state) {
   # Agrupamento por estado e faixa populacional
   rlog::log_info("residuos: agrupando por estado e faixa populacional")
   media <- rsan::media_por_estado_faixa(tabela)
-  tabela <- rsan::soma_por_estado_faixa(tabela)
+  conta <- rsan::conta_municipios_por_estado_faixa(tabela, campo_estado = "estado")
+
+  tabela <- rsan:::soma_por_estado_faixa(tabela)
   tabela$densidade_caminhoes <- media$densidade_caminhoes
   tabela$densidade_caminhoes_bau <- media$densidade_caminhoes_bau
+  tabela$numero_municipios <- conta$numero_municipios
+  tabela <- rsan:::cria_faixas_vazias(tabela)
+  # Fim do preenchimento
 
-  # Coleta regular
+  # Transbordo
+  tabela <- rsan:::demanda_transbordo(tabela)
+  tabela <- rsan:::regionaliza_transbordo(tabela, cenario_regionalizacao)
+  tabela <- rsan:::investimento_transbordo(tabela, custo_transbordo)
+
+  # Coleta indiferenciada
   rlog::log_info("residuos: investimento em coleta indiferenciada")
   tabela <- meta_plansab_residuo(tabela)
   tabela <- deficit_coleta_indiferenciada(tabela)
   tabela <- investimento_coleta_indiferenciada(tabela, valor_caminhao)
   tabela <- capacidade_instalada_coleta_indiferenciada(tabela, valor_caminhao)
-  tabela <- rsan::calcula_reposicao_parcial(
+  tabela <- rsan:::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_coleta_indiferenciada",
     "investimento_coleta_indiferenciada",
@@ -221,6 +230,7 @@ investimento_residuos <- function(state) {
   rlog::log_info("residuos: investimento em compostagem")
   tabela <- demanda_compostagem(tabela)
   tabela <- preco_unidade_faixa(tabela, preco_unidade_compostagem)
+  tabela <- regionaliza_compostagem(tabela, cenario_regionalizacao)
   tabela <- investimento_compostagem(tabela, vida_util_compostagem)
   tabela <- capacidade_instalada_compostagem(tabela, vida_util_compostagem)
   tabela <- rsan::calcula_reposicao_parcial(
@@ -237,7 +247,9 @@ investimento_residuos <- function(state) {
   # Aterro
   rlog::log_info("residuos: investimento em aterro")
   tabela <- preco_unidade_faixa(tabela, preco_unidade_aterro)
-  tabela <- investimento_aterro(tabela, vida_util_aterro)
+  tabela <- demanda_aterro(tabela, vida_util_aterro)
+  tabela <- regionaliza_aterro(tabela, cenario_regionalizacao)
+  tabela <- investimento_aterro(tabela)
   tabela <- capacidade_instalada_aterro(tabela, vida_util_aterro)
   tabela <- rsan::calcula_reposicao_parcial(
     tabela,
@@ -254,6 +266,7 @@ investimento_residuos <- function(state) {
   rlog::log_info("residuos: investimento em triagem")
   tabela <- demanda_triagem(tabela)
   tabela <- preco_unidade_faixa(tabela, preco_unidade_triagem)
+  tabela <- regionaliza_triagem(tabela, cenario_regionalizacao)
   tabela <- investimento_triagem(tabela, vida_util_triagem)
   tabela <- capacidade_instalada_triagem(tabela, vida_util_triagem)
   tabela <- rsan::calcula_reposicao_parcial(
@@ -277,7 +290,7 @@ investimento_residuos <- function(state) {
 #'
 #' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
 #'
-#' @return
+#' @return estado da aplicação (`list`) que guarda todos os resultado e parâmetros dos cálculos
 #' @export
 #'
 #' @examples
@@ -320,7 +333,7 @@ consolida_investimentos <- function(state) {
 #'
 #' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
 #'
-#' @return
+#' @return estado da aplicação (`list`) que guarda todos os resultado e parâmetros dos cálculos
 #' @export
 #'
 #' @examples
@@ -331,7 +344,7 @@ rodar_modelo <- function(state) {
   rlog::log_info("iniciando módulo de projecao populacional")
   state <- rodar_projecao_populacional(state)
 
-  rlog::log_info("água: iniciando módulo ")
+  rlog::log_info("água: iniciando módulo")
   state <- rsan:::investimento_agua(state)
 
   rlog::log_info("esgoto: iniciando módulo")

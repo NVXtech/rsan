@@ -2,15 +2,18 @@
 % Please edit documentation in R/calculo.R
 \name{investimento_residuos}
 \alias{investimento_residuos}
-\title{Title}
+\title{Investimento em residuos}
 \usage{
 investimento_residuos(state)
 }
 \arguments{
 \item{state}{estrutura de dados (\code{list}) que guarda o estado atual da aplicação}
 }
+\value{
+estado da aplicação (\code{list}) que guarda todos os resultado e parâmetros dos cálculos
+}
 \description{
-Title
+Investimento em residuos
 }
 \examples{
 \dontrun{
