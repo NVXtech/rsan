@@ -2,7 +2,7 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{atendimento_relativo_coleta_seletiva}
 \alias{atendimento_relativo_coleta_seletiva}
-\title{Title}
+\title{Atendimento relativo para coleta seletiva}
 \usage{
 atendimento_relativo_coleta_seletiva(tabela)
 }
@@ -10,7 +10,7 @@ atendimento_relativo_coleta_seletiva(tabela)
 \item{tabela}{}
 }
 \description{
-Title
+Atendimento relativo para coleta seletiva
 }
 \examples{
 \dontrun{

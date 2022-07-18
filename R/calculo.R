@@ -99,7 +99,7 @@ investimento_drenagem <- function(state) {
 
 residuos_snis_fields <- c(
   "codigo_municipio", "POP_TOT", "POP_URB", "Estado",
-  "CO164", "CO050", "CO119", "CS026",
+  "CO164", "CO050", "CO119", "CO021", "CS026",
   "CO054", "CO055", "CO056", "CO057", "CO058", "CO059",
   "CO063", "CO064", "CO065", "CO066", "CO067", "CO068",
   "CS001", "CS009", "CS050"
@@ -134,7 +134,7 @@ investimento_residuos <- function(state) {
   ano_inicial <- 2021
   ano_final <- ano
   ano_corrente <- 2022
-  cenario_regionalizacao <- "B"
+  cenario_regionalizacao <- "C"
 
   # Consolida os dados de Unidades de Processamento (SNIS-prestadores)
   rlog::log_info("residuos: carregando snis-rs data")
@@ -143,48 +143,51 @@ investimento_residuos <- function(state) {
 
   # Consolidação dos dados para classificação
   rlog::log_info("residuos: consolidando dados para classificação")
-  tabela <- rsan::get_snis_data(input$snis, residuos_snis_fields)
-  tabela <- rsan::adiciona_projecao_populacao(state$projecao, ano, tabela)
+  tabela <- rsan:::get_snis_data(input$snis, residuos_snis_fields)
+  tabela <- rsan:::adiciona_projecao_populacao(state$projecao, ano, tabela)
   tabela <- dplyr::left_join(tabela, compostagem, by = "codigo_municipio")
-  tabela <- rsan::adiciona_pais(tabela)
-  tabela <- rsan::adiciona_estado(tabela)
-  tabela <- rsan::adiciona_regiao(tabela)
+  tabela <- rsan:::adiciona_pais(tabela)
+  tabela <- rsan:::adiciona_estado(tabela)
+  tabela <- rsan:::adiciona_regiao(tabela)
+  tabela <- rsan:::adiciona_tipo_disposicao(tabela)
+  tabela <- rsan:::adiciona_classificacao_litoranea(tabela)
 
-  # Dados coleta indiferenciada
-  rlog::log_info("residuos: preparando dados para coleta indiferenciada")
-  tabela <- atendimento_relativo_residuos(tabela)
-  tabela <- geracao_residuos(tabela)
-  tabela <- numero_caminhoes(tabela)
-  tabela <- densidade_caminhoes(tabela)
-
-  # Dados coleta seletiva
-  rlog::log_info("residuos: preparando dados para coleta seletiva")
-  tabela <- numero_caminhoes_bau(tabela)
-  tabela <- densidade_caminhoes_bau(tabela)
-
+  # Classificação por faixas populacionais
+  rlog::log_info("residuos: classificando por faixa populacional")
   limites <- as.integer(c(0, 10e3, 30e3, 100e3, 250e3, 1e6, 4e6))
   tabela <- rsan::classifica_faixa_populacional(tabela, limites)
-  antes <- tabela
 
-  # Agrupamento por faixa nao usado
-  rlog::log_info("residuos: agrupando somente por faixa populacional")
-  media_faixa <- rsan::media_por_faixa(tabela)
-  soma_faixa <- rsan::soma_por_faixa(tabela)
-  soma_faixa <- rsan::densidade_caminhoes_bau(soma_faixa)
 
-  # Preenchimentos
+  # Agrupamento por faixa usado para preenchimento
+  rlog::log_info("residuos: agregando por faixa populacional")
+  media_faixa <- rsan:::media_por_faixa(tabela)
+  soma_faixa <- rsan:::soma_por_faixa(tabela)
+  soma_faixa <- rsan:::numero_caminhoes(soma_faixa)
+  soma_faixa <- rsan:::numero_caminhoes_bau(soma_faixa)
+  soma_faixa <- rsan:::densidade_caminhoes(soma_faixa)
+  soma_faixa <- rsan:::densidade_caminhoes_bau(soma_faixa)
 
   # Agrupamento por estado e faixa populacional
-  rlog::log_info("residuos: agrupando por estado e faixa populacional")
-  media <- rsan::media_por_estado_faixa(tabela)
+  rlog::log_info("residuos: agregando por estado e faixa populacional")
+  # media <- rsan::media_por_estado_faixa(tabela)
   conta <- rsan::conta_municipios_por_estado_faixa(tabela, campo_estado = "estado")
 
+  # Agrupamento por regiao e faixa populacional
+  rlog::log_info("residuos: agregando por regiao e faixa populacional")
+  soma_regiao_faixa <- rsan:::soma_por_estado_faixa(
+    rsan:::divide_residuo_litoraneo(rsan:::ignora_residuo_sem_pesagem(tabela)),
+    campo_estado = "regiao"
+  )
+  soma_regiao_faixa <- rsan:::taxa_geracao_residuos(soma_regiao_faixa)
+
+  # Preenchimento
+  tabela <- rsan:::preenche_geracao_residuos(tabela, soma_regiao_faixa)
+  tabela <- rsan:::disposicao_inadequada(tabela)
+  # Fim do preenchimento
+
   tabela <- rsan:::soma_por_estado_faixa(tabela)
-  tabela$densidade_caminhoes <- media$densidade_caminhoes
-  tabela$densidade_caminhoes_bau <- media$densidade_caminhoes_bau
   tabela$numero_municipios <- conta$numero_municipios
   tabela <- rsan:::cria_faixas_vazias(tabela)
-  # Fim do preenchimento
 
   # Transbordo
   tabela <- rsan:::demanda_transbordo(tabela)
@@ -193,6 +196,11 @@ investimento_residuos <- function(state) {
 
   # Coleta indiferenciada
   rlog::log_info("residuos: investimento em coleta indiferenciada")
+  tabela <- atendimento_relativo_residuos(tabela)
+  tabela <- geracao_residuos(tabela)
+  tabela <- numero_caminhoes(tabela)
+  tabela <- densidade_caminhoes(tabela)
+  tabela <- rsan:::preenche_por_faixa_populacional(tabela, soma_faixa, preencher_campo = "densidade_caminhoes")
   tabela <- meta_plansab_residuo(tabela)
   tabela <- deficit_coleta_indiferenciada(tabela)
   tabela <- investimento_coleta_indiferenciada(tabela, valor_caminhao)
@@ -210,7 +218,9 @@ investimento_residuos <- function(state) {
 
   # Coleta seletiva
   rlog::log_info("residuos: investimento em coleta seletiva")
-  tabela <- preenche_caminhoes_bau(tabela, soma_faixa, campo_densidade = "densidade_caminhoes_bau")
+  tabela <- numero_caminhoes_bau(tabela)
+  tabela <- densidade_caminhoes_bau(tabela)
+  tabela <- rsan:::preenche_por_faixa_populacional(tabela, soma_faixa, preencher_campo = "densidade_caminhoes_bau")
   tabela <- atendimento_relativo_coleta_seletiva(tabela)
   tabela <- deficit_coleta_seletiva(tabela)
   tabela <- investimento_coleta_seletiva(tabela, valor_caminhao_bau)
@@ -287,7 +297,6 @@ investimento_residuos <- function(state) {
 }
 
 #' Consolida as necessidade de investimento em saneamento
-#'
 #' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
 #'
 #' @return estado da aplicação (`list`) que guarda todos os resultado e parâmetros dos cálculos

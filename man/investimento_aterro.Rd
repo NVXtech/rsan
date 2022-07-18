@@ -4,12 +4,10 @@
 \alias{investimento_aterro}
 \title{Investimento em Aterros}
 \usage{
-investimento_aterro(tabela, vida_util)
+investimento_aterro(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas \code{total_residuos_projecao} e \code{preco_unidade_aterro}}
-
-\item{vida_util}{valor em anos da vida util do aterro}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{demanda_aterro} e \code{preco_unidade_aterro}}
 }
 \value{
 um \code{data.frame} contendo a coluna \code{investimento_aterro}

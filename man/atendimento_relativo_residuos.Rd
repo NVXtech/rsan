@@ -2,18 +2,16 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{atendimento_relativo_residuos}
 \alias{atendimento_relativo_residuos}
-\title{Title}
+\title{Atendimento relativo para residuo}
 \usage{
 atendimento_relativo_residuos(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} com as colunas \code{CO164}, \code{CO050}, \code{POP_TOT} e \code{POP_URB}.}
+}
+\value{
+um \code{data.frame} contendo as coliunas \code{atendimento_relativo_total}, \code{atendimento_relativo_urbano} e \code{atendimento_relativo_rural}
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Calcula o atendimento relativo total, urbano e rural.
 }

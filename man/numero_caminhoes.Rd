@@ -2,18 +2,22 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{numero_caminhoes}
 \alias{numero_caminhoes}
-\title{Title}
+\title{Quantidade de caminhões compactador}
 \usage{
 numero_caminhoes(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} contendo as colunas CO054, CO055, CO056, CO057, CO058 e CO059.}
+}
+\value{
+um \code{data.frame} contendo a coluna \code{numero_caminhoes}
 }
 \description{
-Title
+Calcula o número de caminhões compactadores utilizando dados do SNIS.
+Soma-se as colunas CO054, CO055, CO056, CO057, CO058 e CO059.
 }
 \examples{
 \dontrun{
-
+tabela <- numero_caminhoes(tabela)
 }
 }

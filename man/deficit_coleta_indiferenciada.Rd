@@ -2,18 +2,21 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{deficit_coleta_indiferenciada}
 \alias{deficit_coleta_indiferenciada}
-\title{Title}
+\title{Déficit para coleta indiferenciada}
 \usage{
 deficit_coleta_indiferenciada(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{é um \code{data.frame} contendo as colunas \code{meta_coleta}, \code{populacao_total} e \code{CO164}}
+}
+\value{
+um \code{data.frame} contendo a coluna \code{coleta_indiferenciada}
 }
 \description{
-Title
+O déficit é a meta em \% multiplicada pela populacao total estimada menos o atendimento atual.
 }
 \examples{
 \dontrun{
-
+tabela <- deficit_coleta_indiferenciada(tabela)
 }
 }

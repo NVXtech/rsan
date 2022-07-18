@@ -32,11 +32,9 @@ adiciona_estado <- function(tabela) {
   original_colnames <- colnames(tabela)
   output_cols <- c(original_colnames, "estado")
   municipio <- dplyr::select(municipio, c("codigo_municipio", "estado", "estado_sigla"))
-  tabela <-
-    dplyr::left_join(tabela, municipio, by = "codigo_municipio")
-  tabela <-
-    dplyr::rename(tabela, estado_nome = estado, estado = estado_sigla)
-  tabela <- dplyr::select(tabela, all_of(output_cols))
+  tabela <- dplyr::left_join(tabela, municipio, by = "codigo_municipio")
+  tabela <- dplyr::rename(tabela, estado_nome = estado, estado = estado_sigla)
+  tabela <- dplyr::select(tabela, dplyr::all_of(output_cols))
   return(tabela)
 }
 
@@ -61,6 +59,29 @@ adiciona_regiao <- function(tabela) {
   municipio <- dplyr::select(municipio, c("codigo_municipio", "regiao"))
   tabela <-
     dplyr::left_join(tabela, municipio, by = "codigo_municipio")
+  return(tabela)
+}
+
+#' Classificação litorânea
+#'
+#' Adiciona se o municipio é litorâneo ou não.
+#'
+#' @param tabela contendo coluna codigo_municipio
+#'
+#' @return tabela com coluna adicional `litoral`
+#' @export
+#'
+#' @examples
+#' codigo_municipio <- c("1200013", "1200054", "1200104", "1200138")
+#' input <- dplyr::tibble(codigo_municipio)
+#' tabela <- adiciona_classificacao_litoranea(input)
+adiciona_classificacao_litoranea <- function(tabela) {
+  data(municipio_litoraneos, package = "rsan")
+  original_colnames <- colnames(tabela)
+  output_cols <- c(original_colnames, "regiao")
+  municipio_litoraneos <- dplyr::select(municipio_litoraneos, c("codigo_municipio", "litoral"))
+  tabela <-
+    dplyr::left_join(tabela, municipio_litoraneos, by = "codigo_municipio")
   return(tabela)
 }
 

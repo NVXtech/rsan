@@ -82,7 +82,7 @@ investimento_residuos_total <- function(tabela) {
 demanda_aterro <- function(tabela, vida_util) {
   tabela <- dplyr::mutate(
     tabela,
-    demanda_aterro = total_residuos_projecao * vida_util
+    demanda_aterro = ((total_residuos_projecao - total_residuos) + residuos_disposicao_inadequada) * vida_util
   )
 }
 
@@ -267,35 +267,135 @@ densidade_caminhoes_bau <- function(tabela) {
   )
 }
 
-#' Title
+#' Preenche por faixa populacional
 #'
-#' @param tabela
-#' @param tabela_densidade
-#' @param campo_densidade
-#' @param campo_faixa
+#' O dado faltante de um estado e uma faixa populacional é preenchido com valores que variam somente com a faixa populacional (`tabela_faixa`)
+#'
+#' @param tabela um `data.frame` com as colunas a serem preenchidas
+#' @param tabela_faixa um `data.frame` contendo os valores que serão base para o preenchimento devem conter a coluna com os nomes fornecidos em `campo` e `campo_faixa`
+#' @param preencher_campo um `character` com o nome da coluna a ser preenchida
+#' @param campo_faixa um `character` com o nome da coluna da faixa populacional
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'
+#' tabela <- preenche_por_faixa_populacional(tabela, densidade)
 #' }
-preenche_caminhoes_bau <- function(tabela,
-                                   tabela_densidade,
-                                   campo_densidade = "densidade",
-                                   campo_faixa = "faixa") {
-  tabela_densidade <- dplyr::select(
-    tabela_densidade,
-    dplyr::all_of(
-      c(
-        campo_densidade,
-        campo_faixa
-      )
-    )
+preenche_por_faixa_populacional <- function(tabela,
+                                            tabela_faixa,
+                                            preencher_campo = "densidade",
+                                            campo_faixa = "faixa") {
+  tabela_faixa <- dplyr::select(
+    tabela_faixa,
+    dplyr::all_of(c(
+      preencher_campo,
+      campo_faixa
+    ))
   )
-  tabela <- dplyr::select(tabela, -dplyr::all_of(campo_densidade))
-  tabela <- dplyr::left_join(tabela, tabela_densidade, by = campo_faixa)
+
+  # transforma valores negativos e nulos em 0
+  mask <- tabela[[preencher_campo]] <= 0
+  tabela[[preencher_campo]][mask] <- NA
+
+  tabela_faixa <- dplyr::rename(tabela_faixa, estimativa = .data[[preencher_campo]])
+  tabela <- dplyr::left_join(tabela, tabela_faixa, by = campo_faixa)
+
+  mask <- is.na(tabela[[preencher_campo]])
+  tabela[[preencher_campo]][mask] <- tabela$estimativa[mask]
+
+  tabela <- dplyr::select(
+    tabela,
+    -estimativa
+  )
+  return(tabela)
+}
+
+#' Preenche por regiao e faixa populacional
+#'
+#' O dado faltante de um estado e uma faixa populacional é preenchido com valores que variam somente com a faixa populacional (`tabela_faixa`)
+#'
+#' @param tabela um `data.frame` com as colunas a serem preenchidas
+#' @param tabela_faixa um `data.frame` contendo os valores que serão base para o preenchimento devem conter a coluna com os nomes fornecidos em `campo` e `campo_faixa`
+#' @param preencher_campo um `character` com o nome da coluna a ser preenchida
+#' @param campo_regiao um `character` com o nome da coluna região
+#' @param campo_faixa um `character` com o nome da coluna faixa populacional
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- preenche_por_regiao_faixa_populacional(tabela, densidade)
+#' }
+preenche_por_regiao_faixa_populacional <- function(tabela,
+                                                   tabela_faixa,
+                                                   preencher_campo = "densidade",
+                                                   campo_regiao = "regiao",
+                                                   campo_faixa = "faixa") {
+  tabela_faixa <- dplyr::select(
+    tabela_faixa,
+    dplyr::all_of(c(
+      preencher_campo,
+      campo_regiao,
+      campo_faixa
+    ))
+  )
+
+  # transforma valores negativos e nulos em 0
+  mask <- tabela[[preencher_campo]] <= 0
+  tabela[[preencher_campo]][mask] <- NA
+
+  tabela_faixa <- dplyr::rename(tabela_faixa, estimativa = .data[[preencher_campo]])
+  tabela <- dplyr::left_join(tabela, tabela_faixa, by = c(campo_regiao, campo_faixa))
+
+  mask <- is.na(tabela[[preencher_campo]])
+  tabela[[preencher_campo]][mask] <- tabela$estimativa[mask]
+
+  tabela <- dplyr::select(
+    tabela,
+    -estimativa
+  )
+  return(tabela)
+}
+
+#' Substitui por faixa populacional
+#'
+#' O dados faltante de um campo é preenchido com valores que variam somente com a faixa populacional (`tabela_faixa`)
+#'
+#' @param tabela um `data.frame` com as colunas a serem preenchidas
+#' @param tabela_faixa um `data.frame` contendo os valores que serão base para o preenchimento devem conter a coluna com os nomes fornecidos em `campo` e `campo_faixa`
+#' @param preencher_campo um `character` com o nome da coluna a ser preenchida
+#' @param campo_faixa um `character` com o nome da coluna da faixa populacional
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- substitui_por_faixa_populacional(tabela, densidade)
+#' }
+substitui_por_faixa_populacional <- function(tabela,
+                                             tabela_faixa,
+                                             preencher_campo = "densidade",
+                                             campo_faixa = "faixa") {
+  campos_para_filtrar <- dplyr::all_of(c(preencher_campo, campo_faixa))
+  tabela_faixa <- dplyr::select(
+    tabela_faixa,
+    campos_para_filtrar
+  )
+  tabela_faixa <- dplyr::rename(
+    tabela_faixa,
+    estimativa = .data[[preencher_campo]]
+  )
+  tabela <- dplyr::left_join(tabela, tabela_faixa, by = campo_faixa)
+  tabela[[preencher_campo]] <- tabela$estimativa
+  tabela <- dplyr::select(
+    tabela,
+    -estimativa
+  )
+  return(tabela)
 }
 
 #' Mascara de municipios que contém coleta seletiva
@@ -316,7 +416,7 @@ mascara_coleta_seletiva <- function(tabela) {
   return(mask)
 }
 
-#' Title
+#' Atendimento relativo para coleta seletiva
 #'
 #' @param tabela
 #'
@@ -392,16 +492,19 @@ capacidade_instalada_coleta_seletiva <- function(tabela, valor) {
 
 # COLETA REGULAR -----------------------------------------------------------------
 
-#' Title
+#' Quantidade de caminhões compactador
 #'
-#' @param tabela
+#' Calcula o número de caminhões compactadores utilizando dados do SNIS.
+#' Soma-se as colunas CO054, CO055, CO056, CO057, CO058 e CO059.
 #'
-#' @return
+#' @param tabela um `data.frame` contendo as colunas CO054, CO055, CO056, CO057, CO058 e CO059.
+#'
+#' @return  um `data.frame` contendo a coluna `numero_caminhoes`
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'
+#' tabela <- numero_caminhoes(tabela)
 #' }
 numero_caminhoes <- function(tabela) {
   tabela <- dplyr::mutate(
@@ -410,16 +513,18 @@ numero_caminhoes <- function(tabela) {
   )
 }
 
-#' Title
+#' Déficit para coleta indiferenciada
 #'
-#' @param tabela
+#' O déficit é a meta em % multiplicada pela populacao total estimada menos o atendimento atual.
 #'
-#' @return
+#' @param tabela é um `data.frame` contendo as colunas `meta_coleta`, `populacao_total` e `CO164`
+#'
+#' @return um `data.frame` contendo a coluna `coleta_indiferenciada`
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'
+#' tabela <- deficit_coleta_indiferenciada(tabela)
 #' }
 deficit_coleta_indiferenciada <- function(tabela) {
   tabela <- dplyr::mutate(
@@ -514,17 +619,15 @@ densidade_caminhoes <- function(tabela) {
 
 #' Adiciona metas de atendimento por região
 #'
-#' @param tabela
+#' @param tabela um `data.frame` com a coluna `regiao`
 #'
-#' @return
+#' @return um `data.frame` com as colunas adicionais `meta_coleta`, `meta_compostagem`e `meta_reaproveitamento`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 meta_plansab_residuo <- function(tabela) {
   data("plansab", package = "rsan")
+  plansab <- get("plansab")
+  vars <- c("regiao", "meta_coleta", "meta_compostagem", "meta_reaproveitamento")
+  plansab <- dplyr::select(plansab, all_of(vars))
   tabela <- dplyr::left_join(
     tabela,
     plansab,
@@ -532,17 +635,46 @@ meta_plansab_residuo <- function(tabela) {
   )
 }
 
-#' Title
+#' Adiciona tipo de disposição de resíduos
 #'
-#' @param tabela
+#' @param tabela um `data.frame` com a coluna `codigo_municipio`
 #'
-#' @return
+#' @return um `data.frame` com as colunas adicionais `meta_coleta`, `meta_compostagem`e `meta_reaproveitamento`
 #' @export
+adiciona_tipo_disposicao <- function(tabela) {
+  data("tipo_disposicao", package = "rsan")
+  tipo_disposicao <- get("tipo_disposicao")
+  vars <- c("codigo_municipio", "tipo_disposicao")
+  tipo_disposicao <- dplyr::select(tipo_disposicao, dplyr::all_of(vars))
+  tabela <- dplyr::left_join(
+    tabela,
+    tipo_disposicao,
+    by = "codigo_municipio"
+  )
+}
+
+#' Adiciona quantidade de residuos com disposição inadequada
 #'
-#' @examples
-#' \dontrun{
+#' @param tabela um `data.frame` com a coluna `CO119`
 #'
-#' }
+#' @return um `data.frame` com a colunas adicional `residuos_disposicao_inadequada`
+#' @export
+disposicao_inadequada <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    disposicao_inadequada = ifelse(tipo_disposicao == "Inadequada", 1.0, 0.0),
+    residuos_disposicao_inadequada = CO119 * disposicao_inadequada
+  )
+}
+
+#' Atendimento relativo para residuo
+#'
+#' Calcula o atendimento relativo total, urbano e rural.
+#'
+#' @param tabela um `data.frame` com as colunas `CO164`, `CO050`, `POP_TOT` e `POP_URB`.
+#'
+#' @return um `data.frame` contendo as coliunas `atendimento_relativo_total`, `atendimento_relativo_urbano` e `atendimento_relativo_rural`
+#' @export
 atendimento_relativo_residuos <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -570,6 +702,103 @@ geracao_residuos <- function(tabela) {
     total_residuos = taxa_geracao_residuos * POP_TOT,
     total_residuos_projecao = taxa_geracao_residuos * populacao_total,
     percentual_recuperado = CS009 / CO119
+  )
+}
+
+#' Title
+#'
+#' @param tabela
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+taxa_geracao_residuos <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    taxa_geracao_residuos = CO119 / CO164,
+    taxa_geracao_residuos_litoral = CO119_litoral / CO164_litoral,
+  )
+}
+
+#' Ignora quantidade de residuo litorâneo
+#'
+#' @param tabela um `data.frame` contendo as colunas CO119, CO164 e litoral
+#'
+#' @return um `data.frame` onde os municipios litoraneos não tem dados de quantidade de residuos
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tbl <- ignora_residuo_litoraneo(tbl)
+#' }
+ignora_residuo_litoraneo <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    CO119 = ifelse(litoral == "Não", CO119, NA),
+    CO164 = ifelse(litoral == "Não", CO164, NA),
+  )
+}
+
+#' Ignora quantidade de residuo em municipio sem pesagem
+#'
+#' @param tabela um `data.frame` contendo as colunas CO119, CO164 e CO021
+#'
+#' @return um `data.frame` onde os municipios litoraneos não tem dados de quantidade de residuos
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tbl <- ignora_residuo_litoraneo(tbl)
+#' }
+ignora_residuo_sem_pesagem <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    CO119 = ifelse(CO021 == "Sim", CO119, NA),
+    CO164 = ifelse(CO021 == "Sim", CO164, NA),
+  )
+}
+
+#' Ignora quantidade de residuo litorâneo
+#'
+#' @param tabela um `data.frame` contendo as colunas CO119, CO164 e litoral
+#'
+#' @return um `data.frame` onde os municipios litoraneos não tem dados de quantidade de residuos
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tbl <- ignora_residuo_litoraneo(tbl)
+#' }
+ignora_residuo_litoraneo <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    CO119 = ifelse(litoral == "Não", CO119, NA),
+    CO164 = ifelse(litoral == "Não", CO164, NA),
+  )
+}
+
+#' Divide quantidade de residuo litorâneo e nao litoraneo
+#'
+#' @param tabela um `data.frame` contendo as colunas CO119, CO164 e litoral
+#'
+#' @return um `data.frame` onde os municipios litoraneos não tem dados de quantidade de residuos
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tbl <- divide_residuo_litoraneo(tbl)
+#' }
+divide_residuo_litoraneo <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    CO119_litoral = ifelse(litoral == "Sim", CO119, NA),
+    CO164_litoral = ifelse(litoral == "Sim", CO164, NA),
+    CO119 = ifelse(litoral == "Não", CO119, NA),
+    CO164 = ifelse(litoral == "Não", CO164, NA),
   )
 }
 
@@ -635,8 +864,8 @@ regionaliza100 <- function(tabela, campo) {
   tabela <- dplyr::group_by(tabela, estado)
   regionaliza <- function(group, group_name) {
     group <- dplyr::arrange(group, faixa)
-    group[[campo]][6] <- sum(group[[campo]][5:6])
-    group[[campo]][5] <- sum(group[[campo]][1:4])
+    group[[campo]][6] <- sum(group[[campo]][5:6], na.rm = TRUE)
+    group[[campo]][5] <- sum(group[[campo]][1:4], na.rm = TRUE)
     group[[campo]][1:4] <- 0
     return(group)
   }
@@ -662,8 +891,6 @@ regionaliza100 <- function(tabela, campo) {
 regionaliza_faixa1 <- function(tabela, potencial, campo_demanda, campo_potencial) {
   potencial <- dplyr::select(potencial, all_of(c("regiao", campo_potencial)))
   tabela <- dplyr::left_join(tabela, potencial, by = "regiao")
-  print(names(tabela))
-  print(campo_potencial)
   tabela <- dplyr::mutate(
     tabela,
     sem_potencial = 1.0 - .data[[campo_potencial]],
@@ -746,7 +973,7 @@ regionaliza_faixa5e6 <- function(tabela, potencial, campo_demanda, campo_potenci
     group[[campo_demanda]][6] <- group[[campo_potencial]][5] *
       group[[campo_demanda]][5] + group[[campo_demanda]][6]
     group[[campo_demanda]][5] <- group[[campo_potencial]][5] *
-      sum(group[[campo_demanda]][1:4]) + group$sem_potencial[5] * group[[campo_demanda]][5]
+      sum(group[[campo_demanda]][1:4], na.rm = TRUE) + group$sem_potencial[5] * group[[campo_demanda]][5]
     for (i in seq(4, 1)) {
       group[[campo_demanda]][i] <- group[[campo_demanda]][i] * group$sem_potencial[i]
     }
@@ -973,4 +1200,71 @@ regionaliza_aterro <- function(tabela, cenario) {
   } else {
     return(tabela)
   }
+}
+
+
+#' Preenche residuo gerado
+#'
+#' O campo de quantidade gerada de residuos (CO119) é prenchido pela taxa média por regiao e estado.
+#'
+#' @param tabela um `data.frame` com as colunas a serem preenchidas
+#' @param tabela_faixa um `data.frame` contendo os valores que serão base para o preenchimento devem conter a coluna com os nomes fornecidos em `campo` e `campo_faixa`
+#' @param preencher_campo um `character` com o nome da coluna a ser preenchida
+#' @param campo_regiao um `character` com o nome da coluna região
+#' @param campo_faixa um `character` com o nome da coluna faixa populacional
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- preenche_por_regiao_faixa_populacional(tabela, densidade)
+#' }
+preenche_geracao_residuos <- function(tabela,
+                                      tabela_faixa,
+                                      preencher_campo = "CO119",
+                                      campo_regiao = "regiao",
+                                      campo_faixa = "faixa") {
+  tabela_faixa <- dplyr::select(
+    tabela_faixa,
+    dplyr::all_of(c(
+      "taxa_geracao_residuos",
+      "taxa_geracao_residuos_litoral",
+      campo_regiao,
+      campo_faixa
+    ))
+  )
+
+  # transforma valores negativos e nulos em NA
+  mask <- tabela[[preencher_campo]] <= 0
+  tabela[[preencher_campo]][mask] <- NA
+  # transforma muncípios sem pesagem em NA
+  mask <- tabela$CO021 == "Não"
+  tabela[[preencher_campo]][mask] <- NA
+
+  tabela <- dplyr::left_join(tabela,
+    tabela_faixa,
+    by = c(campo_regiao, campo_faixa)
+  )
+
+  tabela <- dplyr::mutate(
+    tabela,
+    estimativa_nao_litoral = taxa_geracao_residuos * POP_TOT,
+    estimativa_litoral = taxa_geracao_residuos_litoral * POP_TOT,
+    estimativa = ifelse(litoral == "Sim", estimativa_litoral, estimativa_nao_litoral)
+  )
+
+  mask <- is.na(tabela[[preencher_campo]])
+  tabela[[preencher_campo]][mask] <- tabela$estimativa[mask]
+
+  campos_para_remover <- c(
+    "estimativa", "estimativa_litoral", "estimativa_nao_litoral",
+    "taxa_geracao_residuos", "taxa_geracao_residuos_litoral"
+  )
+
+  tabela <- dplyr::select(
+    tabela,
+    -dplyr::all_of(campos_para_remover)
+  )
+  return(tabela)
 }

@@ -17,6 +17,7 @@ investimento_residuos_total(tabela)
 \item\link{investimento_aterro}
 \item\link{investimento_compostagem}
 \item\link{investimento_triagem}
+\item\link{investimento_transbordo}
 \item\link{investimento_coleta_indiferenciada}
 \item\link{investimento_coleta_seletiva}
 }}
