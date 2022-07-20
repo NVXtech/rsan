@@ -3,21 +3,21 @@ areas_url <-
 
 
 get_anos_ibge_area <- function() {
-  rsan::listFilesFromFTP(areas_url)
+  rsan:::listFilesFromFTP(areas_url)
 }
 
 get_ultimo_ano_ibge_area <- function() {
-  anos <- rsan::listFilesFromFTP(areas_url)
+  anos <- rsan:::listFilesFromFTP(areas_url)
   max(anos)
 }
 
 load_ultimo_ibge_area <- function() {
-  col_names <- c("id", "codigo_uf",	"estado", "estado_sigla", "codigo_municipio", "municipio", "area")
-  col_types<- c("numeric", "text",	"text", "text", "text", "text", "numeric")
+  col_names <- c("id", "codigo_uf", "estado", "estado_sigla", "codigo_municipio", "municipio", "area")
+  col_types <- c("numeric", "text", "text", "text", "text", "text", "numeric")
   ano <- get_ultimo_ano_ibge_area()
-  files <- rsan::listFilesFromFTP(paste0(areas_url, ano, "/"))
+  files <- rsan:::listFilesFromFTP(paste0(areas_url, ano, "/"))
   for (file in files) {
-    if (grepl(".*xls", file)){
+    if (grepl(".*xls", file)) {
       url_to_download <- paste0(areas_url, ano, "/", file)
       sheet <- sprintf("AR_BR_MUN_%s", ano)
       destfile <- tempfile()
@@ -32,14 +32,14 @@ load_ultimo_ibge_area <- function() {
       unlink(destfile)
       area_municipio <- area_municipio[stats::complete.cases(area_municipio), ]
       area_municipio <- dplyr::select(area_municipio, codigo_municipio, area)
-      usethis::use_data(area_municipio, overwrite=TRUE)
+      usethis::use_data(area_municipio, overwrite = TRUE)
     }
   }
 }
 
-load_area_urbana <- function(){
+load_area_urbana <- function() {
   col_names <- c("codigo_municipio", "area_urbana")
-  col_types<- c("text", "numeric")
+  col_types <- c("text", "numeric")
   file_name <- file.path("data-raw", "area_urbana_2015.xlsx")
   area_urbana_municipio <- readxl::read_xlsx(
     file_name,
@@ -48,7 +48,7 @@ load_area_urbana <- function(){
     col_names = col_names,
     col_types = col_types
   )
-  usethis::use_data(area_urbana_municipio, overwrite=TRUE)
+  usethis::use_data(area_urbana_municipio, overwrite = TRUE)
 }
 
 load_ultimo_ibge_area()

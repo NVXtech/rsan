@@ -7,13 +7,20 @@
 rodar_modulo_demografico(input, projecao, tema)
 }
 \arguments{
+\item{input}{estrutura de dados (\code{reactive}) que guarda os parâmetros da interface gráfica}
+
+\item{projecao}{é o \code{data.frame} com o estado atual da projeção populacional}
+
 \item{tema}{define qual tema será caculado (\code{agua} ou \code{esgoto})}
+}
+\value{
+um \code{data.frame} contendo as necessidades de intraestrutura para um dado \code{tema}
 }
 \description{
 Calcula as necessidades
 }
 \examples{
 \dontrun{
-rodar_modulo_demografico
+tabela <- rodar_modulo_demografico(input, projecao, "agua")
 }
 }

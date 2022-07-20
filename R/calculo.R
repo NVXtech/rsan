@@ -27,6 +27,7 @@ rodar_projecao_populacional <- function(state) {
 
   rlog::log_info("projecao: calculando taxa de crescimento")
   consolidado <- calcula_taxa_crescimento(consolidado, ano1, ano2)
+  state$taxas_projecao <- consolidado
 
   rlog::log_info("projecao: calculando crescimento_urbano_rural")
   consolidado <- calcular_urbana_rural_fonte2(consolidado)
@@ -40,12 +41,6 @@ rodar_projecao_populacional <- function(state) {
   return(state)
 }
 
-
-estimar_parametros_drenagem <- function() {
-  plano <- corrige_plano_drenagem("2021-12-01")
-  plano <- prepara_regressao(plano, tabela)
-  modelo <- regressao_drenagem(plano)
-}
 
 #' Cálculo da Necessidade de Investimento para Drenagem Urbana
 #'

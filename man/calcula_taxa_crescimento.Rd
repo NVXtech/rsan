@@ -2,8 +2,7 @@
 % Please edit documentation in R/projecao.R
 \name{calcula_taxa_crescimento}
 \alias{calcula_taxa_crescimento}
-\title{Calcula a taxa de crescimento populacional
-Utiliza método de crescimento geométrico}
+\title{Calcula a taxa de crescimento populacional}
 \usage{
 calcula_taxa_crescimento(tabela, ano_fonte1, ano_fonte2)
 }
@@ -18,11 +17,10 @@ calcula_taxa_crescimento(tabela, ano_fonte1, ano_fonte2)
 Um tibble() contendo a coluna taxa_de_crescimento
 }
 \description{
-Calcula a taxa de crescimento populacional
 Utiliza método de crescimento geométrico
 }
 \examples{
 \dontrun{
-df <- calcula_taxa_crescimento(df, 2010, 2021)
+tabela <- calcula_taxa_crescimento(tabela, 2010, 2021)
 }
 }

@@ -21,6 +21,6 @@ Retorna a projecao de população de um tipo e ano
 }
 \examples{
 \dontrun{
-df <- get_populacao(df, 2033, "urbana")
+tabela <- get_populacao(tabela, 2033, "urbana")
 }
 }

@@ -21,6 +21,6 @@ Calcula a projeção populacional para cada ano dentro do período requerido.
 }
 \examples{
 \dontrun{
-df <- calcula_projecao(df, 2021, 2033)
+tabela <- calcula_projecao(tabela, 2021, 2033)
 }
 }

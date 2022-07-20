@@ -722,16 +722,16 @@ snis_fields <- c(
 #'
 #' Calcula as necessidades
 #'
-#' @param input
-#' @param projecao
+#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param projecao é o `data.frame` com o estado atual da projeção populacional
 #' @param tema define qual tema será caculado (`agua` ou `esgoto`)
 #'
-#' @return
+#' @return um `data.frame` contendo as necessidades de intraestrutura para um dado `tema`
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' rodar_modulo_demografico
+#' tabela <- rodar_modulo_demografico(input, projecao, "agua")
 #' }
 rodar_modulo_demografico <- function(input, projecao, tema) {
   ano <- input$geral$ano
@@ -739,7 +739,9 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
   rlog::log_info(sprintf("%s: carregado snis (%s, %s)", tema, nrow(tabela), ncol(tabela)))
   tabela <- rsan:::necessidade_agua_esgoto(tabela)
   rlog::log_info(sprintf("%s: preenchendo dados de densidade", tema))
-  tabela <- rsan:::fill_missing_density(tabela, c("densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"))
+  tabela <- rsan:::fill_missing_density(tabela, c(
+    "densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"
+  ))
   rlog::log_info(sprintf("%s: adicionando projecao", tema))
   tabela <- rsan:::adiciona_projecao_populacao(projecao, ano, tabela)
   rlog::log_info(sprintf("%s: calculando demandas", tema))
@@ -1024,10 +1026,11 @@ investimento_agua <- function(state) {
   rlog::log_info("água: rodando módulo financeiro")
   financeiro <- rodar_modulo_financeiro_agua(input, orcamentario)
   tabela <- consolida_investimentos_agua(financeiro)
-  tabela <- rsan::adiciona_pais(tabela)
-  tabela <- rsan::adiciona_regiao(tabela)
+  tabela <- rsan:::adiciona_pais(tabela)
+  tabela <- rsan:::adiciona_regiao(tabela)
   state$agua <- tabela
-
+  rlog::log_info("água: rodando módulo rural")
+  state$agua_rural <- rsan:::rodar_modulo_rural_agua(input, state$taxas_projecao)
   return(state)
 }
 
@@ -1058,6 +1061,7 @@ investimento_esgoto <- function(state) {
   tabela <- rsan::adiciona_pais(tabela)
   tabela <- rsan::adiciona_regiao(tabela)
   state$esgoto <- tabela
-
+  rlog::log_info("esgoto: rodando módulo rural")
+  state$esgoto_rural <- rsan:::rodar_modulo_rural_esgoto(input, state$taxas_projecao)
   return(state)
 }

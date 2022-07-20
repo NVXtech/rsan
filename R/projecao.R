@@ -1,29 +1,29 @@
-#
-#' Adiciona colunas de proporção relativa para populações urbana e rural.
-#' tabela precisa dos seguintes campos:
-#' codigo_municipio, populacao_total, populacao_urbana e populacao_rural
+#' Proporção relativa para populações urbana e rural.
 #'
+#' Calcula frações da população urbana e rural em relação a população total.
 #'
-#' @param df é um tibble contendo os dados de populações total, urbana e rural.
+#' @param tabela é um tibble contendo os dados de populações total, urbana e rural.
 #'
 #' @return Um tibble() contendo as colunas relativa_urbana e relativa_rural.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' df <- adicionar_proporcao_urbana_rural(df)
+#' tabela <- adicionar_proporcao_urbana_rural(tabela)
 #' }
-adicionar_proporcao_urbana_rural <- function(df) {
-  df <- dplyr::as_tibble(df)
-  df <-
-    dplyr::select(df,
-           codigo_municipio,
-           populacao_urbana,
-           populacao_rural,
-           populacao_total)
-  df <-
+adicionar_proporcao_urbana_rural <- function(tabela) {
+  tabela <- dplyr::as_tibble(tabela)
+  tabela <-
+    dplyr::select(
+      tabela,
+      codigo_municipio,
+      populacao_urbana,
+      populacao_rural,
+      populacao_total
+    )
+  tabela <-
     dplyr::mutate(
-      df,
+      tabela,
       relativa_urbana = populacao_urbana / populacao_total,
       relativa_rural = populacao_rural / populacao_total
     )
@@ -53,6 +53,7 @@ junta_fontes_populacao <- function(fonte1, fonte2) {
 
 
 #' Calcula a taxa de crescimento populacional
+#'
 #' Utiliza método de crescimento geométrico
 #'
 #' @param tabela é um tibble() contentando os dados consolidados de população
@@ -64,7 +65,7 @@ junta_fontes_populacao <- function(fonte1, fonte2) {
 #'
 #' @examples
 #' \dontrun{
-#' df <- calcula_taxa_crescimento(df, 2010, 2021)
+#' tabela <- calcula_taxa_crescimento(tabela, 2010, 2021)
 #' }
 calcula_taxa_crescimento <-
   function(tabela, ano_fonte1, ano_fonte2) {
@@ -72,12 +73,13 @@ calcula_taxa_crescimento <-
     tabela$taxa_de_crescimento <-
       ((
         tabela$populacao_total_fonte2 / tabela$populacao_total_fonte1
-      ) ^ potencia) - 1
+      )^potencia) - 1
     return(tabela)
   }
 
 
 #' Calcula a população urbana e rural da fonte 2
+#'
 #' Assume-se que a porcentagem obtida na fonte 1 não é alterada
 #' Assim necessita que a fonte 1 tenha os campos:
 #' relativa_urbana e relativa_rural calculados pela funcao
@@ -90,7 +92,7 @@ calcula_taxa_crescimento <-
 #'
 #' @examples
 #' \dontrun{
-#' df <- calcular_urbana_rural_fonte2(df)
+#' tabela <- calcular_urbana_rural_fonte2(tabela)
 #' }
 calcular_urbana_rural_fonte2 <- function(data) {
   data <-
@@ -113,14 +115,16 @@ calcular_urbana_rural_fonte2 <- function(data) {
 #'
 #' @examples
 #' \dontrun{
-#' df <- calcula_projecao(df, 2021, 2033)
+#' tabela <- calcula_projecao(tabela, 2021, 2033)
 #' }
-calcula_projecao <- function (tabela, ano_inicial, ano_final) {
-  tipo <- c("total", "urbana",  "rural")
+calcula_projecao <- function(tabela, ano_inicial, ano_final) {
+  tipo <- c("total", "urbana", "rural")
   nome_campo <-
-    c("populacao_total_fonte2",
+    c(
+      "populacao_total_fonte2",
       "populacao_urbana_fonte2",
-      "populacao_rural_fonte2")
+      "populacao_rural_fonte2"
+    )
   dfs <- tibble::tibble()
   for (i in 1:length(tipo)) {
     time <- (ano_inicial:ano_final)
@@ -128,7 +132,7 @@ calcula_projecao <- function (tabela, ano_inicial, ano_final) {
       new_table <- dplyr::select(tabela, codigo_municipio)
       new_table <- dplyr::mutate(new_table, tipo_populacao = tipo[i], ano = t)
       new_table["populacao"] <-
-        tabela[[nome_campo[i]]] * ((1 + tabela$taxa_de_crescimento) ^ (t - ano_inicial))
+        tabela[[nome_campo[i]]] * ((1 + tabela$taxa_de_crescimento)^(t - ano_inicial))
       dfs <- dplyr::bind_rows(dfs, new_table)
     }
   }
@@ -146,7 +150,7 @@ calcula_projecao <- function (tabela, ano_inicial, ano_final) {
 #' @examples
 #' ano <- get_year_from_path("populaca_estimada_2021")
 get_year_from_path <- function(path) {
-  strtoi(gsub('[^0-9]', '', path))
+  strtoi(gsub("[^0-9]", "", path))
 }
 
 
@@ -161,7 +165,7 @@ get_year_from_path <- function(path) {
 #'
 #' @examples
 #' \dontrun{
-#' df <- get_populacao(df, 2033, "urbana")
+#' tabela <- get_populacao(tabela, 2033, "urbana")
 #' }
 get_populacao <- function(tabela, ano, tipo) {
   year <- ano

@@ -2,25 +2,21 @@
 % Please edit documentation in R/projecao.R
 \name{adicionar_proporcao_urbana_rural}
 \alias{adicionar_proporcao_urbana_rural}
-\title{Adiciona colunas de proporção relativa para populações urbana e rural.
-tabela precisa dos seguintes campos:
-codigo_municipio, populacao_total, populacao_urbana e populacao_rural}
+\title{Proporção relativa para populações urbana e rural.}
 \usage{
-adicionar_proporcao_urbana_rural(df)
+adicionar_proporcao_urbana_rural(tabela)
 }
 \arguments{
-\item{df}{é um tibble contendo os dados de populações total, urbana e rural.}
+\item{tabela}{é um tibble contendo os dados de populações total, urbana e rural.}
 }
 \value{
 Um tibble() contendo as colunas relativa_urbana e relativa_rural.
 }
 \description{
-Adiciona colunas de proporção relativa para populações urbana e rural.
-tabela precisa dos seguintes campos:
-codigo_municipio, populacao_total, populacao_urbana e populacao_rural
+Calcula frações da população urbana e rural em relação a população total.
 }
 \examples{
 \dontrun{
-df <- adicionar_proporcao_urbana_rural(df)
+tabela <- adicionar_proporcao_urbana_rural(tabela)
 }
 }
