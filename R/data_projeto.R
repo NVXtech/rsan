@@ -18,8 +18,9 @@ create_projeto <- function() {
   caminho <- c()
   for (projeto in projetos) {
     rlog::log_info(sprintf("Creating %s", projeto))
-    data(list = c(projeto), package = "rsan")
-    save(list = c(projeto), file = get_data_path(projeto))
+    e <- new.env()
+    data(list = c(projeto), package = "rsan", envir = e)
+    save(list = c(projeto), file = get_data_path(projeto), envir = e)
     nome <- c(nome, gsub("_", " ", projeto))
     caminho <- c(caminho, projeto)
   }
