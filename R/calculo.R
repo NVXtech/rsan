@@ -21,8 +21,8 @@ rodar_projecao_populacional <- function(state) {
   fonte2 <- rsan:::load_data(input$fonte2)
   ano1 <- rsan:::nome_para_ano(input$fonte1)
   ano2 <- rsan:::nome_para_ano(input$fonte2)
-  state$geral$ano_popolacao_fonte1 <- ano1
-  state$geral$ano_popolacao_fonte2 <- ano2
+  state$input$geral$ano_popolacao_fonte1 <- ano1
+  state$input$geral$ano_popolacao_fonte2 <- ano2
 
   rlog::log_info("projecao: consolidando fontes")
   consolidado <- junta_fontes_populacao(fonte1, fonte2)
