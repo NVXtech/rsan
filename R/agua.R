@@ -50,8 +50,10 @@ fill_missing_density <- function(density, fields) {
     fit <-
       stats::lm(log(get(i)) ~ 0 + I(POP_TOT / 1000000) + Estado, data = density)
 
-    density <- density %>%
-      dplyr::mutate(pred = exp(stats::predict(fit, .)))
+    density <- dplyr::mutate(
+      density,
+      pred = exp(stats::predict(fit, density))
+    )
     mask <- as.vector(is.na(density[, i]))
     density[mask, i] <- density[mask, "pred"]
     density <- density[, -n]
