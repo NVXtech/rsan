@@ -9,8 +9,3 @@ create_snis()
 \description{
 Cria armazenamento local dos dados do SNIS consolidado
 }
-\examples{
-\dontrun{
-create_snis()
-}
-}

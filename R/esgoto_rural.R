@@ -167,6 +167,16 @@ adiciona_deficit_rural_esgoto <- function(tabela, deficit) {
     tabela <- dplyr::left_join(tabela, deficit, by = "estado")
 }
 
+#' Módulo de cálculo para demanda rural de esgoto
+#'
+#' Esta função organiza a ordem de execução das tarefas necessárias
+#' para o cálculo de necessidades de investimento em sistema de abastecimento de esgoto.
+#'
+#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param taxas_projecao um `data.frame` contendo as taxas de projecao populacional
+#' @export
+#'
+#' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_rural_esgoto <- function(input, taxas_projecao) {
     ano <- input$geral$ano
     ano_censo <- 2010
@@ -211,8 +221,8 @@ rodar_modulo_rural_esgoto <- function(input, taxas_projecao) {
         "investimento_esgoto_rural_reposicao",
         2021,
         ano,
-        2022,
-        30
+        input$geral$ano_corrente,
+        input$esgoto$vida_util
     )
     return(tabela)
 }

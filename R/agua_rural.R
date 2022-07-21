@@ -26,16 +26,16 @@ fracao_coletivo_individual_agua <- function(tabela) {
         tabela,
         fracao_investimento_coletivo_agua = dplyr::case_when(
             situacao_setor == 7 & deficit_agua_relativo_rural < 0.7 ~ 0.1,
-            situacao_setor == 8 & deficit_agua_relativo_rural < 0.8 ~ 0.1,
-            situacao_setor == 5 & deficit_agua_relativo_rural < 0.6 ~ 0.25,
-            situacao_setor == 6 & deficit_agua_relativo_rural < 0.6 ~ 0.25,
             situacao_setor == 7 & deficit_agua_relativo_rural >= 0.7 ~ 0.25,
+            situacao_setor == 8 & deficit_agua_relativo_rural < 0.8 ~ 0.1,
             situacao_setor == 8 & deficit_agua_relativo_rural >= 0.8 ~ 0.25,
-            situacao_setor == 4 & deficit_agua_relativo_rural < 0.1 & regiao == "Sudeste" ~ 0.25,
+            situacao_setor == 5 & deficit_agua_relativo_rural < 0.6 ~ 0.25,
             situacao_setor == 5 & deficit_agua_relativo_rural >= 0.6 ~ 0.4,
+            situacao_setor == 6 & deficit_agua_relativo_rural < 0.6 ~ 0.25,
             situacao_setor == 6 & deficit_agua_relativo_rural >= 0.6 ~ 0.4,
-            situacao_setor == 4 & deficit_agua_relativo_rural >= 0.1 & regiao == "Sudeste" ~ 1,
-            situacao_setor == 4 & regiao != "Sudeste" ~ 1
+            situacao_setor == 4 & regiao != "Sudeste" ~ 1,
+            situacao_setor == 4 & deficit_agua_relativo_rural < 0.1 & regiao == "Sudeste" ~ 0.25,
+            situacao_setor == 4 & deficit_agua_relativo_rural >= 0.1 & regiao == "Sudeste" ~ 1
         ),
         fracao_investimento_individual_agua =
             1 - fracao_investimento_coletivo_agua
@@ -117,13 +117,13 @@ classifica_deficit_setor <- function(tabela) {
 #' @export
 #'
 #' @return um `data.frame` contendo a coluna adicional `custo_agua_individual`.
-custo_individual_agua <- function(tabela) {
+custo_individual_agua <- function(tabela, custo, custo_sem_disponibilidade) {
     classes_seguranca <- c("Baixa", "Mínima")
     tabela <- dplyr::mutate(
         tabela,
         custo_agua_individual = ifelse(
             seguranca_hidrica %in% classes_seguranca & semiarido == "SIM",
-            14682.16 * 1.6169335, 10682.16 * 1.6169335
+            custo_sem_disponibilidade, custo
         )
     )
 }
@@ -260,15 +260,36 @@ adiciona_deficit_rural_agua <- function(tabela, deficit) {
 #' @return um `data.frame` contendo a coluna adicional `taxa_crescimento`.
 adiciona_seguranca_hidrica <- function(tabela, seguranca_hidrica) {
     manter <- c("codigo_municipio", "seguranca_hidrica", "semiarido")
-    deficit <- dplyr::select(seguranca_hidrica, dplyr::all_of(manter))
+    seguranca_hidrica <- dplyr::select(seguranca_hidrica, dplyr::all_of(manter))
     tabela <- dplyr::left_join(tabela, seguranca_hidrica, by = "codigo_municipio")
 }
 
-
+#' Filtra setores censitarios
+#'
+#' Fitra a tabela deixando-a somente com as linhas com o tipo de situação desejada.
+#'
+#' @param tabela um `data.frame` contendo a coluna `codigo_municipio`
+#' @param setores um `list` contendo as situações dos setores que se quer manter.
+#' @export
+#'
+#' @return um `data.frame` contendo a coluna adicional `taxa_crescimento`.
 filtra_setores_rurais <- function(tabela, setores) {
     tabela <- dplyr::filter(tabela, situacao_setor %in% setores)
 }
 
+
+#' Faz projeção de domícilios
+#'
+#' Projeta o número de domícilio pela projeção populacional e considera que a relação domicílio/habitantes se mantém constante.
+#'
+#' @param tabela um `data.frame` contendo a coluna `codigo_municipio`
+#' @param ano_inicial um `number` contendo o ano do conjunto de dados de população (V002)
+#' @param ano_final um `number` contendo o ano da projeção
+#' @param atualizar_moradores_por_domicilio um `boolean` dizendo se existe uma atualização da relação domicílio/habitantes (V003). O padrão é `FALSE`.
+#'
+#' @export
+#'
+#' @return um `data.frame` contendo a coluna adicional `taxa_crescimento`.
 fazer_projecao_domicilio <- function(tabela, ano_inicial, ano_final, atualizar_moradores_por_domicilio = FALSE) {
     if (atualizar_moradores_por_domicilio) {
         tabela <- dplyr::mutate(
@@ -283,8 +304,19 @@ fazer_projecao_domicilio <- function(tabela, ano_inicial, ano_final, atualizar_m
     )
 }
 
+#' Módulo de cálculo para demanda rural de água
+#'
+#' Esta função organiza a ordem de execução das tarefas necessárias
+#' para o cálculo de necessidades de investimento em sistema de abastecimento de água.
+#'
+#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param taxas_projecao um `data.frame` contendo as taxas de projecao populacional
+#' @export
+#'
+#' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_rural_agua <- function(input, taxas_projecao) {
     ano <- input$geral$ano
+    param <- input$agua # parametros
     ano_censo <- 2010
 
     data("agua_esgoto_rural", package = "rsan")
@@ -310,7 +342,11 @@ rodar_modulo_rural_agua <- function(input, taxas_projecao) {
     tabela <- adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
     tabela <- fracao_coletivo_individual_agua(tabela)
 
-    tabela <- custo_individual_agua(tabela)
+    tabela <- custo_individual_agua(
+        tabela,
+        custo = param$custo_rural_individual,
+        custo_sem_disponibilidade = param$custo_rural_individual_sem
+    )
     tabela <- custo_producao_agua(tabela, custo_producao)
     tabela <- custo_distribuicao_agua(tabela, custo_distribuicao)
 
@@ -324,8 +360,9 @@ rodar_modulo_rural_agua <- function(input, taxas_projecao) {
         "investimento_agua_rural_reposicao",
         2021,
         ano,
-        2022,
-        30
+        input$geral$ano_corrente,
+        input$agua$vida_util
     )
+    tabela <- rsan:::adiciona_pais(tabela)
     return(tabela)
 }

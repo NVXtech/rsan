@@ -23,6 +23,9 @@ preenche_geracao_residuos(
 
 \item{campo_faixa}{um \code{character} com o nome da coluna faixa populacional}
 }
+\value{
+o mesmo \code{data.frame} com a coluna preenchida (CO119)
+}
 \description{
 O campo de quantidade gerada de residuos (CO119) é prenchido pela taxa média por regiao e estado.
 }

@@ -20,7 +20,7 @@ integrity_functions <- list(
 #'
 #' @param name é um `character` com o nome do conjunto de dados
 #'
-#' @return boleano sendo TRUE conjunto de dados encontrado e FALSE conjunto inexistente
+#' @return `logical` sendo TRUE conjunto de dados encontrado e FALSE conjunto inexistente
 #' @export
 dataset_exists <- function(name) {
   file.exists(rsan:::get_data_path(name))
@@ -30,7 +30,7 @@ dataset_exists <- function(name) {
 #'
 #' @param name é um `character` com o nome do conjunto de dados
 #'
-#' @return
+#' @return NULL
 #' @export
 create_dataset <- function(name) {
   rlog::log_info(sprintf("Creating %s dataset..", name))
@@ -41,7 +41,7 @@ create_dataset <- function(name) {
 #'
 #' @param name é um `character` com o nome do conjunto de dados
 #'
-#' @return
+#' @return NULL
 #' @export
 clean_dataset <- function(name) {
   rlog::log_info(sprintf("Cleaning %s dataset..", name))
@@ -57,7 +57,7 @@ clean_dataset <- function(name) {
 #'
 #' @param name é um `character` com o nome do conjunto de dados
 #'
-#' @return
+#' @return um `logical` sendo `TRUE` integridade OK.
 #' @export
 check_dataset_integrity <- function(name) {
   rlog::log_info(sprintf("Checking %s dataset..", name))
@@ -66,7 +66,7 @@ check_dataset_integrity <- function(name) {
 
 #' Verifica a integridade e cria amarzenamento de conjunto de dados
 #'
-#' @return
+#' @return NULL
 #' @export
 check_and_create_datasets <- function() {
   for (dataset in datasets) {

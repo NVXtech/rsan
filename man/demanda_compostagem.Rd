@@ -7,13 +7,11 @@
 demanda_compostagem(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{meta_compostagem}, \code{total_residuos_projecao} e \code{quantidade_compostagem}.}
+}
+\value{
+um \code{data.frame} com a coluna \code{demanda_compostagem}
 }
 \description{
 Demanda por compostagem
-}
-\examples{
-\dontrun{
-
-}
 }

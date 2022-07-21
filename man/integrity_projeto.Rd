@@ -2,10 +2,13 @@
 % Please edit documentation in R/data_projeto.R
 \name{integrity_projeto}
 \alias{integrity_projeto}
-\title{Title}
+\title{Verifica integridade dos dados dos projetos tipos}
 \usage{
 integrity_projeto()
 }
+\value{
+um \code{logical} sendo \code{TRUE} integridade OK.
+}
 \description{
-Title
+Verifica integridade dos dados dos projetos tipos
 }

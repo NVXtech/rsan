@@ -2,18 +2,20 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{adiciona_preco_unidade_residuos}
 \alias{adiciona_preco_unidade_residuos}
-\title{Title}
+\title{Preço unidade de resíduos}
 \usage{
 adiciona_preco_unidade_residuos(input, name, precos)
 }
 \arguments{
-\item{name}{}
+\item{input}{estrutura de dados (\code{reactive}) que guarda os parâmetros da interface gráfica}
+
+\item{name}{um \code{character} com o nome do projeto}
+
+\item{precos}{uma \code{list} com os preços por faixa}
+}
+\value{
+os parâmetros da interface gráfica com os preços corrigidos
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Salva preços por faixa populacional no formato da interface gráfica.
 }

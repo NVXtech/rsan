@@ -11,16 +11,18 @@
 #' }
 rodar_projecao_populacional <- function(state) {
   input <- state$input$projecao
-  fonte1 <- dplyr::as_tibble(load_data(input$fonte1))
+  fonte1 <- rsan:::load_data(input$fonte1)
   fonte1 <- adicionar_proporcao_urbana_rural(fonte1)
   if (grepl(".*censo.*", input$fonte2)) {
     # TODO: implementar para caso a fonte seja outro censo
     showNotification("Fonte de dados 2 não pode ser censo!", type = "error")
     return()
   }
-  fonte2 <- dplyr::as_tibble(load_data(input$fonte2))
-  ano1 <- get_year_from_path(input$fonte1)
-  ano2 <- get_year_from_path(input$fonte2)
+  fonte2 <- rsan:::load_data(input$fonte2)
+  ano1 <- rsan:::nome_para_ano(input$fonte1)
+  ano2 <- rsan:::nome_para_ano(input$fonte2)
+  state$geral$ano_popolacao_fonte1 <- ano1
+  state$geral$ano_popolacao_fonte2 <- ano2
 
   rlog::log_info("projecao: consolidando fontes")
   consolidado <- junta_fontes_populacao(fonte1, fonte2)
@@ -56,10 +58,10 @@ rodar_projecao_populacional <- function(state) {
 investimento_drenagem <- function(state) {
   input <- state$input$drenagem
   data("snis_ap", package = "rsan")
-  ano <- get_year_from_path(input$snis_ap)
+  ano <- nome_para_ano(input$snis_ap)
   ano_inicial <- 2021
-  ano_final <- 2033
-  ano_corrente <- 2022
+  ano_final <- state$input$geral$ano
+  ano_corrente <- state$input$geral$ano_corrente
   depreciacao <- rsan::depreciacao_para_vida_util(input$deprec_drenagem)
 
   tabela <- snis_ap[[paste0("ano", ano)]]
@@ -114,7 +116,7 @@ residuos_snis_fields <- c(
 investimento_residuos <- function(state) {
   ano <- state$input$geral$ano
   input <- state$input$residuos
-  # parâmetros de entradar (TODO: colocar como parametros da funcao)
+
   valor_caminhao <- input$valor_caminhao
   valor_caminhao_bau <- input$valor_caminhao_bau
   custo_transbordo <- input$custo_transbordo
@@ -128,7 +130,7 @@ investimento_residuos <- function(state) {
 
   ano_inicial <- 2021
   ano_final <- ano
-  ano_corrente <- 2022
+  ano_corrente <- state$input$geral$ano_corrente
   cenario_regionalizacao <- "C"
 
   # Consolida os dados de Unidades de Processamento (SNIS-prestadores)

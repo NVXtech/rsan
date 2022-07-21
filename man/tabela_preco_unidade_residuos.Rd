@@ -2,18 +2,18 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{tabela_preco_unidade_residuos}
 \alias{tabela_preco_unidade_residuos}
-\title{Title}
+\title{Tabela de preco de projetos de residuos}
 \usage{
 tabela_preco_unidade_residuos(input, name)
 }
 \arguments{
-\item{name}{}
+\item{input}{estrutura de dados (\code{reactive}) que guarda os parâmetros da interface gráfica}
+
+\item{name}{um \code{character} com o nome do projeto}
+}
+\value{
+um \code{data.frame} com a tabela de preços
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Converte os dados da interface gráfica para formato de tabela.
 }

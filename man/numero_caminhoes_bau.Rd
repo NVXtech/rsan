@@ -2,18 +2,16 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{numero_caminhoes_bau}
 \alias{numero_caminhoes_bau}
-\title{Title}
+\title{Número de caminhões baú}
 \usage{
 numero_caminhoes_bau(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} contendo as colunas CO063, CO064, CO065, CO066, CO067 e CO068}
+}
+\value{
+um \code{data.frame} contendo a coluna \code{numero_caminhoes_bau}
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Cálcula o número de caminhões baú
 }

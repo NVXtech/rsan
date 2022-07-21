@@ -15,8 +15,3 @@ um \code{data.frame} contendo a coluna \code{investimento_aterro}
 \description{
 Estima o investimento necessários em aterro como a multiplicação de: total de residuos, preço unitario por massa e vida útil do aterro.
 }
-\examples{
-\dontrun{
-
-}
-}

@@ -60,7 +60,6 @@
 #'   \item{09a}{quantidade de material para cenário população grande e de alto custo}
 #'   \item{09b}{quantidade de material para cenário população grande e de baixo custo}
 #' }
-#' @source \url{}
 "projeto_coleta_esgoto"
 
 #' Projeto tipo para distribuicao de água
@@ -80,7 +79,6 @@
 #'   \item{09a}{quantidade de material para cenário população grande e de alto custo}
 #'   \item{09b}{quantidade de material para cenário população grande e de baixo custo}
 #' }
-#' @source \url{}
 "projeto_distribuicao_agua"
 
 #' Projeto tipo para distribuicao de água
@@ -94,7 +92,6 @@
 #'   \item{subterranea}{Predominância em % de extração de água superficial}
 #'   \item{superficial}{Predominância em % de extração de água subterrânea}
 #' }
-#' @source \url{}
 "projeto_predominancia_tipo_producao"
 
 #' Áreas territoriais dos municípios brasileiros

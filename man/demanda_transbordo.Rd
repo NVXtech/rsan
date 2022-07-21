@@ -15,8 +15,3 @@ um \code{data.frame} contendo a coluna \code{demanda_tranbordo}
 \description{
 A demanda por transbordo é considerada 1 estacao de transbordo e 1 caminhao por municipio
 }
-\examples{
-\dontrun{
-
-}
-}

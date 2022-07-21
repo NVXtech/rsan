@@ -1,12 +1,7 @@
 #' Cria armazenamento local dos dados do SNIS consolidado
 #'
-#' @return
+#' @return NULL
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' create_snis()
-#' }
 create_snis <- function() {
   data("snis2020", package = "rsan")
   df_snis <- snis2020
@@ -23,10 +18,8 @@ create_snis <- function() {
 
 #' Verifica a integridade dos dados do SNIS
 #'
-#' @return
+#' @return um `logical` sendo `TRUE` integridade OK.
 #' @export
-#'
-#' @examples
 integrity_snis <- function() {
   pop <- rsan:::load_data("snis")
   for (caminho in pop$caminho) {
@@ -45,13 +38,8 @@ integrity_snis <- function() {
 #' @param snis caminho do SNIS
 #' @param fields lista com campos a serem retornados
 #'
-#' @return um tibble() contendo os dados do SNIS
+#' @return um `data.frame` contendo os dados do SNIS
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' df <- get_snis_data("snis_2020", c("AG001", "AG010"))
-#' }
 get_snis_data <- function(snis, fields) {
   df <- rsan:::load_data(snis)
   df <- dplyr::select(df, dplyr::all_of(fields))

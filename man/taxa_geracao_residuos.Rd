@@ -2,18 +2,16 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{taxa_geracao_residuos}
 \alias{taxa_geracao_residuos}
-\title{Title}
+\title{Taxa de geração de resíduos (t/hab)}
 \usage{
 taxa_geracao_residuos(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} contendo as colunas CO119, CO164, CO119_litoral e CO164_litoral}
+}
+\value{
+um \code{data.frame} contendo as colunas taxa_geracao_residuos, taxa_geracao_residuos_litoral
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Taxa de geração de resíduos (t/hab)
 }

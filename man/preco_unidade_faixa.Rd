@@ -19,8 +19,3 @@ Faz a união entre duas tabelas, a tabela 1 manterá todas suas linhas.
 Os valores serão \code{NA} caso não haja uma faixa populacional na tabela2 mas haja na tabela 1.
 Ambas tabelas deve ter o campo \code{faixa}.
 }
-\examples{
-\dontrun{
-
-}
-}

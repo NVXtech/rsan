@@ -2,10 +2,13 @@
 % Please edit documentation in R/data_sinapi.R
 \name{get_last_month_and_year}
 \alias{get_last_month_and_year}
-\title{Title}
+\title{Último ano e mês}
 \usage{
 get_last_month_and_year()
 }
+\value{
+uma \code{list} com o último ano e mes
+}
 \description{
-Title
+Último ano e mês
 }

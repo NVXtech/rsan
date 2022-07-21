@@ -2,18 +2,18 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{capacidade_instalada_coleta_indiferenciada}
 \alias{capacidade_instalada_coleta_indiferenciada}
-\title{Title}
+\title{Capacidade instalada coleta indiferenciada}
 \usage{
 capacidade_instalada_coleta_indiferenciada(tabela, valor)
 }
 \arguments{
-\item{valor}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{POP_URB}, \code{atendimento_relativo_seletiva_urbano} e \code{densidade_caminhoes }}
+
+\item{valor}{valor um \code{double} contendo o preço de um caminhão}
+}
+\value{
+um \code{data.frame} contendo a coluna capacidade_instalada_coleta_indiferenciada
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Capacidade instalada coleta indiferenciada
 }

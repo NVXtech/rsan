@@ -6,7 +6,9 @@ test_that("classificacão de municipio esta correta", {
   populacao_rural <- c(1, 2999, 1, 299999, 1, 599999)
 
   df_in <- dplyr::tibble(populacao_total, populacao_urbana, populacao_rural)
-  df_out <- dplyr::tibble(populacao_total, populacao_urbana, populacao_rural, classificacao, cenario)
+  df_out <- dplyr::tibble(
+    populacao_total, populacao_urbana, populacao_rural, classificacao, cenario
+  )
 
   output <- classifica_municipio(df_in)
   expect_true(dplyr::all_equal(output, df_out))
@@ -102,7 +104,10 @@ test_that("se o custo relativo dos projeto tipo producao de água está correto"
 
   cenario <- c("08", "08", "08", "08", "09", "09", "09", "09")
   unidade <- c("ETA200", "EEA200", "POÇO40", "EEA200", "ETA200", "EEA200", "POÇO40", "EEA200")
-  tipo <- c("superficial", "superficial", "subterranea", "subterranea", "superficial", "superficial", "subterranea", "subterranea")
+  tipo <- c(
+    "superficial", "superficial", "subterranea", "subterranea",
+    "superficial", "superficial", "subterranea", "subterranea"
+  )
   quantidade <- c(0.854106686284393, 1.3, 1, 1, 0.549559117416313, 1.3, 1, 1)
   projeto_producao <- dplyr::tibble(cenario, unidade, tipo, quantidade)
 
@@ -118,7 +123,10 @@ test_that("se o custo relativo dos projeto tipo producao de água está correto"
 
 test_that("Se o custo relativo dos projeto tipo de tratamento de esgoto está correto", {
   estado <- c("AC", "AC", "AC", "AC", "AL", "AL", "AL", "AL")
-  unidade <- c("LAGOA125", "REATORANA180", "EE85", "LODOBAT400", "LAGOA125", "REATORANA180", "EE85", "LODOBAT400")
+  unidade <- c(
+    "LAGOA125", "REATORANA180", "EE85", "LODOBAT400",
+    "LAGOA125", "REATORANA180", "EE85", "LODOBAT400"
+  )
   preco <- c(2.476, 0.762, 0.209, 2.31, 2.051, 0.4282, 0.2008, 2.2114)
   preco_unidade <- dplyr::tibble(estado, unidade, preco)
 
@@ -132,7 +140,9 @@ test_that("Se o custo relativo dos projeto tipo de tratamento de esgoto está co
   custo_relativo <- c(3.94, 8.32, 3.09, 7.97)
   expected_output <- dplyr::tibble(estado, cenario, custo_relativo)
 
-  df_out <- rsan::calcula_custo_relativo_tratamento(preco_unidade, projeto_tratamento)
+  df_out <- rsan::calcula_custo_relativo_tratamento(
+    preco_unidade, projeto_tratamento
+  )
   df_out <- dplyr::mutate(df_out, custo_relativo = round(custo_relativo, 2))
   expect_true(dplyr::all_equal(expected_output, df_out))
 })

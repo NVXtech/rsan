@@ -2,10 +2,10 @@
 % Please edit documentation in R/data_sinapi.R
 \name{create_sinapi}
 \alias{create_sinapi}
-\title{Title}
+\title{Armazena dados do SINAPI}
 \usage{
 create_sinapi()
 }
 \description{
-Title
+Armazena dados do SINAPI
 }

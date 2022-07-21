@@ -1,10 +1,9 @@
 library(lubridate)
-#' Title
+
+#' Último ano e mês
 #'
-#' @return
+#' @return uma `list` com o último ano e mes
 #' @export
-#'
-#' @examples
 get_last_month_and_year <- function() {
   last_date <- floor_date(as.Date(Sys.Date()), "month") - months(1)
   return(list(
@@ -13,15 +12,15 @@ get_last_month_and_year <- function() {
   ))
 }
 
-#' Title
+#' Baixa dados do SINAPI
 #'
-#' @param year
-#' @param month
+#' Baixa dados do SINAPI para um determinado ano e mês
+
+#' @param year é um `number` com o ano desejado
+#' @param month é um `number` com o mês desejado
 #'
-#' @return
+#' @return um `data.frame` com os dados do SINAPI
 #' @export
-#'
-#' @examples
 download_sinapi <- function(year, month) {
   type <- "NaoDesonerado"
   inputs <- dplyr::tibble()
@@ -42,12 +41,10 @@ download_sinapi <- function(year, month) {
 }
 
 
-#' Title
+#' Armazena dados do SINAPI
 #'
-#' @return
+#' @return NULL
 #' @export
-#'
-#' @examples
 create_sinapi <- function() {
   data("sinapi202112")
   sinapi_202112 <- sinapi202112
@@ -61,12 +58,10 @@ create_sinapi <- function() {
   save(sinapi, file = rsan:::get_data_path("sinapi"))
 }
 
-#' Title
+#' Armazena dados sinapi
 #'
-#' @return
+#' @return um `logical` sendo `TRUE` integridade OK.
 #' @export
-#'
-#' @examples
 integrity_sinapi <- function() {
   pop <- rsan:::load_data("sinapi")
   for (caminho in pop$caminho) {

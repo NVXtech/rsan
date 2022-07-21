@@ -7,13 +7,11 @@
 demanda_triagem(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{meta_reaproveitamento}, \code{total_residuos_projecao} e \code{CS026}}
+}
+\value{
+um \code{data.frame} com a coluna \code{demanda_triagem}
 }
 \description{
 Demanda por triagem
-}
-\examples{
-\dontrun{
-
-}
 }

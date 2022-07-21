@@ -17,8 +17,3 @@ um \code{data.frame} contendo a coluna \code{demanda_tranbordo}
 \description{
 Regionaliza a demanda dependendo do cenario de regionalização
 }
-\examples{
-\dontrun{
-
-}
-}

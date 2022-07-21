@@ -148,8 +148,8 @@ calcula_projecao <- function(tabela, ano_inicial, ano_final) {
 #' @export
 #'
 #' @examples
-#' ano <- get_year_from_path("populaca_estimada_2021")
-get_year_from_path <- function(path) {
+#' ano <- nome_para_ano("populaca_estimada_2021")
+nome_para_ano <- function(path) {
   strtoi(gsub("[^0-9]", "", path))
 }
 

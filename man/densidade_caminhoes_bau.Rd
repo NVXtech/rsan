@@ -15,8 +15,3 @@ tabela com o campo adicional densidade de caminhoes baú (\code{densidade_caminh
 \description{
 Densidade de caminhões bau
 }
-\examples{
-\dontrun{
-
-}
-}

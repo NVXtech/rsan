@@ -7,13 +7,11 @@
 atendimento_relativo_coleta_seletiva(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} com as colunas \code{CS050} e \code{POP_URB}}
+}
+\value{
+um \code{data.frame} contendo a coluna atendimento_relativo_coleta_seletiva
 }
 \description{
 Atendimento relativo para coleta seletiva
-}
-\examples{
-\dontrun{
-
-}
 }

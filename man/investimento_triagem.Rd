@@ -7,13 +7,13 @@
 investimento_triagem(tabela, vida_util)
 }
 \arguments{
-\item{vida_util}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{demanda_triagem} e \code{preco_unidade_triagem}}
+
+\item{vida_util}{um \code{number} com o numero de anos da vida útil do sistema de triagem}
+}
+\value{
+um \code{data.frame} com a coluna \code{investimento_triagem}
 }
 \description{
 Investimento em triagem
-}
-\examples{
-\dontrun{
-
-}
 }

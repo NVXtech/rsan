@@ -17,8 +17,3 @@ um \code{data.frame} contendo a coluna \code{investimento_transbordo}
 \description{
 Estima o investimento necessários em transbordo como a multiplicação da demanda pelo custo.
 }
-\examples{
-\dontrun{
-tabela <- investimento_transbordo(tabela, 1000)
-}
-}

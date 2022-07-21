@@ -2,18 +2,16 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{geracao_residuos}
 \alias{geracao_residuos}
-\title{Title}
+\title{Geração de resíduos}
 \usage{
 geracao_residuos(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} contendo as colunas POP_TOT, CO119, CO164, CS009 e populacao_total}
+}
+\value{
+um \code{data.frame} contendo as colunas taxa_geracao_residuos, total_residuos, total_residuos_projecaoe e percentual_recuperado
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Geração de resíduos
 }

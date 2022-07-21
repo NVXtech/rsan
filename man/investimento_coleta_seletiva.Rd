@@ -2,18 +2,18 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{investimento_coleta_seletiva}
 \alias{investimento_coleta_seletiva}
-\title{Title}
+\title{Necessidade de investimento em coleta seletiva}
 \usage{
 investimento_coleta_seletiva(tabela, valor)
 }
 \arguments{
-\item{valor}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{deficit_coleta_seletiva} e \code{densidade_caminhoes_bau}}
+
+\item{valor}{um \code{double} contendo o preço de um caminhão bau}
+}
+\value{
+um \code{data.frame} contendo a coluna \code{investimento_coleta_seletiva}
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Necessidade de investimento em coleta seletiva
 }

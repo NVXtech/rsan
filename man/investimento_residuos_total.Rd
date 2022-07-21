@@ -28,8 +28,3 @@ um \code{data.frame} contendo as colunas adicionais \code{investimento_reposicao
 \description{
 Consolida os valores de investimentos para reposicao, expansão e total
 }
-\examples{
-\dontrun{
-
-}
-}

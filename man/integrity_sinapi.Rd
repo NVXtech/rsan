@@ -2,10 +2,13 @@
 % Please edit documentation in R/data_sinapi.R
 \name{integrity_sinapi}
 \alias{integrity_sinapi}
-\title{Title}
+\title{Armazena dados sinapi}
 \usage{
 integrity_sinapi()
 }
+\value{
+um \code{logical} sendo \code{TRUE} integridade OK.
+}
 \description{
-Title
+Armazena dados sinapi
 }

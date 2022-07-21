@@ -7,7 +7,6 @@
 #' @return tabela com a soma dos investimento no campo `investimento_total`
 #' @export
 investimento_total_drenagem <- function(tabela) {
-  # TODO: retirar capacidade intalada
   tabela <- dplyr::mutate(
     tabela,
     investimento_total = investimento_expansao + investimento_reposicao + investimento_cadastro
@@ -146,7 +145,7 @@ regressao_multipla_drenagem <- function(plano) {
 #' @param plano um `data.frame` contendo as colunas `codigo_muncipio` e 'investimento_corrigido'
 #' @param tabela um `data.frame` contendo as colunas `codigo_muncipio`, `pd` e `GE006`
 #'
-#' @return
+#' @return um `data.frame` contendo os campos necessários para regressão linear
 #' @export
 #'
 #' @examples
@@ -260,7 +259,6 @@ densidade_urbana <- function(tabela) {
 #' tabela <- area_urbana(tabela)
 #' }
 area_urbana <- function(tabela) {
-  # TODO: preencher com dados de área municipal
   tabela <- dplyr::mutate(
     tabela,
     area_urbana = GE002

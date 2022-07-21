@@ -1,9 +1,7 @@
-#' Title
+#' Armazena dados dos projetos tipos
 #'
-#' @return
+#' @return NULL
 #' @export
-#'
-#' @examples
 create_projeto <- function() {
   projetos <-
     c(
@@ -31,12 +29,10 @@ create_projeto <- function() {
 }
 
 
-#' Title
+#' Verifica integridade dos dados dos projetos tipos
 #'
-#' @return
+#' @return um `logical` sendo `TRUE` integridade OK.
 #' @export
-#'
-#' @examples
 integrity_projeto <- function() {
   pop <- load_data("projeto")
   for (caminho in pop$caminho) {

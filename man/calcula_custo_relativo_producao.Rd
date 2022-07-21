@@ -25,7 +25,10 @@ preco_unidade <- dplyr::tibble(estado, unidade, preco)
 
 cenario <- c("08", "08", "08", "08", "09", "09", "09", "09")
 unidade <- c("ETA200", "EEA200", "POÇO40", "EEA200", "ETA200", "EEA200", "POÇO40", "EEA200")
-tipo <- c("superficial", "superficial", "subterranea", "subterranea", "superficial", "superficial", "subterranea", "subterranea")
+tipo <- c(
+  "superficial", "superficial", "subterranea", "subterranea",
+  "superficial", "superficial", "subterranea", "subterranea"
+)
 quantidade <- c(0.854106686284393, 1.3, 1, 1, 0.549559117416313, 1.3, 1, 1)
 projeto_producao <- dplyr::tibble(cenario, unidade, tipo, quantidade)
 df_out <- calcula_custo_relativo_producao(preco_unidade, projeto_producao)

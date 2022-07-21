@@ -23,6 +23,9 @@ preenche_por_regiao_faixa_populacional(
 
 \item{campo_faixa}{um \code{character} com o nome da coluna faixa populacional}
 }
+\value{
+o mesmo \code{data.frame} com o campo preenchido
+}
 \description{
 O dado faltante de um estado e uma faixa populacional é preenchido com valores que variam somente com a faixa populacional (\code{tabela_faixa})
 }

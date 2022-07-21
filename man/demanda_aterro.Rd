@@ -11,11 +11,9 @@ demanda_aterro(tabela, vida_util)
 
 \item{vida_util}{valor em anos da vida util do aterro}
 }
+\value{
+um \code{data.frame} contendo a coluna \code{demanda_aterro}
+}
 \description{
 Demanda por aterro
-}
-\examples{
-\dontrun{
-
-}
 }

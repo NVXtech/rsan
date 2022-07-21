@@ -12,9 +12,6 @@ Um data frame com 27 estados e 3 colunas, sendo estas:
 \item{superficial}{Predominância em \% de extração de água subterrânea}
 }
 }
-\source{
-\url{}
-}
 \usage{
 projeto_predominancia_tipo_producao
 }

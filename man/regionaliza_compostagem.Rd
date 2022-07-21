@@ -23,11 +23,3 @@ Faz a regionalização da demanda em acordo com o cenário de regionalização.
 
 Faz a regionalização da demanda em acordo com o cenário de regionalização.
 }
-\examples{
-\dontrun{
-
-}
-\dontrun{
-
-}
-}

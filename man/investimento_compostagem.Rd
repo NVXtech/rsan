@@ -7,13 +7,13 @@
 investimento_compostagem(tabela, vida_util)
 }
 \arguments{
-\item{vida_util}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{demanda_compostagem} e \code{preco_unidade_compostagem}}
+
+\item{vida_util}{um \code{number} com o numero de anos da vida útil do sistema}
+}
+\value{
+um \code{data.frame} com a coluna \code{investimento_compostagem}
 }
 \description{
 Investimento em compostagem
-}
-\examples{
-\dontrun{
-
-}
 }

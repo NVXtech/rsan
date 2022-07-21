@@ -2,18 +2,18 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{investimento_coleta_indiferenciada}
 \alias{investimento_coleta_indiferenciada}
-\title{Title}
+\title{Necessidade de investimento em coleta indiferenciada}
 \usage{
 investimento_coleta_indiferenciada(tabela, valor)
 }
 \arguments{
-\item{valor}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{deficit_coleta_indiferenciada} e \code{densidade_caminhoes}}
+
+\item{valor}{um \code{double} contendo o preço de um caminhão}
+}
+\value{
+um \code{data.frame} contendo a coluna \code{investimento_coleta_indiferenciada}
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Necessidade de investimento em coleta indiferenciada
 }

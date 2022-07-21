@@ -7,13 +7,13 @@
 capacidade_instalada_triagem(tabela, vida_util)
 }
 \arguments{
-\item{vida_util}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{meta_reaproveitamento}, \code{total_residuos} e \code{preco_unidade_triagem}}
+
+\item{vida_util}{um \code{number} com o numero de anos da vida útil do sistema de triagem}
+}
+\value{
+um \code{data.frame} com a coluna \code{capacidade_instalada_triagem}
 }
 \description{
 Capacidade instalada de triagem
-}
-\examples{
-\dontrun{
-
-}
 }

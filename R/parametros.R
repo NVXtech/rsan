@@ -24,7 +24,10 @@ salva_parametros <- function(state, input, name) {
   return(state)
 }
 
-geral <- list(ano = 2033)
+geral <- list(
+  ano = 2033,
+  ano_corrente = 2022
+)
 
 projecao <- list(
   fonte1 = "populacao_censo_2010",
@@ -38,7 +41,9 @@ agua <- list(
   perda_agua = 25,
   fator_servicos = 26,
   fator_materiais = 18,
-  vida_util = 30
+  vida_util = 30,
+  custo_rural_individual = 10682.16 * 1.6169335,
+  custo_rural_individual_sem = 14682.16 * 1.6169335
 )
 
 esgoto <- list(

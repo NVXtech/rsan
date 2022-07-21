@@ -10,7 +10,7 @@ dataset_exists(name)
 \item{name}{é um \code{character} com o nome do conjunto de dados}
 }
 \value{
-boleano sendo TRUE conjunto de dados encontrado e FALSE conjunto inexistente
+\code{logical} sendo TRUE conjunto de dados encontrado e FALSE conjunto inexistente
 }
 \description{
 Verifica se o conjunto de dados existe

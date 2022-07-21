@@ -7,13 +7,13 @@
 capacidade_instalada_compostagem(tabela, vida_util)
 }
 \arguments{
-\item{vida_util}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{meta_compostagem}, \code{total_residuos} e \code{preco_unidade_compostagem}}
+
+\item{vida_util}{um \code{number} com o numero de anos da vida útil do sistema}
+}
+\value{
+um \code{data.frame} com a coluna \code{capacidade_instalada_compostagem}
 }
 \description{
 Capacidade instalada de compostagem
-}
-\examples{
-\dontrun{
-
-}
 }

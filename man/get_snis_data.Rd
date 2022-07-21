@@ -12,13 +12,8 @@ get_snis_data(snis, fields)
 \item{fields}{lista com campos a serem retornados}
 }
 \value{
-um tibble() contendo os dados do SNIS
+um \code{data.frame} contendo os dados do SNIS
 }
 \description{
 Retorna dados do SNIS
-}
-\examples{
-\dontrun{
-df <- get_snis_data("snis_2020", c("AG001", "AG010"))
-}
 }

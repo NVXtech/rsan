@@ -6,6 +6,9 @@
 \usage{
 integrity_municipio()
 }
+\value{
+um \code{logical} sendo \code{TRUE} integridade OK.
+}
 \description{
 Verifica a integridade dos dados locais de munícipio
 }

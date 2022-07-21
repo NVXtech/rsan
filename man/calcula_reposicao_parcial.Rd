@@ -43,5 +43,7 @@ Dessa maneira é desconsiderado investimento em reposições que teoricamente j�
 investimento <- c(1, 3)
 capacidade <- c(0, 1)
 df_in <- dplyr::tibble(capacidade, investimento)
-df_out <- calcula_reposicao_parcial(df_in, "capacidade", "investimento", "reposicao", 2021, 2033, 2022, 30)
+df_out <- calcula_reposicao_parcial(
+  df_in, "capacidade", "investimento", "reposicao", 2021, 2033, 2022, 30
+)
 }

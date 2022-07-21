@@ -11,6 +11,9 @@ prepara_regressao(plano, tabela)
 
 \item{tabela}{um \code{data.frame} contendo as colunas \code{codigo_muncipio}, \code{pd} e \code{GE006}}
 }
+\value{
+um \code{data.frame} contendo os campos necessários para regressão linear
+}
 \description{
 Concatena dados para regressão
 }

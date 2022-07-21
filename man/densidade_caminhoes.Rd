@@ -2,18 +2,16 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{densidade_caminhoes}
 \alias{densidade_caminhoes}
-\title{Title}
+\title{Densidade de caminhões}
 \usage{
 densidade_caminhoes(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} contendo as colunas CO164 e numero_caminhoes}
+}
+\value{
+um \code{data.frame} contendo a coluna \code{densidade_caminhoes}
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Cálcula a densidade de caminhões
 }

@@ -2,13 +2,18 @@
 % Please edit documentation in R/data_sinapi.R
 \name{download_sinapi}
 \alias{download_sinapi}
-\title{Title}
+\title{Baixa dados do SINAPI}
 \usage{
 download_sinapi(year, month)
 }
 \arguments{
-\item{month}{}
+\item{year}{é um \code{number} com o ano desejado}
+
+\item{month}{é um \code{number} com o mês desejado}
+}
+\value{
+um \code{data.frame} com os dados do SINAPI
 }
 \description{
-Title
+Baixa dados do SINAPI para um determinado ano e mês
 }

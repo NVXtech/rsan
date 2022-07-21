@@ -2,18 +2,18 @@
 % Please edit documentation in R/agua.R
 \name{capacidade_instalada_esgoto}
 \alias{capacidade_instalada_esgoto}
-\title{Title}
+\title{Capacidade instalada sistema de abastecimento de água}
 \usage{
 capacidade_instalada_esgoto(snis, custo)
 }
 \arguments{
-\item{custo}{}
+\item{snis}{um \code{data.frame} contendo as colunas \code{codigo_municipio}, \code{ES004} e \code{ES006}}
+
+\item{custo}{um \code{data.frame} contendo as colunas \code{codigo_municipio}, \code{custo_relativo_tratamento}, \code{preco_coleta_esgoto}}
+}
+\value{
+um \code{data.frame} contendo as colunas \code{capacidade_instalada_coleta} e \code{capacidade_instalada_tratamento}
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Capacidade instalada sistema de abastecimento de água
 }

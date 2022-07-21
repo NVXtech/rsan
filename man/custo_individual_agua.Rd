@@ -4,7 +4,7 @@
 \alias{custo_individual_agua}
 \title{Custo individual para sistemas de abastecimento de água}
 \usage{
-custo_individual_agua(tabela)
+custo_individual_agua(tabela, custo, custo_sem_disponibilidade)
 }
 \arguments{
 \item{tabela}{um \code{data.frame} contendo as colunas \code{seguranca_hidrica} e \code{semiarido}.}

@@ -21,6 +21,8 @@ Calcula o custo de expansão do sistema de esgoto
 }
 \examples{
 \dontrun{
-invest <- calcula_custo_expansao_esgoto(demanda, distribuicao, coleta, producao, tratamento, perda_agua)
+invest <- calcula_custo_expansao_esgoto(
+  demanda, distribuicao, coleta, producao, tratamento, perda_agua
+)
 }
 }

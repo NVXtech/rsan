@@ -2,10 +2,10 @@
 % Please edit documentation in R/data_projeto.R
 \name{create_projeto}
 \alias{create_projeto}
-\title{Title}
+\title{Armazena dados dos projetos tipos}
 \usage{
 create_projeto()
 }
 \description{
-Title
+Armazena dados dos projetos tipos
 }

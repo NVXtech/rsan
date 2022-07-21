@@ -9,11 +9,6 @@
 #'
 #' @return um `data.frame` com as tabelas unidas
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 preco_unidade_faixa <- function(tabela1, tabela2) {
   tabela <- dplyr::left_join(
     tabela1,
@@ -43,11 +38,6 @@ preco_unidade_faixa <- function(tabela1, tabela2) {
 #'
 #' @return um `data.frame` contendo as colunas adicionais `investimento_reposicao`, `investimento_expansao` e `investimento_total`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 investimento_residuos_total <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -72,13 +62,8 @@ investimento_residuos_total <- function(tabela) {
 #'
 #' @param tabela um `data.frame` contendo a coluna `total_residuos_projecao`
 #' @param vida_util valor em anos da vida util do aterro
-#' @return
+#' @return um `data.frame` contendo a coluna `demanda_aterro`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 demanda_aterro <- function(tabela, vida_util) {
   tabela <- dplyr::mutate(
     tabela,
@@ -94,11 +79,6 @@ demanda_aterro <- function(tabela, vida_util) {
 #'
 #' @return um `data.frame` contendo a coluna `investimento_aterro`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 investimento_aterro <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -129,15 +109,10 @@ capacidade_instalada_aterro <- function(tabela, vida_util) {
 
 #' Demanda por triagem
 #'
-#' @param tabela
+#' @param tabela um `data.frame` contendo as colunas `meta_reaproveitamento`, `total_residuos_projecao` e `CS026`
 #'
-#' @return
+#' @return um `data.frame` com a coluna `demanda_triagem`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 demanda_triagem <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -147,16 +122,11 @@ demanda_triagem <- function(tabela) {
 
 #' Investimento em triagem
 #'
-#' @param tabela
-#' @param vida_util
+#' @param tabela  um `data.frame` contendo as colunas `demanda_triagem` e `preco_unidade_triagem`
+#' @param vida_util um `number` com o numero de anos da vida útil do sistema de triagem
 #'
-#' @return
+#' @return um `data.frame` com a coluna `investimento_triagem`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 investimento_triagem <- function(tabela, vida_util) {
   tabela <- dplyr::mutate(
     tabela,
@@ -166,16 +136,11 @@ investimento_triagem <- function(tabela, vida_util) {
 
 #' Capacidade instalada de triagem
 #'
-#' @param tabela
-#' @param vida_util
+#' @param tabela um `data.frame` contendo as colunas `meta_reaproveitamento`, `total_residuos` e `preco_unidade_triagem`
+#' @param vida_util um `number` com o numero de anos da vida útil do sistema de triagem
 #'
-#' @return
+#' @return um `data.frame` com a coluna `capacidade_instalada_triagem`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 capacidade_instalada_triagem <- function(tabela, vida_util) {
   tabela <- dplyr::mutate(
     tabela,
@@ -187,15 +152,10 @@ capacidade_instalada_triagem <- function(tabela, vida_util) {
 
 #' Demanda por compostagem
 #'
-#' @param tabela
+#' @param tabela um `data.frame` contendo as colunas `meta_compostagem`, `total_residuos_projecao` e `quantidade_compostagem`.
 #'
-#' @return
+#' @return um `data.frame` com a coluna `demanda_compostagem`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 demanda_compostagem <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -205,16 +165,11 @@ demanda_compostagem <- function(tabela) {
 
 #' Investimento em compostagem
 #'
-#' @param tabela
-#' @param vida_util
+#' @param tabela um `data.frame` contendo as colunas `demanda_compostagem` e `preco_unidade_compostagem`
+#' @param vida_util um `number` com o numero de anos da vida útil do sistema
 #'
-#' @return
+#' @return um `data.frame` com a coluna `investimento_compostagem`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 investimento_compostagem <- function(tabela, vida_util) {
   tabela <- dplyr::mutate(
     tabela,
@@ -224,16 +179,11 @@ investimento_compostagem <- function(tabela, vida_util) {
 
 #' Capacidade instalada de compostagem
 #'
-#' @param tabela
-#' @param vida_util
+#' @param tabela um `data.frame` contendo as colunas `meta_compostagem`, `total_residuos` e `preco_unidade_compostagem`
+#' @param vida_util um `number` com o numero de anos da vida útil do sistema
 #'
-#' @return
+#' @return um `data.frame` com a coluna `capacidade_instalada_compostagem`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 capacidade_instalada_compostagem <- function(tabela, vida_util) {
   tabela <- dplyr::mutate(
     tabela,
@@ -249,14 +199,7 @@ capacidade_instalada_compostagem <- function(tabela, vida_util) {
 #'
 #' @return tabela com o campo adicional densidade de caminhoes baú (`densidade_caminhoes_bau`)
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 densidade_caminhoes_bau <- function(tabela) {
-  # TODO: avaliar como foi preenchido na planilha de investimento
-  # solucao usar tabela fixa?
   tabela <- dplyr::mutate(
     tabela,
     densidade_caminhoes_bau = ifelse(
@@ -276,7 +219,7 @@ densidade_caminhoes_bau <- function(tabela) {
 #' @param preencher_campo um `character` com o nome da coluna a ser preenchida
 #' @param campo_faixa um `character` com o nome da coluna da faixa populacional
 #'
-#' @return
+#' @return o mesmo `data.frame` com o campo preenchido
 #' @export
 #'
 #' @examples
@@ -322,43 +265,50 @@ preenche_por_faixa_populacional <- function(tabela,
 #' @param campo_regiao um `character` com o nome da coluna região
 #' @param campo_faixa um `character` com o nome da coluna faixa populacional
 #'
-#' @return
+#' @return o mesmo `data.frame` com o campo preenchido
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' tabela <- preenche_por_regiao_faixa_populacional(tabela, densidade)
 #' }
-preenche_por_regiao_faixa_populacional <- function(tabela,
-                                                   tabela_faixa,
-                                                   preencher_campo = "densidade",
-                                                   campo_regiao = "regiao",
-                                                   campo_faixa = "faixa") {
-  tabela_faixa <- dplyr::select(
-    tabela_faixa,
-    dplyr::all_of(c(
-      preencher_campo,
-      campo_regiao,
-      campo_faixa
-    ))
-  )
+preenche_por_regiao_faixa_populacional <-
+  function(tabela,
+           tabela_faixa,
+           preencher_campo = "densidade",
+           campo_regiao = "regiao",
+           campo_faixa = "faixa") {
+    tabela_faixa <- dplyr::select(
+      tabela_faixa,
+      dplyr::all_of(c(
+        preencher_campo,
+        campo_regiao,
+        campo_faixa
+      ))
+    )
 
-  # transforma valores negativos e nulos em 0
-  mask <- tabela[[preencher_campo]] <= 0
-  tabela[[preencher_campo]][mask] <- NA
+    # transforma valores negativos e nulos em 0
+    mask <- tabela[[preencher_campo]] <= 0
+    tabela[[preencher_campo]][mask] <- NA
 
-  tabela_faixa <- dplyr::rename(tabela_faixa, estimativa = .data[[preencher_campo]])
-  tabela <- dplyr::left_join(tabela, tabela_faixa, by = c(campo_regiao, campo_faixa))
+    tabela_faixa <- dplyr::rename(
+      tabela_faixa,
+      estimativa = .data[[preencher_campo]]
+    )
+    tabela <- dplyr::left_join(
+      tabela, tabela_faixa,
+      by = c(campo_regiao, campo_faixa)
+    )
 
-  mask <- is.na(tabela[[preencher_campo]])
-  tabela[[preencher_campo]][mask] <- tabela$estimativa[mask]
+    mask <- is.na(tabela[[preencher_campo]])
+    tabela[[preencher_campo]][mask] <- tabela$estimativa[mask]
 
-  tabela <- dplyr::select(
-    tabela,
-    -estimativa
-  )
-  return(tabela)
-}
+    tabela <- dplyr::select(
+      tabela,
+      -estimativa
+    )
+    return(tabela)
+  }
 
 #' Substitui por faixa populacional
 #'
@@ -369,7 +319,7 @@ preenche_por_regiao_faixa_populacional <- function(tabela,
 #' @param preencher_campo um `character` com o nome da coluna a ser preenchida
 #' @param campo_faixa um `character` com o nome da coluna da faixa populacional
 #'
-#' @return
+#' @return o mesmo `data.frame` com o campo substituido
 #' @export
 #'
 #' @examples
@@ -418,15 +368,10 @@ mascara_coleta_seletiva <- function(tabela) {
 
 #' Atendimento relativo para coleta seletiva
 #'
-#' @param tabela
+#' @param tabela um `data.frame` com as colunas `CS050` e `POP_URB`
 #'
-#' @return
+#' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_seletiva
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 atendimento_relativo_coleta_seletiva <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -434,17 +379,12 @@ atendimento_relativo_coleta_seletiva <- function(tabela) {
   )
 }
 
-#' Title
+#' Déficit de coleta seletiva
 #'
-#' @param tabela
+#' @param tabela um `data.frame` contendo as colunas `populacao_urbana` e `atendimento_relativo_seletiva_urbano`
 #'
-#' @return
+#' @return um `data.frame` contendo a coluna deficit_coleta_seletiva
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 deficit_coleta_seletiva <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -452,18 +392,13 @@ deficit_coleta_seletiva <- function(tabela) {
   )
 }
 
-#' Title
+#' Necessidade de investimento em coleta seletiva
 #'
-#' @param tabela
-#' @param valor
+#' @param tabela um `data.frame` contendo as colunas `deficit_coleta_seletiva` e `densidade_caminhoes_bau`
+#' @param valor um `double` contendo o preço de um caminhão bau
 #'
-#' @return
+#' @return um `data.frame` contendo a coluna `investimento_coleta_seletiva`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 investimento_coleta_seletiva <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
@@ -471,18 +406,13 @@ investimento_coleta_seletiva <- function(tabela, valor) {
   )
 }
 
-#' Title
+#' Capacidade instalada coleta seletiva
 #'
-#' @param tabela
-#' @param valor
+#' @param tabela um `data.frame` contendo as colunas `POP_URB`, `atendimento_relativo_seletiva_urbano` e `densidade_caminhoes_bau `
+#' @param valor valor um `double` contendo o preço de um caminhão bau
 #'
-#' @return
+#' @return um `data.frame` contendo a coluna capacidade_instalada_coleta_seletiva
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 capacidade_instalada_coleta_seletiva <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
@@ -499,7 +429,7 @@ capacidade_instalada_coleta_seletiva <- function(tabela, valor) {
 #'
 #' @param tabela um `data.frame` contendo as colunas CO054, CO055, CO056, CO057, CO058 e CO059.
 #'
-#' @return  um `data.frame` contendo a coluna `numero_caminhoes`
+#' @return um `data.frame` contendo a coluna `numero_caminhoes`
 #' @export
 #'
 #' @examples
@@ -533,18 +463,13 @@ deficit_coleta_indiferenciada <- function(tabela) {
   )
 }
 
-#' Title
+#' Necessidade de investimento em coleta indiferenciada
 #'
-#' @param tabela
-#' @param valor
+#' @param tabela um `data.frame` contendo as colunas `deficit_coleta_indiferenciada` e `densidade_caminhoes`
+#' @param valor um `double` contendo o preço de um caminhão
 #'
-#' @return
+#' @return um `data.frame` contendo a coluna `investimento_coleta_indiferenciada`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 investimento_coleta_indiferenciada <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
@@ -552,18 +477,13 @@ investimento_coleta_indiferenciada <- function(tabela, valor) {
   )
 }
 
-#' Title
+#' Capacidade instalada coleta indiferenciada
 #'
-#' @param tabela
-#' @param valor
+#' @param tabela um `data.frame` contendo as colunas `POP_URB`, `atendimento_relativo_seletiva_urbano` e `densidade_caminhoes `
+#' @param valor valor um `double` contendo o preço de um caminhão
 #'
-#' @return
+#' @return um `data.frame` contendo a coluna capacidade_instalada_coleta_indiferenciada
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 capacidade_instalada_coleta_indiferenciada <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
@@ -572,17 +492,14 @@ capacidade_instalada_coleta_indiferenciada <- function(tabela, valor) {
 }
 
 
-#' Title
+#' Número de caminhões baú
 #'
-#' @param tabela
+#' Cálcula o número de caminhões baú
 #'
-#' @return
+#' @param tabela um `data.frame` contendo as colunas CO063, CO064, CO065, CO066, CO067 e CO068
+#'
+#' @return um `data.frame` contendo a coluna `numero_caminhoes_bau`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 numero_caminhoes_bau <- function(tabela) {
   tabela$mask <- mascara_coleta_seletiva(tabela)
   tabela <- dplyr::mutate(
@@ -595,17 +512,14 @@ numero_caminhoes_bau <- function(tabela) {
   )
 }
 
-#' Title
+#' Densidade de caminhões
 #'
-#' @param tabela
+#' Cálcula a densidade de caminhões
 #'
-#' @return
+#' @param tabela um `data.frame` contendo as colunas CO164 e numero_caminhoes
+#'
+#' @return um `data.frame` contendo a coluna `densidade_caminhoes`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 densidade_caminhoes <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -684,17 +598,12 @@ atendimento_relativo_residuos <- function(tabela) {
   )
 }
 
-#' Title
+#' Geração de resíduos
 #'
-#' @param tabela
+#' @param tabela um `data.frame` contendo as colunas POP_TOT, CO119, CO164, CS009 e populacao_total
 #'
-#' @return
+#' @return um `data.frame` contendo as colunas taxa_geracao_residuos, total_residuos, total_residuos_projecaoe e percentual_recuperado
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 geracao_residuos <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -705,17 +614,12 @@ geracao_residuos <- function(tabela) {
   )
 }
 
-#' Title
+#' Taxa de geração de resíduos (t/hab)
 #'
-#' @param tabela
+#' @param tabela um `data.frame` contendo as colunas CO119, CO164, CO119_litoral e CO164_litoral
 #'
-#' @return
+#' @return um `data.frame` contendo as colunas taxa_geracao_residuos, taxa_geracao_residuos_litoral
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 taxa_geracao_residuos <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -802,18 +706,15 @@ divide_residuo_litoraneo <- function(tabela) {
   )
 }
 
-#' Title
+#' Tabela de preco de projetos de residuos
 #'
-#' @param input
-#' @param name
+#' Converte os dados da interface gráfica para formato de tabela.
 #'
-#' @return
+#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param name um `character` com o nome do projeto
+#'
+#' @return um `data.frame` com a tabela de preços
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 tabela_preco_unidade_residuos <- function(input, name) {
   faixa <- seq.int(1, 7)
   precos <- c()
@@ -827,18 +728,16 @@ tabela_preco_unidade_residuos <- function(input, name) {
   return(output)
 }
 
-#' Title
+#' Preço unidade de resíduos
 #'
-#' @param input
-#' @param name
+#' Salva preços por faixa populacional no formato da interface gráfica.
 #'
-#' @return
+#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param name um `character` com o nome do projeto
+#' @param precos uma `list` com os preços por faixa
+#'
+#' @return os parâmetros da interface gráfica com os preços corrigidos
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 adiciona_preco_unidade_residuos <- function(input, name, precos) {
   faixa <- seq.int(1, 7)
   for (i in faixa) {
@@ -993,11 +892,6 @@ regionaliza_faixa5e6 <- function(tabela, potencial, campo_demanda, campo_potenci
 #'
 #' @return um `data.frame` contendo a coluna `demanda_tranbordo`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 demanda_transbordo <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
@@ -1015,11 +909,6 @@ demanda_transbordo <- function(tabela) {
 #' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
 #' @return um `data.frame` contendo a coluna `demanda_tranbordo`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 regionaliza_transbordo <- function(tabela, cenario) {
   if (cenario == "C") {
     data("potencial_regionalizacao", package = "rsan")
@@ -1057,11 +946,6 @@ regionaliza_transbordo <- function(tabela, cenario) {
 #'
 #' @return um `data.frame` contendo a coluna `investimento_transbordo`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' tabela <- investimento_transbordo(tabela, 1000)
-#' }
 investimento_transbordo <- function(tabela, custo) {
   tabela <- dplyr::mutate(
     tabela,
@@ -1078,11 +962,6 @@ investimento_transbordo <- function(tabela, custo) {
 #' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
 #' @return um `data.frame` contendo a coluna `demanda_tranbordo`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 regionaliza_triagem <- function(tabela, cenario) {
   rlog::log_info(sprintf("residuos: regionalizando cenario %s", cenario))
   if (cenario == "C") {
@@ -1111,11 +990,6 @@ regionaliza_triagem <- function(tabela, cenario) {
 #' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
 #' @return um `data.frame` contendo a coluna `demanda_tranbordo`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 regionaliza_compostagem <- function(tabela, cenario) {
   rlog::log_info(sprintf("residuos: regionalizando cenario %s", cenario))
   if (cenario == "C") {
@@ -1144,11 +1018,6 @@ regionaliza_compostagem <- function(tabela, cenario) {
 #' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
 #' @return um `data.frame` contendo a coluna `demanda_tranbordo`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 regionaliza_compostagem <- function(tabela, cenario) {
   rlog::log_info(sprintf("residuos: regionalizando cenario %s", cenario))
   if (cenario == "C") {
@@ -1177,11 +1046,6 @@ regionaliza_compostagem <- function(tabela, cenario) {
 #' @param cenario um `character` contendo o nome do cenario ("A" "B" ou "C")
 #' @return um `data.frame` contendo a coluna `demanda_tranbordo`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 regionaliza_aterro <- function(tabela, cenario) {
   rlog::log_info(sprintf("residuos: regionalizando cenario %s", cenario))
   if (cenario == "C") {
@@ -1213,7 +1077,7 @@ regionaliza_aterro <- function(tabela, cenario) {
 #' @param campo_regiao um `character` com o nome da coluna região
 #' @param campo_faixa um `character` com o nome da coluna faixa populacional
 #'
-#' @return
+#' @return o mesmo `data.frame` com a coluna preenchida (CO119)
 #' @export
 #'
 #' @examples

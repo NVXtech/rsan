@@ -2,18 +2,16 @@
 % Please edit documentation in R/residuos_modulo.R
 \name{deficit_coleta_seletiva}
 \alias{deficit_coleta_seletiva}
-\title{Title}
+\title{Déficit de coleta seletiva}
 \usage{
 deficit_coleta_seletiva(tabela)
 }
 \arguments{
-\item{tabela}{}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{populacao_urbana} e \code{atendimento_relativo_seletiva_urbano}}
+}
+\value{
+um \code{data.frame} contendo a coluna deficit_coleta_seletiva
 }
 \description{
-Title
-}
-\examples{
-\dontrun{
-
-}
+Déficit de coleta seletiva
 }

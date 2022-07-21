@@ -9,6 +9,9 @@ check_dataset_integrity(name)
 \arguments{
 \item{name}{é um \code{character} com o nome do conjunto de dados}
 }
+\value{
+um \code{logical} sendo \code{TRUE} integridade OK.
+}
 \description{
 Verifica a integridade do conjunto de dados
 }

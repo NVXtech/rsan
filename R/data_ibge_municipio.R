@@ -8,7 +8,7 @@ municipios_url <-
 #' sobre os munícipios do Brasil
 #' regiões, estado e códigos do IBGE
 #'
-#' @return
+#' @return NULL
 #' @export
 #'
 #' @examples
@@ -23,7 +23,7 @@ create_municipio <- function() {
 
 #' Verifica a integridade dos dados locais de munícipio
 #'
-#' @return
+#' @return um `logical` sendo `TRUE` integridade OK.
 #' @export
 #'
 #' @examples

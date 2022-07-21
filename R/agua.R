@@ -347,7 +347,10 @@ classifica_municipio <- function(tabela) {
 #'
 #' cenario <- c("08", "08", "08", "08", "09", "09", "09", "09")
 #' unidade <- c("ETA200", "EEA200", "POÇO40", "EEA200", "ETA200", "EEA200", "POÇO40", "EEA200")
-#' tipo <- c("superficial", "superficial", "subterranea", "subterranea", "superficial", "superficial", "subterranea", "subterranea")
+#' tipo <- c(
+#'   "superficial", "superficial", "subterranea", "subterranea",
+#'   "superficial", "superficial", "subterranea", "subterranea"
+#' )
 #' quantidade <- c(0.854106686284393, 1.3, 1, 1, 0.549559117416313, 1.3, 1, 1)
 #' projeto_producao <- dplyr::tibble(cenario, unidade, tipo, quantidade)
 #' df_out <- calcula_custo_relativo_producao(preco_unidade, projeto_producao)
@@ -386,7 +389,10 @@ calcula_custo_relativo_producao <-
 #'
 #' @examples
 #' estado <- c("AC", "AC", "AC", "AC", "AL", "AL", "AL", "AL")
-#' unidade <- c("LAGOA125", "REATORANA180", "EE85", "LODOBAT400", "LAGOA125", "REATORANA180", "EE85", "LODOBAT400")
+#' unidade <- c(
+#'   "LAGOA125", "REATORANA180", "EE85", "LODOBAT400",
+#'   "LAGOA125", "REATORANA180", "EE85", "LODOBAT400"
+#' )
 #' preco <- c(2.476, 0.762, 0.209, 2.31, 2.051, 0.4282, 0.2008, 2.2114)
 #' preco_unidade <- dplyr::tibble(estado, unidade, preco)
 #'
@@ -624,7 +630,9 @@ calcula_custo_expansao_agua <- function(demanda,
 #'
 #' @examples
 #' \dontrun{
-#' invest <- calcula_custo_expansao_esgoto(demanda, distribuicao, coleta, producao, tratamento, perda_agua)
+#' invest <- calcula_custo_expansao_esgoto(
+#'   demanda, distribuicao, coleta, producao, tratamento, perda_agua
+#' )
 #' }
 calcula_custo_expansao_esgoto <- function(demanda, coleta, tratamento) {
   tabela <- rsan::calcula_custo_extensao(demanda, coleta, "coleta_esgoto")
@@ -702,7 +710,6 @@ consolida_investimentos_esgoto <- function(tabela) {
   )
 }
 
-################# TODO FIX DOCUMENTATION FROM HERE
 snis_fields <- c(
   "codigo_municipio",
   "POP_TOT",
@@ -849,18 +856,13 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
 }
 
 
-#' Title
+#' Capacidade instalada sistema de abastecimento de água
 #'
-#' @param snis
-#' @param custo
+#' @param snis um `data.frame` contendo as colunas `codigo_municipio`, `AG005` e `AG006`
+#' @param custo um `data.frame` contendo as colunas `codigo_municipio`, `custo_relativo_producao`, `preco_distribuicao_agua`
 #'
-#' @return
+#' @return um `data.frame` contendo as colunas `capacidade_instalada_distribuicao` e `capacidade_instalada_producao`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 capacidade_instalada_agua <- function(snis, custo) {
   # Quando não informada assume extensões igual a 0
   snis$AG005[is.na(snis$AG005)] <- 0
@@ -874,18 +876,14 @@ capacidade_instalada_agua <- function(snis, custo) {
   )
   return(tabela)
 }
-#' Title
+
+#' Capacidade instalada sistema de abastecimento de água
 #'
-#' @param snis
-#' @param custo
+#' @param snis um `data.frame` contendo as colunas `codigo_municipio`, `ES004` e `ES006`
+#' @param custo um `data.frame` contendo as colunas `codigo_municipio`, `custo_relativo_tratamento`, `preco_coleta_esgoto`
 #'
-#' @return
+#' @return um `data.frame` contendo as colunas `capacidade_instalada_coleta` e `capacidade_instalada_tratamento`
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' }
 capacidade_instalada_esgoto <- function(snis, custo) {
   # Quando não informada assume extensões igual a 0
   snis$ES004[is.na(snis$ES004)] <- 0
@@ -901,25 +899,23 @@ capacidade_instalada_esgoto <- function(snis, custo) {
 }
 
 
-#' Title
+#' Módulo financeiro para demanda urbana de água
 #'
-#' @param input
-#' @param orcamentario
+#' Esta função organiza a ordem de execução das tarefas necessárias
+#' para o cálculo de necessidades de investimento em sistema de abastecimento de água.
 #'
-#' @return
+#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param orcamentario um `data.frame` contendo a saida do modulo orcamentário
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#'
-#' }
-rodar_modulo_financeiro_agua <- function(input, orcamentario, tipo = "agua") {
+#' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
+rodar_modulo_financeiro_agua <- function(input, orcamentario) {
   snis_data <- rsan::get_snis_data(input$agua$snis, snis_fields)
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_agua(snis_data, custo)
   ano_final <- input$geral$ano
   ano_inicial <- 2021
-  ano_corrente <- 2022
+  ano_corrente <- input$geral$ano_corrente
 
   vars <- list(
     campos_reposicao(
@@ -951,25 +947,23 @@ rodar_modulo_financeiro_agua <- function(input, orcamentario, tipo = "agua") {
   return(tabela)
 }
 
-#' Title
+#' Módulo financeiro para demanda urbana de esgoto
 #'
-#' @param input
-#' @param orcamentario
+#' Esta função organiza a ordem de execução das tarefas necessárias
+#' para o cálculo de necessidades de investimento em sistema de abastecimento de esgoto.
 #'
-#' @return
+#' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
+#' @param orcamentario um `data.frame` contendo a saida do modulo orcamentário
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#'
-#' }
+#' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
   snis_data <- rsan::get_snis_data(input$esgoto$snis, snis_fields)
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_esgoto(snis_data, custo)
   ano_final <- input$geral$ano
   ano_inicial <- 2021
-  ano_corrente <- 2022
+  ano_corrente <- input$geral$ano_corrente
 
   vars <- list(
     campos_reposicao(
@@ -1019,6 +1013,10 @@ investimento_agua <- function(state) {
   projecao <- state$projecao
   rlog::log_info("água: carregando parâmetros")
   input <- state$input
+  rlog::log_info("água: rodando módulo rural")
+  state$agua_rural <- rsan:::rodar_modulo_rural_agua(
+    input, state$taxas_projecao
+  )
   rlog::log_info("água: rodando módulo demografico")
   demografico <- rodar_modulo_demografico(input, projecao, "agua")
   rlog::log_info("água: rodando módulo orcamentario")
@@ -1029,8 +1027,6 @@ investimento_agua <- function(state) {
   tabela <- rsan:::adiciona_pais(tabela)
   tabela <- rsan:::adiciona_regiao(tabela)
   state$agua <- tabela
-  rlog::log_info("água: rodando módulo rural")
-  state$agua_rural <- rsan:::rodar_modulo_rural_agua(input, state$taxas_projecao)
   return(state)
 }
 
@@ -1056,7 +1052,6 @@ investimento_esgoto <- function(state) {
   orcamentario <- rodar_modulo_orcamentario_esgoto(input, demografico)
   rlog::log_info("esgoto: rodando módulo financeiro")
   financeiro <- rodar_modulo_financeiro_esgoto(input, orcamentario)
-
   tabela <- consolida_investimentos_esgoto(financeiro)
   tabela <- rsan::adiciona_pais(tabela)
   tabela <- rsan::adiciona_regiao(tabela)
