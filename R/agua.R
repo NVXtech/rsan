@@ -781,23 +781,16 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
 #' }
 rodar_modulo_orcamentario_agua <- function(input, demografico) {
   sinapi <- rsan:::load_data(input$agua$sinapi)
-  e <- new.env()
-  data("projeto_distribuicao_agua", package = "rsan", envir = e)
-  projeto_distribuicao_agua <- get(
-    "projeto_distribuicao_agua",
-    envir = e
-  )
+
+  data("projeto_distribuicao_agua", package = "rsan")
+
   distribuicao <- calcula_precos_distribuicao(
     projeto_distribuicao_agua,
     sinapi,
     input$agua$fator_servicos,
     input$agua$fator_materiais
   )
-  data("projeto_producao_agua", package = "rsan", envir = e)
-  projeto_producao_agua_unidades <- get(
-    "projeto_producao_agua_unidades",
-    envir = e
-  )
+  data("projeto_producao_agua_unidades", package = "rsan")
   producao <- calcula_preco_unidades_producao(
     projeto_producao_agua_unidades,
     sinapi,
@@ -834,12 +827,8 @@ rodar_modulo_orcamentario_agua <- function(input, demografico) {
 #' }
 rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
   sinapi <- rsan:::load_data(input$esgoto$sinapi)
-  e <- new.env()
-  data("projeto_coleta_esgoto", package = "rsan", envir = e)
-  projeto_coleta_esgoto <- get(
-    "projeto_coleta_esgoto",
-    envir = e
-  )
+
+  data("projeto_coleta_esgoto", package = "rsan")
   coleta <- calcula_precos_distribuicao(
     projeto_coleta_esgoto,
     sinapi,
@@ -847,11 +836,7 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
     input$esgoto$fator_materiais
   )
 
-  data("projeto_tratamento_esgoto", package = "rsan", envir = e)
-  projeto_tratamento_esgoto_unidades <- get(
-    "projeto_tratamento_esgoto_unidades",
-    envir = e
-  )
+  data("projeto_tratamento_esgoto_unidades", package = "rsan")
   tratamento <- calcula_preco_unidades_producao(
     projeto_tratamento_esgoto_unidades,
     sinapi,
