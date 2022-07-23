@@ -651,8 +651,8 @@ calcula_custo_expansao_esgoto <- function(demanda, coleta, tratamento) {
 #' \itemize{
 #' \item{custo_expansao_distribuicao_agua}
 #' \item{custo_expansao_producao_agua}
-#' \item{reposicao_producao_agua}
-#' \item{reposicao_distribuicao_agua}
+#' \item{custo_reposicao_producao_agua}
+#' \item{custo_reposicao_distribuicao_agua}
 #' }
 #'
 #' @return tabela contendo os campos:
@@ -672,7 +672,7 @@ consolida_investimentos_agua <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
     investimento_expansao = custo_expansao_distribuicao_agua + custo_expansao_producao_agua,
-    investimento_reposicao = reposicao_producao_agua + reposicao_distribuicao_agua,
+    investimento_reposicao = custo_reposicao_producao_agua + custo_reposicao_distribuicao_agua,
     investimento_total = investimento_expansao + investimento_reposicao,
   )
 }
@@ -686,8 +686,8 @@ consolida_investimentos_agua <- function(tabela) {
 #' \itemize{
 #' \item{custo_expansao_coleta_esgoto}
 #' \item{custo_expansao_tratamento_esgoto}
-#' \item{reposicao_tratamento_esgoto}
-#' \item{reposicao_coleta_esgoto}
+#' \item{custo_reposicao_tratamento_esgoto}
+#' \item{custo_reposicao_coleta_esgoto}
 #' }
 #'
 #' @return tabela contendo os campos:
@@ -707,8 +707,96 @@ consolida_investimentos_esgoto <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
     investimento_expansao = custo_expansao_coleta_esgoto + custo_expansao_tratamento_esgoto,
-    investimento_reposicao = reposicao_tratamento_esgoto + reposicao_coleta_esgoto,
+    investimento_reposicao = custo_reposicao_tratamento_esgoto + custo_reposicao_coleta_esgoto,
     investimento_total = investimento_expansao + investimento_reposicao,
+  )
+}
+
+#' Cria tabela longa de necessidade de investimento do componente água
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{custo_expansao_distribuicao_agua}
+#' \item{custo_expansao_producao_agua}
+#' \item{custo_reposicao_producao_agua}
+#' \item{custo_reposicao_distribuicao_agua}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{destino}
+#'  \item{etapa}
+#' }
+#'
+#' @export
+tbl_longa_investimentos_agua <- function(tabela) {
+  colunas <- c(
+    "estado", "regiao",
+    "custo_expansao_distribuicao_agua", "custo_expansao_producao_agua",
+    "custo_reposicao_producao_agua", "custo_reposicao_distribuicao_agua"
+  )
+  tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+  tabela <- rsan:::somar_por_campo(tabela, "estado")
+  tabela <- tidyr::pivot_longer(
+    tabela,
+    cols = starts_with("custo_"),
+    names_to = c("destino", "etapa"),
+    names_pattern = "custo_?(.*)_(.*_.*)",
+    values_to = "necessidade_investimento"
+  )
+  tabela <- dplyr::mutate(
+    tabela,
+    componente = "agua",
+    situacao = "urbana"
+  )
+}
+
+#' Cria tabela longa de necessidade de investimento do componente esgoto
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{custo_expansao_coleta_esgoto}
+#' \item{custo_expansao_tratamento_esgoto}
+#' \item{custo_reposicao_tratamento_esgoto}
+#' \item{custo_reposicao_coleta_esgoto}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{destino}
+#'  \item{etapa}
+#' }
+#'
+#' @export
+tbl_longa_investimentos_esgoto <- function(tabela) {
+  colunas <- c(
+    "estado", "regiao",
+    "custo_expansao_coleta_esgoto",
+    "custo_expansao_tratamento_esgoto",
+    "custo_reposicao_tratamento_esgoto",
+    "custo_reposicao_coleta_esgoto"
+  )
+  tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+  tabela <- rsan:::somar_por_campo(tabela, "estado")
+  tabela <- tidyr::pivot_longer(
+    tabela,
+    cols = starts_with("custo_"),
+    names_to = c("destino", "etapa"),
+    names_pattern = "custo_?(.*)_(.*_.*)",
+    values_to = "necessidade_investimento"
+  )
+  tabela <- dplyr::mutate(
+    tabela,
+    componente = "esgoto",
+    situacao = "urbana"
   )
 }
 
@@ -797,6 +885,7 @@ rodar_modulo_orcamentario_agua <- function(input, demografico) {
     input$agua$fator_insumo,
     input$agua$fator_composicao
   )
+
   custo <- calcula_custo_expansao_agua(
     demografico,
     distribuicao,
@@ -924,13 +1013,13 @@ rodar_modulo_financeiro_agua <- function(input, orcamentario) {
     campos_reposicao(
       "capacidade_instalada_distribuicao",
       "custo_expansao_distribuicao_agua",
-      "reposicao_distribuicao_agua",
+      "custo_reposicao_distribuicao_agua",
       input$agua$vida_util
     ),
     campos_reposicao(
       "capacidade_instalada_producao",
       "custo_expansao_producao_agua",
-      "reposicao_producao_agua",
+      "custo_reposicao_producao_agua",
       input$agua$vida_util
     )
   )
@@ -972,13 +1061,13 @@ rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
     campos_reposicao(
       "capacidade_instalada_coleta",
       "custo_expansao_coleta_esgoto",
-      "reposicao_coleta_esgoto",
+      "custo_reposicao_coleta_esgoto",
       input$esgoto$vida_util
     ),
     campos_reposicao(
       "capacidade_instalada_tratamento",
       "custo_expansao_tratamento_esgoto",
-      "reposicao_tratamento_esgoto",
+      "custo_reposicao_tratamento_esgoto",
       input$esgoto$vida_util
     )
   )
@@ -1030,6 +1119,11 @@ investimento_agua <- function(state) {
   tabela <- rsan:::adiciona_pais(tabela)
   tabela <- rsan:::adiciona_regiao(tabela)
   state$agua <- tabela
+
+  state$geral_longa <- dplyr::bind_rows(
+    tbl_longa_investimentos_agua(tabela),
+    state$geral_longa
+  )
   return(state)
 }
 
@@ -1061,5 +1155,9 @@ investimento_esgoto <- function(state) {
   state$esgoto <- tabela
   rlog::log_info("esgoto: rodando módulo rural")
   state$esgoto_rural <- rsan:::rodar_modulo_rural_esgoto(input, state$taxas_projecao)
+  state$geral_longa <- dplyr::bind_rows(
+    tbl_longa_investimentos_esgoto(tabela),
+    state$geral_longa
+  )
   return(state)
 }

@@ -41,6 +41,8 @@ agua <- list(
   perda_agua = 25,
   fator_servicos = 26,
   fator_materiais = 18,
+  fator_composicao = 26,
+  fator_insumo = 18,
   vida_util = 30,
   custo_rural_individual = 10682.16 * 1.6169335,
   custo_rural_individual_sem = 14682.16 * 1.6169335

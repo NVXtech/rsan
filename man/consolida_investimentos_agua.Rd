@@ -11,8 +11,8 @@ consolida_investimentos_agua(tabela)
 \itemize{
 \item{custo_expansao_distribuicao_agua}
 \item{custo_expansao_producao_agua}
-\item{reposicao_producao_agua}
-\item{reposicao_distribuicao_agua}
+\item{custo_reposicao_producao_agua}
+\item{custo_reposicao_distribuicao_agua}
 }}
 }
 \value{

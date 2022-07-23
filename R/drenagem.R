@@ -14,6 +14,50 @@ investimento_total_drenagem <- function(tabela) {
   return(tabela)
 }
 
+#' Cria tabela longa de necessidade de investimento do componente drenagem
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{investimento_expansao}
+#' \item{investimento_reposicao}
+#' \item{investimento_cadastro}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{destino}
+#'  \item{etapa}
+#' }
+#'
+#' @export
+tbl_longa_investimento_drenagem <- function(tabela) {
+  colunas <- c(
+    "estado", "regiao",
+    "investimento_expansao",
+    "investimento_reposicao",
+    "investimento_cadastro"
+  )
+  tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+  tabela <- rsan:::somar_por_campo(tabela, "estado")
+  tabela <- tidyr::pivot_longer(
+    tabela,
+    cols = c("investimento_expansao", "investimento_reposicao", "investimento_cadastro"),
+    names_to = c("destino"),
+    names_pattern = "investimento_(.*)",
+    values_to = "necessidade_investimento"
+  )
+  tabela <- dplyr::mutate(
+    tabela,
+    componente = "drenagem",
+    situacao = "urbana",
+    etapa = "unica"
+  )
+}
+
 #' Capacidade instalada para drenagem
 #'
 #' @param tabela `data.frame` contendo os campos:

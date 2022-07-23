@@ -11,8 +11,8 @@ consolida_investimentos_esgoto(tabela)
 \itemize{
 \item{custo_expansao_coleta_esgoto}
 \item{custo_expansao_tratamento_esgoto}
-\item{reposicao_tratamento_esgoto}
-\item{reposicao_coleta_esgoto}
+\item{custo_reposicao_tratamento_esgoto}
+\item{custo_reposicao_coleta_esgoto}
 }}
 }
 \value{

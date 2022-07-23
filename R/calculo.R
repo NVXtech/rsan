@@ -58,7 +58,7 @@ rodar_projecao_populacional <- function(state) {
 investimento_drenagem <- function(state) {
   input <- state$input$drenagem
   data("snis_ap", package = "rsan")
-  ano <- nome_para_ano(input$snis_ap)
+  ano <- rsan:::nome_para_ano(input$snis_ap)
   ano_inicial <- 2021
   ano_final <- state$input$geral$ano
   ano_corrente <- state$input$geral$ano_corrente
@@ -91,6 +91,10 @@ investimento_drenagem <- function(state) {
   tabela <- investimento_total_drenagem(tabela)
   tabela <- rsan::adiciona_pais(tabela)
   state$drenagem <- tabela
+  state$geral_longa <- dplyr::bind_rows(
+    tbl_longa_investimento_drenagem(tabela),
+    state$geral_longa
+  )
   return(state)
 }
 
@@ -189,7 +193,7 @@ investimento_residuos <- function(state) {
   # Transbordo
   tabela <- rsan:::demanda_transbordo(tabela)
   tabela <- rsan:::regionaliza_transbordo(tabela, cenario_regionalizacao)
-  tabela <- rsan:::investimento_transbordo(tabela, custo_transbordo)
+  tabela <- rsan:::investimento_expansao_transbordo(tabela, custo_transbordo)
 
   # Coleta indiferenciada
   rlog::log_info("residuos: investimento em coleta indiferenciada")
@@ -200,13 +204,13 @@ investimento_residuos <- function(state) {
   tabela <- rsan:::preenche_por_faixa_populacional(tabela, soma_faixa, preencher_campo = "densidade_caminhoes")
   tabela <- meta_plansab_residuo(tabela)
   tabela <- deficit_coleta_indiferenciada(tabela)
-  tabela <- investimento_coleta_indiferenciada(tabela, valor_caminhao)
+  tabela <- investimento_expansao_coleta_indiferenciada(tabela, valor_caminhao)
   tabela <- capacidade_instalada_coleta_indiferenciada(tabela, valor_caminhao)
   tabela <- rsan:::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_coleta_indiferenciada",
-    "investimento_coleta_indiferenciada",
-    "reposicao_coleta_indiferenciada",
+    "investimento_expansao_coleta_indiferenciada",
+    "investimento_reposicao_coleta_indiferenciada",
     ano_inicial,
     ano_final,
     ano_corrente,
@@ -220,13 +224,13 @@ investimento_residuos <- function(state) {
   tabela <- rsan:::preenche_por_faixa_populacional(tabela, soma_faixa, preencher_campo = "densidade_caminhoes_bau")
   tabela <- atendimento_relativo_coleta_seletiva(tabela)
   tabela <- deficit_coleta_seletiva(tabela)
-  tabela <- investimento_coleta_seletiva(tabela, valor_caminhao_bau)
+  tabela <- investimento_expansao_coleta_seletiva(tabela, valor_caminhao_bau)
   tabela <- capacidade_instalada_coleta_seletiva(tabela, valor_caminhao_bau)
   tabela <- rsan::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_coleta_seletiva",
-    "investimento_coleta_seletiva",
-    "reposicao_coleta_seletiva",
+    "investimento_expansao_coleta_seletiva",
+    "investimento_reposicao_coleta_seletiva",
     ano_inicial,
     ano_final,
     ano_corrente,
@@ -238,13 +242,13 @@ investimento_residuos <- function(state) {
   tabela <- demanda_compostagem(tabela)
   tabela <- preco_unidade_faixa(tabela, preco_unidade_compostagem)
   tabela <- regionaliza_compostagem(tabela, cenario_regionalizacao)
-  tabela <- investimento_compostagem(tabela, vida_util_compostagem)
+  tabela <- investimento_expansao_compostagem(tabela, vida_util_compostagem)
   tabela <- capacidade_instalada_compostagem(tabela, vida_util_compostagem)
   tabela <- rsan::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_compostagem",
-    "investimento_compostagem",
-    "reposicao_compostagem",
+    "investimento_expansao_compostagem",
+    "investimento_reposicao_compostagem",
     ano_inicial,
     ano_final,
     ano_corrente,
@@ -256,13 +260,13 @@ investimento_residuos <- function(state) {
   tabela <- preco_unidade_faixa(tabela, preco_unidade_aterro)
   tabela <- demanda_aterro(tabela, vida_util_aterro)
   tabela <- regionaliza_aterro(tabela, cenario_regionalizacao)
-  tabela <- investimento_aterro(tabela)
+  tabela <- investimento_expansao_aterro(tabela)
   tabela <- capacidade_instalada_aterro(tabela, vida_util_aterro)
   tabela <- rsan::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_aterro",
-    "investimento_aterro",
-    "reposicao_aterro",
+    "investimento_expansao_aterro",
+    "investimento_reposicao_aterro",
     ano_inicial,
     ano_final,
     ano_corrente,
@@ -274,13 +278,13 @@ investimento_residuos <- function(state) {
   tabela <- demanda_triagem(tabela)
   tabela <- preco_unidade_faixa(tabela, preco_unidade_triagem)
   tabela <- regionaliza_triagem(tabela, cenario_regionalizacao)
-  tabela <- investimento_triagem(tabela, vida_util_triagem)
+  tabela <- investimento_expansao_triagem(tabela, vida_util_triagem)
   tabela <- capacidade_instalada_triagem(tabela, vida_util_triagem)
   tabela <- rsan::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_triagem",
-    "investimento_triagem",
-    "reposicao_triagem",
+    "investimento_expansao_triagem",
+    "investimento_reposicao_triagem",
     ano_inicial,
     ano_final,
     ano_corrente,
@@ -288,8 +292,12 @@ investimento_residuos <- function(state) {
   )
 
   rlog::log_info("residuos: totalizando investimentos")
-  tabela <- investimento_residuos_total(tabela)
+  tabela <- rsan:::investimento_residuos_total(tabela)
   state$residuos <- tabela
+  state$geral_longa <- dplyr::bind_rows(
+    tbl_longa_investimento_residuos(tabela),
+    state$geral_longa
+  )
   return(state)
 }
 
@@ -335,6 +343,7 @@ consolida_investimentos <- function(state) {
   return(state)
 }
 
+
 #' Roda todos os modelos de cálculo de investimento
 #'
 #' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
@@ -349,6 +358,9 @@ consolida_investimentos <- function(state) {
 rodar_modelo <- function(state) {
   rlog::log_info("iniciando módulo de projecao populacional")
   state <- rodar_projecao_populacional(state)
+
+  rlog::log_info("criando nova tabela de dados")
+  state$geral_longa <- rsan:::tabela_consolidada_vazia()
 
   rlog::log_info("água: iniciando módulo")
   state <- rsan:::investimento_agua(state)

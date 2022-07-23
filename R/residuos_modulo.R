@@ -23,17 +23,17 @@ preco_unidade_faixa <- function(tabela1, tabela2) {
 #'
 #' @param tabela contendo os valores de reposição e investimento em resíduos:
 #' \itemize{
-#' \item[resposicao_aterro]
-#' \item[resposicao_compostagem]
-#' \item[resposicao_triagem]
-#' \item[resposicao_coleta_indiferenciada]
-#' \item[resposicao_coleta_seletiva]
-#' \item[investimento_aterro]
-#' \item[investimento_compostagem]
-#' \item[investimento_triagem]
-#' \item[investimento_transbordo]
-#' \item[investimento_coleta_indiferenciada]
-#' \item[investimento_coleta_seletiva]
+#' \item[investimento_reposicao_aterro]
+#' \item[investimento_reposicao_compostagem]
+#' \item[investimento_reposicao_triagem]
+#' \item[investimento_reposicao_coleta_indiferenciada]
+#' \item[investimento_reposicao_coleta_seletiva]
+#' \item[investimento_expansao_aterro]
+#' \item[investimento_expansao_compostagem]
+#' \item[investimento_expansao_triagem]
+#' \item[investimento_expansao_transbordo]
+#' \item[investimento_expansao_coleta_indiferenciada]
+#' \item[investimento_expansao_coleta_seletiva]
 #' }
 #'
 #' @return um `data.frame` contendo as colunas adicionais `investimento_reposicao`, `investimento_expansao` e `investimento_total`
@@ -41,21 +41,79 @@ preco_unidade_faixa <- function(tabela1, tabela2) {
 investimento_residuos_total <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_reposicao = reposicao_aterro +
-      reposicao_compostagem +
-      reposicao_triagem +
-      reposicao_coleta_indiferenciada +
-      reposicao_coleta_seletiva,
-    investimento_expansao = investimento_aterro +
-      investimento_compostagem +
-      investimento_triagem +
-      investimento_transbordo +
-      investimento_coleta_indiferenciada +
-      investimento_coleta_seletiva,
+    investimento_reposicao = investimento_reposicao_aterro +
+      investimento_reposicao_compostagem +
+      investimento_reposicao_triagem +
+      investimento_reposicao_coleta_indiferenciada +
+      investimento_reposicao_coleta_seletiva,
+    investimento_expansao = investimento_expansao_aterro +
+      investimento_expansao_compostagem +
+      investimento_expansao_triagem +
+      investimento_expansao_transbordo +
+      investimento_expansao_coleta_indiferenciada +
+      investimento_expansao_coleta_seletiva,
     investimento_total = investimento_reposicao + investimento_expansao
   )
 }
 
+#' Cria tabela longa de necessidade de investimento do componente residuos
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item[investimento_reposicao_aterro]
+#' \item[investimento_reposicao_compostagem]
+#' \item[investimento_reposicao_triagem]
+#' \item[investimento_reposicao_coleta_indiferenciada]
+#' \item[investimento_reposicao_coleta_seletiva]
+#' \item[investimento_expansao_aterro]
+#' \item[investimento_expansao_compostagem]
+#' \item[investimento_expansao_triagem]
+#' \item[investimento_expansao_transbordo]
+#' \item[investimento_expansao_coleta_indiferenciada]
+#' \item[investimento_expansao_coleta_seletiva]
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{destino}
+#'  \item{etapa}
+#' }
+#'
+#' @export
+tbl_longa_investimento_residuos <- function(tabela) {
+  colunas <- c(
+    "estado", "regiao",
+    "investimento_reposicao_aterro",
+    "investimento_reposicao_compostagem",
+    "investimento_reposicao_triagem",
+    "investimento_reposicao_coleta_indiferenciada",
+    "investimento_reposicao_coleta_seletiva",
+    "investimento_expansao_aterro",
+    "investimento_expansao_compostagem",
+    "investimento_expansao_triagem",
+    "investimento_expansao_transbordo",
+    "investimento_expansao_coleta_indiferenciada",
+    "investimento_expansao_coleta_seletiva"
+  )
+  tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+  tabela <- rsan:::somar_por_campo(tabela, "estado")
+  tabela <- tidyr::pivot_longer(
+    tabela,
+    cols = colunas[3:length(colunas)],
+    names_to = c("destino", "etapa"),
+    names_pattern = "investimento_(.*?)_(.*)",
+    values_to = "necessidade_investimento"
+  )
+  tabela <- dplyr::mutate(
+    tabela,
+    componente = "residuos",
+    situacao = "urbana",
+  )
+}
 # ATERRO -----------------------------------------------------------------------
 
 #' Demanda por aterro
@@ -77,12 +135,12 @@ demanda_aterro <- function(tabela, vida_util) {
 #'
 #' @param tabela um `data.frame` contendo as colunas `demanda_aterro` e `preco_unidade_aterro`
 #'
-#' @return um `data.frame` contendo a coluna `investimento_aterro`
+#' @return um `data.frame` contendo a coluna `investimento_expansao_aterro`
 #' @export
-investimento_aterro <- function(tabela) {
+investimento_expansao_aterro <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_aterro = demanda_aterro * preco_unidade_aterro
+    investimento_expansao_aterro = demanda_aterro * preco_unidade_aterro
   )
 }
 
@@ -125,12 +183,12 @@ demanda_triagem <- function(tabela) {
 #' @param tabela  um `data.frame` contendo as colunas `demanda_triagem` e `preco_unidade_triagem`
 #' @param vida_util um `number` com o numero de anos da vida útil do sistema de triagem
 #'
-#' @return um `data.frame` com a coluna `investimento_triagem`
+#' @return um `data.frame` com a coluna `investimento_expansao_triagem`
 #' @export
-investimento_triagem <- function(tabela, vida_util) {
+investimento_expansao_triagem <- function(tabela, vida_util) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_triagem = demanda_triagem * preco_unidade_triagem * vida_util
+    investimento_expansao_triagem = demanda_triagem * preco_unidade_triagem * vida_util
   )
 }
 
@@ -168,12 +226,12 @@ demanda_compostagem <- function(tabela) {
 #' @param tabela um `data.frame` contendo as colunas `demanda_compostagem` e `preco_unidade_compostagem`
 #' @param vida_util um `number` com o numero de anos da vida útil do sistema
 #'
-#' @return um `data.frame` com a coluna `investimento_compostagem`
+#' @return um `data.frame` com a coluna `investimento_expansao_compostagem`
 #' @export
-investimento_compostagem <- function(tabela, vida_util) {
+investimento_expansao_compostagem <- function(tabela, vida_util) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_compostagem = demanda_compostagem * preco_unidade_compostagem * vida_util
+    investimento_expansao_compostagem = demanda_compostagem * preco_unidade_compostagem * vida_util
   )
 }
 
@@ -375,7 +433,9 @@ mascara_coleta_seletiva <- function(tabela) {
 atendimento_relativo_coleta_seletiva <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    atendimento_relativo_seletiva_urbano = CS050 / POP_URB,
+    atendimento_relativo_seletiva_urbano = ifelse(
+      POP_URB > 0, CS050 / POP_URB, NA
+    ),
   )
 }
 
@@ -397,12 +457,16 @@ deficit_coleta_seletiva <- function(tabela) {
 #' @param tabela um `data.frame` contendo as colunas `deficit_coleta_seletiva` e `densidade_caminhoes_bau`
 #' @param valor um `double` contendo o preço de um caminhão bau
 #'
-#' @return um `data.frame` contendo a coluna `investimento_coleta_seletiva`
+#' @return um `data.frame` contendo a coluna `investimento_expansao_coleta_seletiva`
 #' @export
-investimento_coleta_seletiva <- function(tabela, valor) {
+investimento_expansao_coleta_seletiva <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_coleta_seletiva = deficit_coleta_seletiva / densidade_caminhoes_bau * valor
+    investimento_expansao_coleta_seletiva = ifelse(
+      densidade_caminhoes_bau > 0,
+      deficit_coleta_seletiva / densidade_caminhoes_bau * valor,
+      NA
+    )
   )
 }
 
@@ -416,7 +480,12 @@ investimento_coleta_seletiva <- function(tabela, valor) {
 capacidade_instalada_coleta_seletiva <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
-    capacidade_instalada_coleta_seletiva = POP_URB * (1.0 - atendimento_relativo_seletiva_urbano) / densidade_caminhoes_bau * valor
+    capacidade_instalada_coleta_seletiva = ifelse(
+      densidade_caminhoes_bau > 0,
+      POP_URB * (1.0 - atendimento_relativo_seletiva_urbano) /
+        densidade_caminhoes_bau * valor,
+      NA
+    )
   )
 }
 
@@ -468,12 +537,16 @@ deficit_coleta_indiferenciada <- function(tabela) {
 #' @param tabela um `data.frame` contendo as colunas `deficit_coleta_indiferenciada` e `densidade_caminhoes`
 #' @param valor um `double` contendo o preço de um caminhão
 #'
-#' @return um `data.frame` contendo a coluna `investimento_coleta_indiferenciada`
+#' @return um `data.frame` contendo a coluna `investimento_expansao_coleta_indiferenciada`
 #' @export
-investimento_coleta_indiferenciada <- function(tabela, valor) {
+investimento_expansao_coleta_indiferenciada <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_coleta_indiferenciada = deficit_coleta_indiferenciada / densidade_caminhoes * valor
+    investimento_expansao_coleta_indiferenciada = ifelse(
+      densidade_caminhoes > 0,
+      deficit_coleta_indiferenciada / densidade_caminhoes * valor,
+      NA
+    )
   )
 }
 
@@ -487,7 +560,11 @@ investimento_coleta_indiferenciada <- function(tabela, valor) {
 capacidade_instalada_coleta_indiferenciada <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
-    capacidade_instalada_coleta_indiferenciada = CO164 / densidade_caminhoes * valor
+    capacidade_instalada_coleta_indiferenciada = ifelse(
+      densidade_caminhoes > 0,
+      CO164 / densidade_caminhoes * valor,
+      NA
+    )
   )
 }
 
@@ -594,7 +671,11 @@ atendimento_relativo_residuos <- function(tabela) {
     tabela,
     atendimento_relativo_total = CO164 / POP_TOT,
     atendimento_relativo_urbano = CO050 / POP_URB,
-    atendimento_relativo_rural = (CO164 - CO050) / (POP_TOT - POP_URB)
+    atendimento_relativo_rural = ifelse(
+      (POP_TOT - POP_URB) > 0,
+      (CO164 - CO050) / (POP_TOT - POP_URB),
+      NA
+    )
   )
 }
 
@@ -607,10 +688,18 @@ atendimento_relativo_residuos <- function(tabela) {
 geracao_residuos <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    taxa_geracao_residuos = CO119 / CO164,
+    taxa_geracao_residuos = ifelse(
+      CO164 > 0,
+      CO119 / CO164,
+      NA
+    ),
     total_residuos = taxa_geracao_residuos * POP_TOT,
     total_residuos_projecao = taxa_geracao_residuos * populacao_total,
-    percentual_recuperado = CS009 / CO119
+    percentual_recuperado = ifelse(
+      CO119 > 0,
+      CS009 / CO119,
+      NA
+    )
   )
 }
 
@@ -944,12 +1033,12 @@ regionaliza_transbordo <- function(tabela, cenario) {
 #' @param tabela um `data.frame` contendo a coluna `demanda_transbordo`
 #' @param vida_util valor em anos da vida util do aterro
 #'
-#' @return um `data.frame` contendo a coluna `investimento_transbordo`
+#' @return um `data.frame` contendo a coluna `investimento_expansao_transbordo`
 #' @export
-investimento_transbordo <- function(tabela, custo) {
+investimento_expansao_transbordo <- function(tabela, custo) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_transbordo = demanda_transbordo * custo
+    investimento_expansao_transbordo = demanda_transbordo * custo
   )
   return(tabela)
 }
