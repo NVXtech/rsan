@@ -2,7 +2,7 @@
 % Please edit documentation in R/drenagem.R
 \name{investimento_total_drenagem}
 \alias{investimento_total_drenagem}
-\title{Investimento total}
+\title{Necessidade de Investimento - Componente Drenagem - Situação Urbana}
 \usage{
 investimento_total_drenagem(tabela)
 }
@@ -13,5 +13,8 @@ investimento_total_drenagem(tabela)
 tabela com a soma dos investimento no campo \code{investimento_total}
 }
 \description{
+Investimento total
+}
+\details{
 Soma os investimentos de expansao e resposicao
 }

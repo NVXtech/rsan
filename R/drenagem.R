@@ -1,3 +1,5 @@
+#' Necessidade de Investimento - Componente Drenagem - Situação Urbana
+#'
 #' Investimento total
 #'
 #' Soma os investimentos de expansao e resposicao
@@ -54,7 +56,7 @@ tbl_longa_investimento_drenagem <- function(tabela) {
     tabela,
     componente = "drenagem",
     situacao = "urbana",
-    etapa = "unica"
+    etapa = "drenagem_urbana"
   )
 }
 

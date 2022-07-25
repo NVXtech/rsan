@@ -2,8 +2,7 @@
 % Please edit documentation in R/agua.R
 \name{necessidade_agua_esgoto}
 \alias{necessidade_agua_esgoto}
-\title{Necessidade de Investimento - Água
-Calcula as necessidades produção e distribuição}
+\title{Calcula as necessidades produção e distribuição}
 \usage{
 necessidade_agua_esgoto(df)
 }

@@ -2,7 +2,8 @@
 % Please edit documentation in R/esgoto_rural.R
 \name{custo_individual_esgoto}
 \alias{custo_individual_esgoto}
-\title{Custo individual para sistemas de estações de esgoto}
+\title{Necessidade de Investimento - Componente Esgoto - Situação Rural
+Custo individual para sistemas de estações de esgoto}
 \usage{
 custo_individual_esgoto(tabela)
 }

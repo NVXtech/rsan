@@ -1,5 +1,6 @@
 tabela_consolidada_vazia <- function() {
     tabela <- dplyr::tibble(
+        "componente" = character(),
         "estado" = character(),
         "regiao" = character(),
         "situacao" = character(),
@@ -35,4 +36,78 @@ consolida_investimentos_tabela_longa <- function(state) {
     tabela <- rsan:::adiciona_pais(tabela)
     state$geral_longa <- tabela
     return(state)
+}
+
+#' Prepara tabela para
+#' @param tabela o `data.frame` longo com dados de investimento
+#'
+#' @return uma lista (`list`) que guarda todos os dados para o sankey plot
+#' @export
+prepare_sankey <- function(tabela) {
+    colunas <- c("componente", "situacao", "destino", "etapa")
+
+    # cria lista de fontes
+    n <- length(colunas)
+    source_names <- c()
+    for (i in 1:n) {
+        tmp <- dplyr::distinct(
+            tabela, .data[[colunas[i]]],
+        )
+        source_names <- c(source_names, tmp[[colunas[i]]])
+        rm(tmp)
+    }
+    sources <- data.frame(
+        name = source_names, ind = 1:length(source_names)
+    )
+
+    consolidado <- dplyr::tibble(
+        "source_name" = character(),
+        "target_name" = character(),
+        "necessidade_investimento" = double()
+    )
+    n <- length(colunas) - 1
+    for (i in 1:n) {
+        tmp <- dplyr::group_by(
+            tabela, .data[[colunas[i]]], .data[[colunas[i + 1]]]
+        )
+        tmp <- dplyr::summarise(
+            tmp,
+            necessidade_investimento = sum(
+                necessidade_investimento,
+                na.rm = TRUE
+            )
+        )
+        tmp <- dplyr::rename(
+            tmp,
+            source_name = .data[[colunas[i]]],
+            target_name = .data[[colunas[i + 1]]]
+        )
+        consolidado <- dplyr::bind_rows(consolidado, tmp)
+        rm(tmp)
+    }
+    consolidado <- dplyr::left_join(
+        consolidado, sources,
+        by = c("source_name" = "name")
+    )
+    consolidado <- dplyr::rename(
+        consolidado,
+        source = ind
+    )
+    consolidado <- dplyr::left_join(
+        consolidado, sources,
+        by = c("target_name" = "name")
+    )
+    consolidado <- dplyr::rename(
+        consolidado,
+        target = ind
+    )
+    output <- list(
+        labels = sources$name,
+        link = list(
+            source = consolidado$source,
+            target = consolidado$target,
+            values = consolidado$necessidade_investimento
+        )
+    )
+    return(output)
 }

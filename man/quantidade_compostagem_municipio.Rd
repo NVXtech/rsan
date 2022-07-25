@@ -2,7 +2,8 @@
 % Please edit documentation in R/residuos.R
 \name{quantidade_compostagem_municipio}
 \alias{quantidade_compostagem_municipio}
-\title{Quantidade de resíduos destinada à compostagem (t/ano)}
+\title{Necessidade de Investimento - Componente Resíduos - Situação Urbana
+Quantidade de resíduos destinada à compostagem (t/ano)}
 \usage{
 quantidade_compostagem_municipio(tabela)
 }

@@ -1,3 +1,5 @@
+#' Necessidade de Investimento - Componente Esgoto - Situação Rural
+
 #' Custo individual para sistemas de estações de esgoto
 #'
 #' Adiciona coluna com custo individual para sistemas de estações de esgoto.

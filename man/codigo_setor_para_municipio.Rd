@@ -2,7 +2,8 @@
 % Please edit documentation in R/agua_rural.R
 \name{codigo_setor_para_municipio}
 \alias{codigo_setor_para_municipio}
-\title{Código setor para codigo do município}
+\title{Necessidade de Investimento - Componente Água - Situação Rural
+Código setor para codigo do município}
 \usage{
 codigo_setor_para_municipio(tabela)
 }
