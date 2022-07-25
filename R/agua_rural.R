@@ -203,19 +203,72 @@ domicilios_adequados_com_agua <- function(tabela) {
 investimento_rural_agua <- function(tabela) {
     tabela <- dplyr::mutate(
         tabela,
-        investimento_agua_rural_individual = custo_agua_individual *
+        investimento_expansao_individual = custo_agua_individual *
             fracao_investimento_individual_agua * domicilios_deficit_agua,
-        investimento_agua_rural_producao = custo_agua_producao_rural *
+        investimento_expansao_producao_agua = custo_agua_producao_rural *
             fracao_investimento_coletivo_agua * domicilios_deficit_agua,
-        investimento_agua_rural_distribuicao = custo_agua_distribuicao_rural *
-            fracao_investimento_coletivo_agua * domicilios_deficit_agua,
-        investimento_agua_rural_expansao = investimento_agua_rural_individual +
-            investimento_agua_rural_producao + investimento_agua_rural_distribuicao,
+        investimento_expansao_distribuicao_agua = domicilios_deficit_agua *
+            custo_agua_distribuicao_rural *
+            fracao_investimento_coletivo_agua,
+        investimento_agua_rural_expansao = investimento_expansao_individual +
+            investimento_expansao_producao_agua +
+            investimento_expansao_distribuicao_agua,
         investimento_agua_rural_coletivo = 0.0,
-        # investimento_agua_rural_coletivo= investimento_agua_rural_producao +
-        #    investimento_agua_rural_distribuicao,
-        capacidade_instalada_agua_rural = domicilios_adequados_agua *
-            (custo_agua_producao_rural + custo_agua_distribuicao_rural)
+    )
+}
+
+#' Capacidade instalada Água Rural
+#'
+#' Calcula a capacidade instalada para expansão do sistema de abastecimento de água rural.
+#'
+#' @param tabela um `data.frame` contendo as colunas:
+#' `domicilios_adequados_agua`, `custo_agua_distribuicao_rural` e `custo_agua_producao_rural`
+#' @export
+#'
+#' @return um `data.frame` contendo as colunas adicional capacidade_instalada_distribuicao_agua  e capacidade_instalada_producao_agua.
+capacidade_instalada_rural_agua <- function(tabela) {
+    tabela <- dplyr::mutate(
+        tabela,
+        capacidade_instalada_distribuicao_agua = domicilios_adequados_agua * custo_agua_distribuicao_rural,
+        capacidade_instalada_producao_agua = domicilios_adequados_agua * custo_agua_producao_rural
+    )
+}
+
+#' Consolida os dados de investimentos para água situação rural
+#'
+#' Totaliza os dados investimento em expansão, reposição e total.
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{investimento_expansao_individual}
+#' \item{investimento_expansao_distribuicao_agua}
+#' \item{investimento_expansao_producao_agua}
+#' \item{investimento_reposicao_producao_agua}
+#' \item{investimento_reposicao_distribuicao_agua}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{investimento_expansao}
+#'  \item{investimento_reposicao}
+#'  \item{investimento_total}
+#' }
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- consolida_investimentos_agua(tabela)
+#' }
+consolida_investimentos_rural_agua <- function(tabela) {
+    tabela <- dplyr::mutate(
+        tabela,
+        investimento_expansao = investimento_expansao_distribuicao_agua +
+            investimento_expansao_producao_agua +
+            investimento_expansao_individual,
+        investimento_reposicao = investimento_reposicao_producao_agua +
+            investimento_reposicao_distribuicao_agua,
+        investimento_total = investimento_expansao + investimento_reposicao,
     )
 }
 
@@ -304,6 +357,52 @@ fazer_projecao_domicilio <- function(tabela, ano_inicial, ano_final, atualizar_m
     )
 }
 
+#' Cria tabela longa de necessidade de investimento do componente água
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{custo_expansao_distribuicao_agua}
+#' \item{custo_expansao_producao_agua}
+#' \item{custo_reposicao_producao_agua}
+#' \item{custo_reposicao_distribuicao_agua}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{destino}
+#'  \item{etapa}
+#' }
+#'
+#' @export
+tbl_longa_investimentos_agua_rural <- function(tabela) {
+    colunas <- c(
+        "estado", "regiao",
+        "investimento_expansao_individual",
+        "investimento_expansao_distribuicao_agua",
+        "investimento_expansao_producao_agua",
+        "investimento_reposicao_producao_agua",
+        "investimento_reposicao_distribuicao_agua"
+    )
+    tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- tidyr::pivot_longer(
+        tabela,
+        cols = starts_with("investimento_"),
+        names_to = c("destino", "etapa"),
+        names_pattern = "investimento_(.*?)_(.*)",
+        values_to = "necessidade_investimento"
+    )
+    tabela <- dplyr::mutate(
+        tabela,
+        componente = "agua",
+        situacao = "rural"
+    )
+}
+
 #' Módulo de cálculo para demanda rural de água
 #'
 #' Esta função organiza a ordem de execução das tarefas necessárias
@@ -314,7 +413,9 @@ fazer_projecao_domicilio <- function(tabela, ano_inicial, ano_final, atualizar_m
 #' @export
 #'
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
-rodar_modulo_rural_agua <- function(input, taxas_projecao) {
+rodar_modulo_rural_agua <- function(state) {
+    input <- state$input
+    taxas_projecao <- state$taxas_projecao
     ano <- input$geral$ano
     param <- input$agua # parametros
     ano_censo <- 2010
@@ -353,16 +454,39 @@ rodar_modulo_rural_agua <- function(input, taxas_projecao) {
     tabela <- domicilios_com_deficit_agua(tabela)
     tabela <- domicilios_adequados_com_agua(tabela)
     tabela <- investimento_rural_agua(tabela)
+    tabela <- capacidade_instalada_rural_agua(tabela)
+
     tabela <- rsan::calcula_reposicao_parcial(
         tabela,
-        "capacidade_instalada_agua_rural",
-        "investimento_agua_rural_coletivo",
-        "investimento_agua_rural_reposicao",
+        "capacidade_instalada_distribuicao_agua",
+        "investimento_expansao_distribuicao_agua",
+        "investimento_reposicao_distribuicao_agua",
         2021,
         ano,
         input$geral$ano_corrente,
         input$agua$vida_util
     )
-    tabela <- rsan:::adiciona_pais(tabela)
-    return(tabela)
+
+    tabela <- domicilios_com_deficit_agua(tabela)
+    tabela <- domicilios_adequados_com_agua(tabela)
+    tabela <- investimento_rural_agua(tabela)
+    tabela <- rsan::calcula_reposicao_parcial(
+        tabela,
+        "capacidade_instalada_producao_agua",
+        "investimento_expansao_producao_agua",
+        "investimento_reposicao_producao_agua",
+        2021,
+        ano,
+        input$geral$ano_corrente,
+        input$agua$vida_util
+    )
+    tabela <- consolida_investimentos_rural_agua(tabela)
+
+    state$agua_rural <- rsan:::adiciona_pais(tabela)
+
+    state$geral_longa <- dplyr::bind_rows(
+        tbl_longa_investimentos_agua_rural(state$agua_rural),
+        state$geral_longa
+    )
+    return(state)
 }

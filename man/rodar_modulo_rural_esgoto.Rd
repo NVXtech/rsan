@@ -4,7 +4,7 @@
 \alias{rodar_modulo_rural_esgoto}
 \title{Módulo de cálculo para demanda rural de esgoto}
 \usage{
-rodar_modulo_rural_esgoto(input, taxas_projecao)
+rodar_modulo_rural_esgoto(state)
 }
 \arguments{
 \item{input}{estrutura de dados (\code{reactive}) que guarda os parâmetros da interface gráfica}

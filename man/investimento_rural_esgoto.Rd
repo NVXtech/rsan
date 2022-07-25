@@ -14,7 +14,7 @@ investimento_rural_esgoto(tabela)
 }
 \value{
 um \code{data.frame} contendo as colunas adicionais:
-investimento_esgoto_rural_individual, investimento_esgoto_rural_producao, investimento_esgoto_rural_distribuicao e investimento_esgoto_rural_expansao
+investimento_expansao_individual, investimento_expansao_tratamento_esgoto e investimento_expansao_coleta_esgoto
 }
 \description{
 Calcula a necessidade de investimento para expansão do sistema de estação de esgoto.

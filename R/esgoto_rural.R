@@ -99,7 +99,7 @@ domicilios_adequados_com_esgoto <- function(tabela) {
 #' @param tabela um `data.frame` contendo as colunas `seguranca_hidrica` e `semiarido`.
 #' @export
 #'
-#' @return um `data.frame` contendo a coluna adicional `custo_agua_individual`.
+#' @return um `data.frame` contendo as colunas adicionais: "custo_esgoto_coleta_rural", "classe_densidade", "regiao".
 custo_coleta_esgoto <- function(tabela, coleta_esgoto) {
     manter <- c("custo_esgoto_coleta_rural", "classe_densidade", "regiao")
     coleta_esgoto <- dplyr::select(coleta_esgoto, dplyr::all_of(manter))
@@ -133,22 +133,36 @@ custo_tratamento_esgoto <- function(tabela, custo_tratamento) {
 #' @export
 #'
 #' @return um `data.frame` contendo as colunas adicionais:
-#' investimento_esgoto_rural_individual, investimento_esgoto_rural_producao, investimento_esgoto_rural_distribuicao e investimento_esgoto_rural_expansao
+#' investimento_expansao_individual, investimento_expansao_tratamento_esgoto e investimento_expansao_coleta_esgoto
 investimento_rural_esgoto <- function(tabela) {
     tabela <- dplyr::mutate(
         tabela,
-        investimento_esgoto_rural_individual = custo_esgoto_individual *
+        investimento_expansao_individual = custo_esgoto_individual *
             fracao_investimento_individual_esgoto * domicilios_deficit_esgoto,
-        investimento_esgoto_rural_tratamento = custo_esgoto_tratamento_rural *
+        investimento_expansao_tratamento_esgoto = domicilios_deficit_esgoto *
+            custo_esgoto_tratamento_rural *
+            fracao_investimento_coletivo_esgoto,
+        investimento_expansao_coleta_esgoto = custo_esgoto_coleta_rural *
             fracao_investimento_coletivo_esgoto * domicilios_deficit_esgoto,
-        investimento_esgoto_rural_coleta = custo_esgoto_coleta_rural *
-            fracao_investimento_coletivo_esgoto * domicilios_deficit_esgoto,
-        investimento_esgoto_rural_expansao = investimento_esgoto_rural_individual +
-            investimento_esgoto_rural_tratamento + investimento_esgoto_rural_coleta,
-        investimento_esgoto_rural_coletivo = 0.0,
-        # investimento_esgoto_rural_coletivo = investimento_esgoto_rural_tratamento + investimento_esgoto_rural_coleta,
-        capacidade_instalada_esgoto_rural = domicilios_adequados_esgoto *
-            (custo_esgoto_tratamento_rural + custo_esgoto_coleta_rural)
+    )
+}
+
+#' Capacidade instalada esgoto situação rural
+#'
+#' Calcula a capacidade instalada para expansão do sistema de abastecimento de esgoto situação rural.
+#'
+#' @param tabela um `data.frame` contendo as colunas:
+#' `domicilios_adequados_esgoto`, `custo_esgoto_distribuicao_rural` e `custo_esgoto_producao_rural`
+#' @export
+#'
+#' @return um `data.frame` contendo as colunas adicional capacidade_instalada_coleta_esgoto  e capacidade_instalada_tratamento_esgoto.
+capacidade_instalada_rural_esgoto <- function(tabela) {
+    tabela <- dplyr::mutate(
+        tabela,
+        capacidade_instalada_coleta_esgoto = domicilios_adequados_esgoto *
+            custo_esgoto_coleta_rural,
+        capacidade_instalada_tratamento_esgoto = domicilios_adequados_esgoto *
+            custo_esgoto_tratamento_rural
     )
 }
 
@@ -167,6 +181,87 @@ adiciona_deficit_rural_esgoto <- function(tabela, deficit) {
     tabela <- dplyr::left_join(tabela, deficit, by = "estado")
 }
 
+#' Consolida os dados de investimentos para água situação rural
+#'
+#' Totaliza os dados investimento em expansão, reposição e total.
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{investimento_expansao_individual}
+#' \item{investimento_expansao_coleta_esgoto}
+#' \item{investimento_expansao_tratamento_esgoto}
+#' \item{investimento_reposicao_coleta_esgoto}
+#' \item{investimento_reposicao_tratamento_esgoto}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{investimento_expansao}
+#'  \item{investimento_reposicao}
+#'  \item{investimento_total}
+#' }
+#'
+#' @export
+consolida_investimentos_rural_esgoto <- function(tabela) {
+    tabela <- dplyr::mutate(
+        tabela,
+        # investimento_esgoto_rural_coletivo = investimento_expansao_tratamento_esgoto + investimento_expansao_coleta_esgoto,
+        investimento_expansao = investimento_expansao_coleta_esgoto +
+            investimento_expansao_tratamento_esgoto +
+            investimento_expansao_individual,
+        investimento_reposicao = investimento_reposicao_tratamento_esgoto +
+            investimento_reposicao_coleta_esgoto,
+        investimento_total = investimento_expansao + investimento_reposicao,
+    )
+}
+
+#' Cria tabela longa de necessidade de investimento do componente esgoto
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{investimento_expansao_individual}
+#' \item{investimento_expansao_coleta_esgoto}
+#' \item{investimento_expansao_tratamento_esgoto}
+#' \item{investimento_reposicao_coleta_esgoto}
+#' \item{investimento_reposicao_tratamento_esgoto}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{destino}
+#'  \item{etapa}
+#' }
+#'
+#' @export
+tbl_longa_investimentos_esgoto_rural <- function(tabela) {
+    colunas <- c(
+        "estado", "regiao",
+        "investimento_expansao_individual",
+        "investimento_expansao_coleta_esgoto",
+        "investimento_expansao_tratamento_esgoto",
+        "investimento_reposicao_coleta_esgoto",
+        "investimento_reposicao_tratamento_esgoto"
+    )
+    tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- tidyr::pivot_longer(
+        tabela,
+        cols = starts_with("investimento_"),
+        names_to = c("destino", "etapa"),
+        names_pattern = "investimento_(.*?)_(.*)",
+        values_to = "necessidade_investimento"
+    )
+    tabela <- dplyr::mutate(
+        tabela,
+        componente = "esgoto",
+        situacao = "rural"
+    )
+}
+
 #' Módulo de cálculo para demanda rural de esgoto
 #'
 #' Esta função organiza a ordem de execução das tarefas necessárias
@@ -177,7 +272,9 @@ adiciona_deficit_rural_esgoto <- function(tabela, deficit) {
 #' @export
 #'
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
-rodar_modulo_rural_esgoto <- function(input, taxas_projecao) {
+rodar_modulo_rural_esgoto <- function(state) {
+    input <- state$input
+    taxas_projecao <- state$taxas_projecao
     ano <- input$geral$ano
     ano_censo <- 2010
 
@@ -214,15 +311,32 @@ rodar_modulo_rural_esgoto <- function(input, taxas_projecao) {
     tabela <- domicilios_com_deficit_esgoto(tabela)
     tabela <- domicilios_adequados_com_esgoto(tabela)
     tabela <- investimento_rural_esgoto(tabela)
+    tabela <- capacidade_instalada_rural_esgoto(tabela)
+
     tabela <- rsan::calcula_reposicao_parcial(
         tabela,
-        "capacidade_instalada_esgoto_rural",
-        "investimento_esgoto_rural_coletivo",
-        "investimento_esgoto_rural_reposicao",
+        "capacidade_instalada_coleta_esgoto",
+        "investimento_expansao_coleta_esgoto",
+        "investimento_reposicao_coleta_esgoto",
         2021,
         ano,
         input$geral$ano_corrente,
         input$esgoto$vida_util
     )
-    return(tabela)
+    tabela <- rsan::calcula_reposicao_parcial(
+        tabela,
+        "capacidade_instalada_tratamento_esgoto",
+        "investimento_expansao_tratamento_esgoto",
+        "investimento_reposicao_tratamento_esgoto",
+        2021,
+        ano,
+        input$geral$ano_corrente,
+        input$esgoto$vida_util
+    )
+    state$esgoto_rural <- consolida_investimentos_rural_esgoto(tabela)
+    state$geral_longa <- dplyr::bind_rows(
+        tbl_longa_investimentos_esgoto_rural(state$esgoto_rural),
+        state$geral_longa
+    )
+    return(state)
 }

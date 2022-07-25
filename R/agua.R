@@ -736,8 +736,10 @@ consolida_investimentos_esgoto <- function(tabela) {
 tbl_longa_investimentos_agua <- function(tabela) {
   colunas <- c(
     "estado", "regiao",
-    "custo_expansao_distribuicao_agua", "custo_expansao_producao_agua",
-    "custo_reposicao_producao_agua", "custo_reposicao_distribuicao_agua"
+    "custo_expansao_distribuicao_agua",
+    "custo_expansao_producao_agua",
+    "custo_reposicao_producao_agua",
+    "custo_reposicao_distribuicao_agua"
   )
   tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
   tabela <- rsan:::somar_por_campo(tabela, "estado")
@@ -745,7 +747,7 @@ tbl_longa_investimentos_agua <- function(tabela) {
     tabela,
     cols = starts_with("custo_"),
     names_to = c("destino", "etapa"),
-    names_pattern = "custo_?(.*)_(.*_.*)",
+    names_pattern = "custo_(.*?)_(.*)",
     values_to = "necessidade_investimento"
   )
   tabela <- dplyr::mutate(
@@ -790,7 +792,7 @@ tbl_longa_investimentos_esgoto <- function(tabela) {
     tabela,
     cols = starts_with("custo_"),
     names_to = c("destino", "etapa"),
-    names_pattern = "custo_?(.*)_(.*_.*)",
+    names_pattern = "custo_(.*?)_(.*)",
     values_to = "necessidade_investimento"
   )
   tabela <- dplyr::mutate(
@@ -1106,9 +1108,7 @@ investimento_agua <- function(state) {
   rlog::log_info("água: carregando parâmetros")
   input <- state$input
   rlog::log_info("água: rodando módulo rural")
-  state$agua_rural <- rsan:::rodar_modulo_rural_agua(
-    input, state$taxas_projecao
-  )
+  state <- rsan:::rodar_modulo_rural_agua(state)
   rlog::log_info("água: rodando módulo demografico")
   demografico <- rodar_modulo_demografico(input, projecao, "agua")
   rlog::log_info("água: rodando módulo orcamentario")
@@ -1153,8 +1153,10 @@ investimento_esgoto <- function(state) {
   tabela <- rsan::adiciona_pais(tabela)
   tabela <- rsan::adiciona_regiao(tabela)
   state$esgoto <- tabela
+
   rlog::log_info("esgoto: rodando módulo rural")
-  state$esgoto_rural <- rsan:::rodar_modulo_rural_esgoto(input, state$taxas_projecao)
+  state <- rsan:::rodar_modulo_rural_esgoto(state)
+
   state$geral_longa <- dplyr::bind_rows(
     tbl_longa_investimentos_esgoto(tabela),
     state$geral_longa

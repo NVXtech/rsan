@@ -10,7 +10,7 @@ custo_coleta_esgoto(tabela, coleta_esgoto)
 \item{tabela}{um \code{data.frame} contendo as colunas \code{seguranca_hidrica} e \code{semiarido}.}
 }
 \value{
-um \code{data.frame} contendo a coluna adicional \code{custo_agua_individual}.
+um \code{data.frame} contendo as colunas adicionais: "custo_esgoto_coleta_rural", "classe_densidade", "regiao".
 }
 \description{
 Adiciona coluna com custo coletivos para sistemas de coleta de esgoto.
