@@ -38,14 +38,13 @@ consolida_investimentos_tabela_longa <- function(state) {
     return(state)
 }
 
-#' Prepara tabela para
+#' Prepara tabela para plotar gráfico estilo sankey
 #' @param tabela o `data.frame` longo com dados de investimento
-#'
+#' @param colunas um `vector` com a lista de coluns para serem utilizadas.
+#' Os items podem ser "situacao", "destino", "componente", "etapa".
 #' @return uma lista (`list`) que guarda todos os dados para o sankey plot
 #' @export
-prepare_sankey <- function(tabela) {
-    colunas <- c("componente", "situacao", "destino", "etapa")
-
+prepara_sankey <- function(tabela, colunas) {
     # cria lista de fontes
     n <- length(colunas)
     source_names <- c()
@@ -57,9 +56,8 @@ prepare_sankey <- function(tabela) {
         rm(tmp)
     }
     sources <- data.frame(
-        name = source_names, ind = 1:length(source_names)
+        name = source_names, ind = 0:(length(source_names) - 1)
     )
-
     consolidado <- dplyr::tibble(
         "source_name" = character(),
         "target_name" = character(),

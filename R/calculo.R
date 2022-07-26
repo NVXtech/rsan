@@ -378,6 +378,5 @@ rodar_modelo <- function(state) {
   state <- consolida_investimentos(state)
 
   rlog::log_info("rodada terminada")
-  rsan:::prepare_sankey(state$geral_longa)
   return(state)
 }
