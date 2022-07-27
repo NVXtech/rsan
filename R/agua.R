@@ -570,7 +570,7 @@ consolida_investimentos_agua <- function(tabela) {
 #'
 #' @param tabela contendo as colunas:
 #' \itemize{
-#' \item{custo_expansao_distribuicao_agua}
+#' \item{deficit_urbana}
 #' \item{custo_expansao_producao_agua}
 #' \item{custo_reposicao_producao_agua}
 #' \item{custo_reposicao_distribuicao_agua}
@@ -584,6 +584,7 @@ consolida_investimentos_agua <- function(tabela) {
 #'  \item{situacao}
 #'  \item{destino}
 #'  \item{etapa}
+#'  \item{necessidade_investimento}
 #' }
 #'
 #' @export
@@ -608,6 +609,45 @@ tbl_longa_investimentos_agua <- function(tabela) {
     tabela,
     componente = "agua",
     situacao = "urbana"
+  )
+}
+
+#' Cria tabela longa de deficit do componente água e situacao urbana
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{estado}
+#' \item{regiao}
+#' \item{deficit_urbana}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{etapa}
+#'  \item{deficit}
+#' }
+#'
+#' @export
+tbl_longa_deficit_agua <- function(tabela) {
+  colunas <- c("estado", "regiao", "deficit_urbana")
+  tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+  tabela <- rsan:::somar_por_campo(tabela, "estado")
+  tabela <- tidyr::pivot_longer(
+    tabela,
+    cols = starts_with("deficit_"),
+    names_to = "situacao",
+    names_pattern = "deficit_(.*)",
+    values_to = "deficit"
+  )
+  tabela <- dplyr::mutate(
+    tabela,
+    componente = "agua",
+    etapa = "producao_distribuicao",
+    deficit = as.integer(deficit)
   )
 }
 
@@ -799,9 +839,13 @@ investimento_agua <- function(state) {
   tabela <- rsan:::adiciona_regiao(tabela)
   state$agua <- tabela
 
-  state$geral_longa <- dplyr::bind_rows(
+  state$necessidade <- dplyr::bind_rows(
     tbl_longa_investimentos_agua(tabela),
-    state$geral_longa
+    state$necessidade
+  )
+  state$deficit <- dplyr::bind_rows(
+    tbl_longa_deficit_agua(tabela),
+    state$deficit
   )
   return(state)
 }

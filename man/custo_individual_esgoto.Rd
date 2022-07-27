@@ -5,10 +5,12 @@
 \title{Necessidade de Investimento - Componente Esgoto - Situação Rural
 Custo individual para sistemas de estações de esgoto}
 \usage{
-custo_individual_esgoto(tabela)
+custo_individual_esgoto(tabela, params)
 }
 \arguments{
 \item{tabela}{um \code{data.frame} contendo as colunas \code{seguranca_hidrica} e \code{V003}.}
+
+\item{params}{uma \code{list} contendo os preços para cada faixa}
 }
 \value{
 um \code{data.frame} contendo a coluna adicional \code{custo_esgoto_individual }.

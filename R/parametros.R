@@ -57,7 +57,17 @@ esgoto <- list(
   fator_materiais = 18,
   fator_composicao = 26,
   fator_insumo = 18,
-  vida_util = 30
+  vida_util = 30,
+  custo_individual_esgoto_faixa1 = 3318.83 * 1.6169335,
+  custo_individual_esgoto_faixa2 = 3487.6 * 1.6169335,
+  custo_individual_esgoto_faixa3 = 3656.36 * 1.6169335,
+  custo_individual_esgoto_faixa4 = 3860.22 * 1.6169335,
+  custo_individual_esgoto_faixa5 = 4300.83 * 1.6169335,
+  custo_individual_esgoto_faixa6 = 4641.6 * 1.6169335,
+  custo_individual_esgoto_faixa7 = 4977.54 * 1.6169335,
+  custo_individual_esgoto_faixa8 = 5638.27 * 1.6169335,
+  custo_individual_esgoto_faixa9 = 1884.98 * 1.6169335,
+  custo_individual_esgoto_faixa10 = 1988.74 * 1.6169335
 )
 
 valores_aterro <- c(

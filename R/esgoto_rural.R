@@ -5,31 +5,35 @@
 #' Adiciona coluna com custo individual para sistemas de estações de esgoto.
 #'
 #' @param tabela um `data.frame` contendo as colunas `seguranca_hidrica` e `V003`.
+#' @param params uma `list` contendo os preços para cada faixa
 #' @export
 #'
 #' @return um `data.frame` contendo a coluna adicional `custo_esgoto_individual `.
-custo_individual_esgoto <- function(tabela) {
+custo_individual_esgoto <- function(tabela, params) {
     classes_seguranca <- c("Baixa", "Mínima")
     tabela <- dplyr::mutate(
         tabela,
         custo_esgoto_individual = dplyr::case_when(
             !(seguranca_hidrica %in% classes_seguranca) & V003 >= 0 & V003 < 2
-            ~ 3318.83 * 1.6169335,
+            ~ params$custo_individual_esgoto_faixa1,
             !(seguranca_hidrica %in% classes_seguranca) & V003 >= 2 & V003 < 3
-            ~ 3487.6 * 1.6169335,
+            ~ params$custo_individual_esgoto_faixa2,
             !(seguranca_hidrica %in% classes_seguranca) & V003 >= 3 & V003 < 4
-            ~ 3656.36 * 1.6169335,
+            ~ params$custo_individual_esgoto_faixa3,
             !(seguranca_hidrica %in% classes_seguranca) & V003 >= 4 & V003 < 5
-            ~ 3860.22 * 1.6169335,
+            ~ params$custo_individual_esgoto_faixa4,
             !(seguranca_hidrica %in% classes_seguranca) & V003 >= 5 & V003 < 6
-            ~ 4300.83 * 1.6169335,
+            ~ params$custo_individual_esgoto_faixa5,
             !(seguranca_hidrica %in% classes_seguranca) & V003 >= 6 & V003 < 7
-            ~ 4641.6 * 1.6169335,
+            ~ params$custo_individual_esgoto_faixa6,
             !(seguranca_hidrica %in% classes_seguranca) & V003 >= 7 & V003 < 8
-            ~ 4977.54 * 1.6169335,
-            !(seguranca_hidrica %in% classes_seguranca) & V003 >= 8 ~ 5638.27 * 1.6169335,
-            (seguranca_hidrica %in% classes_seguranca) & V003 < 5 ~ 1884.98 * 1.6169335,
-            (seguranca_hidrica %in% classes_seguranca) & V003 >= 5 ~ 1988.74 * 1.6169335
+            ~ params$custo_individual_esgoto_faixa7,
+            !(seguranca_hidrica %in% classes_seguranca) & V003 >= 8
+            ~ params$custo_individual_esgoto_faixa8,
+            (seguranca_hidrica %in% classes_seguranca) & V003 < 5
+            ~ params$custo_individual_esgoto_faixa9,
+            (seguranca_hidrica %in% classes_seguranca) & V003 >= 5
+            ~ params$custo_individual_esgoto_faixa10
         )
     )
 }
@@ -64,9 +68,9 @@ fracao_coletivo_individual_esgoto <- function(tabela) {
     )
 }
 
-#' Número de domícilios com deficit de esgoto
+#' Número de domicílios com deficit de esgoto
 #'
-#' Calcula o número de domícilios com déficit de sistemas de estação de esgoto.
+#' Calcula o número de domicílios com déficit de sistemas de estação de esgoto.
 #'
 #' @param tabela um `data.frame` contendo as colunas `V001_projecao` e `deficit_esgoto_relativo_rural`.
 #' @export
@@ -79,9 +83,24 @@ domicilios_com_deficit_esgoto <- function(tabela) {
     )
 }
 
-#' Número de domícilios com demanda adequada de esgoto
+#' Número de habitantes com deficit de esgoto
 #'
-#' Calcula o número de domícilios com déficit de sistemas de estação de esgoto.
+#' Calcula o número de habitantes com déficit de sistemas de estação de esgoto.
+#'
+#' @param tabela um `data.frame` contendo as colunas `V001_projecao` e `deficit_esgoto_relativo_rural`.
+#' @export
+#'
+#' @return um `data.frame` contendo a coluna adicional `domicilios_deficit_esgoto`.
+habitantes_com_deficit_esgoto <- function(tabela) {
+    tabela <- dplyr::mutate(
+        tabela,
+        deficit_rural = domicilios_deficit_esgoto * V003,
+    )
+}
+
+#' Número de domicílios com demanda adequada de esgoto
+#'
+#' Calcula o número de domicílios com déficit de sistemas de estação de esgoto.
 #'
 #' @param tabela um `data.frame` contendo as colunas `V001_projecao` e `deficit_esgoto_relativo_rural`.
 #' @export
@@ -264,6 +283,45 @@ tbl_longa_investimentos_esgoto_rural <- function(tabela) {
     )
 }
 
+#' Cria tabela longa de deficit do componente esgoto e situacao rural
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{estado}
+#' \item{regiao}
+#' \item{deficit_rural}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{etapa}
+#'  \item{deficit}
+#' }
+#'
+#' @export
+tbl_longa_deficit_esgoto_rural <- function(tabela) {
+    colunas <- c("estado", "regiao", "deficit_rural")
+    tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- tidyr::pivot_longer(
+        tabela,
+        cols = starts_with("deficit_"),
+        names_to = "situacao",
+        names_pattern = "deficit_(.*)",
+        values_to = "deficit"
+    )
+    tabela <- dplyr::mutate(
+        tabela,
+        componente = "esgoto",
+        etapa = "coleta_tratamento",
+        deficit = as.integer(deficit)
+    )
+}
+
 #' Módulo de cálculo para demanda rural de esgoto
 #'
 #' Esta função organiza a ordem de execução das tarefas necessárias
@@ -306,11 +364,12 @@ rodar_modulo_rural_esgoto <- function(state) {
     tabela <- rsan:::adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
     tabela <- fracao_coletivo_individual_esgoto(tabela)
 
-    tabela <- custo_individual_esgoto(tabela)
+    tabela <- custo_individual_esgoto(tabela, input$esgoto)
     tabela <- custo_coleta_esgoto(tabela, custo_coleta)
     tabela <- custo_tratamento_esgoto(tabela, custo_tratamento)
 
     tabela <- domicilios_com_deficit_esgoto(tabela)
+    tabela <- habitantes_com_deficit_esgoto(tabela)
     tabela <- domicilios_adequados_com_esgoto(tabela)
     tabela <- investimento_rural_esgoto(tabela)
     tabela <- capacidade_instalada_rural_esgoto(tabela)
@@ -336,9 +395,14 @@ rodar_modulo_rural_esgoto <- function(state) {
         input$esgoto$vida_util
     )
     state$esgoto_rural <- consolida_investimentos_rural_esgoto(tabela)
-    state$geral_longa <- dplyr::bind_rows(
+
+    state$necessidade <- dplyr::bind_rows(
         tbl_longa_investimentos_esgoto_rural(state$esgoto_rural),
-        state$geral_longa
+        state$necessidade
+    )
+    state$deficit <- dplyr::bind_rows(
+        tbl_longa_deficit_esgoto_rural(state$esgoto_rural),
+        state$deficit
     )
     return(state)
 }

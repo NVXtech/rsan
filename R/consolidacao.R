@@ -1,4 +1,4 @@
-tabela_consolidada_vazia <- function() {
+tabela_necessidade_vazia <- function() {
     tabela <- dplyr::tibble(
         "componente" = character(),
         "estado" = character(),
@@ -34,7 +34,7 @@ consolida_investimentos_tabela_longa <- function(state) {
     }
     tabela <- dplyr::bind_rows(tabelas_para_juntar)
     tabela <- rsan:::adiciona_pais(tabela)
-    state$geral_longa <- tabela
+    state$necessidade <- tabela
     return(state)
 }
 
@@ -108,4 +108,15 @@ prepara_sankey <- function(tabela, colunas) {
         )
     )
     return(output)
+}
+
+tabela_deficit_vazia <- function() {
+    tabela <- dplyr::tibble(
+        "estado" = character(),
+        "regiao" = character(),
+        "componente" = character(),
+        "situacao" = character(),
+        "etapa" = character(),
+        "deficit" = integer()
+    )
 }

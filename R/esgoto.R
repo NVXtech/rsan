@@ -221,6 +221,45 @@ tbl_longa_investimentos_esgoto <- function(tabela) {
     )
 }
 
+#' Cria tabela longa de deficit do componente esgoto
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{estado}
+#' \item{regiao}
+#' \item{deficit_urbana}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{etapa}
+#'  \item{deficit}
+#' }
+#'
+#' @export
+tbl_longa_deficit_esgoto <- function(tabela) {
+    colunas <- c("estado", "regiao", "deficit_urbana")
+    tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- tidyr::pivot_longer(
+        tabela,
+        cols = starts_with("deficit_"),
+        names_to = "situacao",
+        names_pattern = "deficit_(.*)",
+        values_to = "deficit"
+    )
+    tabela <- dplyr::mutate(
+        tabela,
+        componente = "esgoto",
+        etapa = "coleta_tratamento",
+        deficit = as.integer(deficit)
+    )
+}
+
 #' Módulo orçamentário para esgoto
 #'
 #' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
@@ -366,9 +405,13 @@ investimento_esgoto <- function(state) {
     rlog::log_info("esgoto: rodando módulo rural")
     state <- rsan:::rodar_modulo_rural_esgoto(state)
 
-    state$geral_longa <- dplyr::bind_rows(
+    state$necessidade <- dplyr::bind_rows(
         tbl_longa_investimentos_esgoto(tabela),
-        state$geral_longa
+        state$necessidade
+    )
+    state$deficit <- dplyr::bind_rows(
+        tbl_longa_deficit_esgoto(tabela),
+        state$deficit
     )
     return(state)
 }

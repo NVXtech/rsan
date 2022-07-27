@@ -91,9 +91,9 @@ investimento_drenagem <- function(state) {
   tabela <- investimento_total_drenagem(tabela)
   tabela <- rsan::adiciona_pais(tabela)
   state$drenagem <- tabela
-  state$geral_longa <- dplyr::bind_rows(
+  state$necessidade <- dplyr::bind_rows(
     tbl_longa_investimento_drenagem(tabela),
-    state$geral_longa
+    state$necessidade
   )
   return(state)
 }
@@ -294,55 +294,18 @@ investimento_residuos <- function(state) {
   rlog::log_info("residuos: totalizando investimentos")
   tabela <- rsan:::investimento_residuos_total(tabela)
   state$residuos <- tabela
-  state$geral_longa <- dplyr::bind_rows(
+
+  rlog::log_info("residuos: consolidando")
+  state$necessidade <- dplyr::bind_rows(
     tbl_longa_investimento_residuos(tabela),
-    state$geral_longa
+    state$necessidade
+  )
+  state$deficit <- dplyr::bind_rows(
+    tbl_longa_deficit_residuos(tabela),
+    state$deficit
   )
   return(state)
 }
-
-#' Consolida as necessidade de investimento em saneamento
-#' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
-#'
-#' @return estado da aplicação (`list`) que guarda todos os resultado e parâmetros dos cálculos
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' state <- consolida_investimentos(state)
-#' }
-consolida_investimentos <- function(state) {
-  vars <- c("codigo_municipio", "investimento_total")
-  by <- "codigo_municipio"
-  tipos <- c("agua", "esgoto", "drenagem")
-  state$geral <- dplyr::tibble(
-    codigo_municipio = character(),
-    investimento_total = double()
-  )
-  col_names <- c()
-  for (tipo in tipos) {
-    suffix <- paste0("_", tipo)
-    col_names <- c(col_names, paste0("investimento_total", suffix))
-    tbl <- dplyr::select(state[[tipo]], dplyr::all_of(vars))
-    state$geral <- dplyr::full_join(
-      state$geral, tbl,
-      suffix = c("", suffix),
-      by = by
-    )
-  }
-  state$geral <- dplyr::mutate(
-    state$geral,
-    investimento_total = rowSums(
-      dplyr::select(state$geral, dplyr::all_of(col_names)),
-      na.rm = TRUE
-    )
-  )
-  state$geral <- rsan:::adiciona_pais(state$geral)
-  state$geral <- rsan:::adiciona_estado(state$geral)
-  state$geral <- rsan:::adiciona_regiao(state$geral)
-  return(state)
-}
-
 
 #' Roda todos os modelos de cálculo de investimento
 #'
@@ -359,8 +322,9 @@ rodar_modelo <- function(state) {
   rlog::log_info("iniciando módulo de projecao populacional")
   state <- rodar_projecao_populacional(state)
 
-  rlog::log_info("criando nova tabela de dados")
-  state$geral_longa <- rsan:::tabela_consolidada_vazia()
+  rlog::log_info("criando novas tabelas de consolidação")
+  state$necessidade <- rsan:::tabela_necessidade_vazia()
+  state$deficit <- rsan:::tabela_deficit_vazia()
 
   rlog::log_info("água: iniciando módulo")
   state <- rsan:::investimento_agua(state)
@@ -373,9 +337,8 @@ rodar_modelo <- function(state) {
 
   rlog::log_info("residuos: iniciando módulo")
   state <- investimento_residuos(state)
-
-  rlog::log_info("consolidando investimentos")
-  state <- consolida_investimentos(state)
+  state$necessidade <- rsan:::adiciona_pais(state$necessidade)
+  state$deficit <- rsan:::adiciona_pais(state$deficit)
 
   rlog::log_info("rodada terminada")
   return(state)

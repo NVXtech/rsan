@@ -161,9 +161,9 @@ custo_distribuicao_agua <- function(tabela, custo_distribuicao) {
 }
 
 
-#' Número de domícilios com deficit de água
+#' Número de domicílios com deficit de água
 #'
-#' Calcula o número de domícilios com déficit de sistemas de abastecimento de água.
+#' Calcula o número de domicílios com déficit de sistemas de abastecimento de água.
 #'
 #' @param tabela um `data.frame` contendo as colunas `V001`, `V001_projecao` e `deficit_agua_relativo_rural`.
 #' @export
@@ -176,9 +176,24 @@ domicilios_com_deficit_agua <- function(tabela) {
     )
 }
 
-#' Número de domícilios sistemas de água adequados
+#' Número de habitantes com deficit de água
 #'
-#' Calcula o número de domícilios com sistemas de abastecimento de água adequados.
+#' Calcula o número de habitantes com déficit de sistemas de abastecimento de água.
+#'
+#' @param tabela um `data.frame` contendo as colunas `V001`, `V001_projecao` e `deficit_agua_relativo_rural`.
+#' @export
+#'
+#' @return um `data.frame` contendo a coluna adicional `domicilios_deficit_agua`.
+habitantes_com_deficit_agua <- function(tabela) {
+    tabela <- dplyr::mutate(
+        tabela,
+        deficit_rural = domicilios_deficit_agua * V003,
+    )
+}
+
+#' Número de domicílios sistemas de água adequados
+#'
+#' Calcula o número de domicílios com sistemas de abastecimento de água adequados.
 #'
 #' @param tabela um `data.frame` contendo as colunas `V001` e `deficit_agua_relativo_rural`.
 #' @export
@@ -333,7 +348,7 @@ filtra_setores_rurais <- function(tabela, setores) {
 }
 
 
-#' Faz projeção de domícilios
+#' Faz projeção de domicílios
 #'
 #' Projeta o número de domícilio pela projeção populacional e considera que a relação domicílio/habitantes se mantém constante.
 #'
@@ -405,6 +420,45 @@ tbl_longa_investimentos_agua_rural <- function(tabela) {
     )
 }
 
+#' Cria tabela longa de deficit do componente água e situacao rural
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{estado}
+#' \item{regiao}
+#' \item{deficit_urbana}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{etapa}
+#'  \item{deficit}
+#' }
+#'
+#' @export
+tbl_longa_deficit_agua_rural <- function(tabela) {
+    colunas <- c("estado", "regiao", "deficit_rural")
+    tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- tidyr::pivot_longer(
+        tabela,
+        cols = starts_with("deficit_"),
+        names_to = "situacao",
+        names_pattern = "deficit_(.*)",
+        values_to = "deficit"
+    )
+    tabela <- dplyr::mutate(
+        tabela,
+        componente = "agua",
+        etapa = "producao_distribuicao",
+        deficit = as.integer(deficit)
+    )
+}
+
 #' Módulo de cálculo para demanda rural de água
 #'
 #' Esta função organiza a ordem de execução das tarefas necessárias
@@ -454,6 +508,7 @@ rodar_modulo_rural_agua <- function(state) {
     tabela <- custo_distribuicao_agua(tabela, custo_distribuicao)
 
     tabela <- domicilios_com_deficit_agua(tabela)
+    tabela <- habitantes_com_deficit_agua(tabela)
     tabela <- domicilios_adequados_com_agua(tabela)
     tabela <- investimento_rural_agua(tabela)
     tabela <- capacidade_instalada_rural_agua(tabela)
@@ -486,9 +541,14 @@ rodar_modulo_rural_agua <- function(state) {
 
     state$agua_rural <- rsan:::adiciona_pais(tabela)
 
-    state$geral_longa <- dplyr::bind_rows(
+    state$necessidade <- dplyr::bind_rows(
         tbl_longa_investimentos_agua_rural(state$agua_rural),
-        state$geral_longa
+        state$necessidade
+    )
+
+    state$deficit <- dplyr::bind_rows(
+        tbl_longa_deficit_agua_rural(tabela),
+        state$deficit
     )
     return(state)
 }

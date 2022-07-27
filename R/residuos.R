@@ -142,6 +142,52 @@ tbl_longa_investimento_residuos <- function(tabela) {
     situacao = "urbana",
   )
 }
+
+#' Cria tabela longa de deficit do componente residuos
+#'
+#' @param tabela contendo as colunas:
+#' \itemize{
+#' \item{estado}
+#' \item{regiao}
+#' \item{deficit_coleta_seletiva}
+#' \item{deficit_coleta_indiferenciada}
+#' }
+#'
+#' @return tabela contendo os campos:
+#' \itemize{
+#'  \item{estado}
+#'  \item{regiao}
+#'  \item{componente}
+#'  \item{situacao}
+#'  \item{etapa}
+#'  \item{deficit}
+#' }
+#'
+#' @export
+tbl_longa_deficit_residuos <- function(tabela) {
+  colunas <- c(
+    "estado", "regiao",
+    "deficit_coleta_seletiva",
+    "deficit_coleta_indiferenciada"
+  )
+  tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
+  tabela <- rsan:::somar_por_campo(tabela, "estado")
+  tabela <- tidyr::pivot_longer(
+    tabela,
+    cols = starts_with("deficit_"),
+    names_to = "etapa",
+    names_pattern = "deficit_(.*)",
+    values_to = "deficit"
+  )
+  tabela <- dplyr::mutate(
+    tabela,
+    componente = "residuos",
+    situacao = "urbana",
+    deficit = as.integer(deficit)
+  )
+}
+
+
 # ATERRO -----------------------------------------------------------------------
 
 #' Demanda por aterro

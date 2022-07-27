@@ -97,7 +97,6 @@ cria_armazenamento_padrao <- function() {
     "tipo_disposicao"
   )
   test <- data(list = dados, package = "rsan")
-  print(test)
   for (dado in dados) {
     tmp <- get(dado)
     salvar_em <- caminho_do(dado)
