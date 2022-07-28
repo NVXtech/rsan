@@ -1,11 +1,9 @@
-library(lubridate)
-
 #' Último ano e mês
 #'
 #' @return uma `list` com o último ano e mes
 #' @export
 get_last_month_and_year <- function() {
-  last_date <- floor_date(as.Date(Sys.Date()), "month") - months(1)
+  last_date <- lubridate::floor_date(as.Date(Sys.Date()), "month") - months(1)
   return(list(
     year = substr(last_date, 1, 4),
     month = substr(last_date, 6, 7)

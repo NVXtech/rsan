@@ -15,7 +15,7 @@ rodar_projecao_populacional <- function(state) {
   fonte1 <- adicionar_proporcao_urbana_rural(fonte1)
   if (grepl(".*censo.*", input$fonte2)) {
     # TODO: implementar para caso a fonte seja outro censo
-    showNotification("Fonte de dados 2 não pode ser censo!", type = "error")
+    shiny::showNotification("Fonte de dados 2 não pode ser censo!", type = "error")
     return()
   }
   fonte2 <- rsan:::load_data(input$fonte2)
