@@ -704,7 +704,7 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
 #' orca <- rodar_modulo_orcamentario_agua(input, demografico)
 #' }
 rodar_modulo_orcamentario_agua <- function(input, demografico) {
-  sinapi <- rsan:::load_data(input$agua$sinapi)
+  sinapi <- rsan:::load_sinapi(input$agua$sinapi)
 
   data("projeto_distribuicao_agua", package = "rsan")
 

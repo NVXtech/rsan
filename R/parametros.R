@@ -36,7 +36,7 @@ projecao <- list(
 
 agua <- list(
   snis = "snis_2020",
-  sinapi = "sinapi_202112",
+  sinapi = "dt202112",
   meta_agua = 99,
   perda_agua = 25,
   fator_servicos = 26,
@@ -50,7 +50,7 @@ agua <- list(
 
 esgoto <- list(
   snis = "snis_2020",
-  sinapi = "sinapi_202112",
+  sinapi = "dt202112",
   meta_esgoto = 90,
   proporcao = 80,
   fator_servicos = 26,

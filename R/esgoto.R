@@ -273,7 +273,7 @@ tbl_longa_deficit_esgoto <- function(tabela) {
 #' orca <- rodar_modulo_orcamentario_esgoto(input, demografico)
 #' }
 rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
-    sinapi <- rsan:::load_data(input$esgoto$sinapi)
+    sinapi <- rsan:::load_sinapi(input$esgoto$sinapi)
 
     data("projeto_coleta_esgoto", package = "rsan")
     coleta <- calcula_precos_distribuicao(

@@ -9,7 +9,7 @@ tbl_longa_investimentos_agua(tabela)
 \arguments{
 \item{tabela}{contendo as colunas:
 \itemize{
-\item{custo_expansao_distribuicao_agua}
+\item{deficit_urbana}
 \item{custo_expansao_producao_agua}
 \item{custo_reposicao_producao_agua}
 \item{custo_reposicao_distribuicao_agua}
@@ -24,6 +24,7 @@ tabela contendo os campos:
 \item{situacao}
 \item{destino}
 \item{etapa}
+\item{necessidade_investimento}
 }
 }
 \description{

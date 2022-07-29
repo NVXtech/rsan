@@ -2,7 +2,7 @@
 % Please edit documentation in R/esgoto_rural.R
 \name{domicilios_com_deficit_esgoto}
 \alias{domicilios_com_deficit_esgoto}
-\title{Número de domícilios com deficit de esgoto}
+\title{Número de domicílios com deficit de esgoto}
 \usage{
 domicilios_com_deficit_esgoto(tabela)
 }
@@ -13,5 +13,5 @@ domicilios_com_deficit_esgoto(tabela)
 um \code{data.frame} contendo a coluna adicional \code{domicilios_deficit_esgoto}.
 }
 \description{
-Calcula o número de domícilios com déficit de sistemas de estação de esgoto.
+Calcula o número de domicílios com déficit de sistemas de estação de esgoto.
 }

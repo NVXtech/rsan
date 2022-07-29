@@ -2,7 +2,7 @@
 % Please edit documentation in R/agua_rural.R
 \name{domicilios_adequados_com_agua}
 \alias{domicilios_adequados_com_agua}
-\title{Número de domícilios sistemas de água adequados}
+\title{Número de domicílios sistemas de água adequados}
 \usage{
 domicilios_adequados_com_agua(tabela)
 }
@@ -13,5 +13,5 @@ domicilios_adequados_com_agua(tabela)
 um \code{data.frame} contendo a coluna adicional \code{domicilios_adequados_agua}.
 }
 \description{
-Calcula o número de domícilios com sistemas de abastecimento de água adequados.
+Calcula o número de domicílios com sistemas de abastecimento de água adequados.
 }

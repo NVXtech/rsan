@@ -2,7 +2,7 @@
 % Please edit documentation in R/agua_rural.R
 \name{fazer_projecao_domicilio}
 \alias{fazer_projecao_domicilio}
-\title{Faz projeção de domícilios}
+\title{Faz projeção de domicílios}
 \usage{
 fazer_projecao_domicilio(
   tabela,
