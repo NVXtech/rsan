@@ -11,31 +11,34 @@
 #' }
 rodar_projecao_populacional <- function(state) {
   input <- state$input$projecao
-  fonte1 <- rsan:::load_data(input$fonte1)
-  fonte1 <- adicionar_proporcao_urbana_rural(fonte1)
+  fonte1 <- rsan:::load_ibge(input$fonte1)
+  fonte1 <- rsan:::adicionar_proporcao_urbana_rural(fonte1)
   if (grepl(".*censo.*", input$fonte2)) {
     # TODO: implementar para caso a fonte seja outro censo
     shiny::showNotification("Fonte de dados 2 não pode ser censo!", type = "error")
     return()
   }
-  fonte2 <- rsan:::load_data(input$fonte2)
+  fonte2 <- rsan:::load_ibge(input$fonte2)
   ano1 <- rsan:::nome_para_ano(input$fonte1)
   ano2 <- rsan:::nome_para_ano(input$fonte2)
-  state$input$geral$ano_popolacao_fonte1 <- ano1
-  state$input$geral$ano_popolacao_fonte2 <- ano2
+  state$input$geral$ano_populacao_fonte1 <- ano1
+  state$input$geral$ano_populacao_fonte2 <- ano2
 
   rlog::log_info("projecao: consolidando fontes")
-  consolidado <- junta_fontes_populacao(fonte1, fonte2)
+  consolidado <- rsan:::junta_fontes_populacao(fonte1, fonte2)
 
   rlog::log_info("projecao: calculando taxa de crescimento")
-  consolidado <- calcula_taxa_crescimento(consolidado, ano1, ano2)
+  consolidado <- rsan:::calcula_taxa_crescimento(consolidado, ano1, ano2)
   state$taxas_projecao <- consolidado
 
   rlog::log_info("projecao: calculando crescimento_urbano_rural")
-  consolidado <- calcular_urbana_rural_fonte2(consolidado)
+  consolidado <- rsan:::calcular_urbana_rural_fonte2(consolidado)
 
   rlog::log_info("projecao: calculando projecao")
-  state$projecao <- calcula_projecao(consolidado, ano2, state$input$geral$ano)
+  state$projecao <- rsan:::calcula_projecao(
+    consolidado, ano2, state$input$geral$ano
+  )
+
   rlog::log_info(sprintf(
     "projecao: dimensao %s x %s",
     nrow(state$projecao), ncol(state$projecao)
@@ -57,14 +60,12 @@ rodar_projecao_populacional <- function(state) {
 #' }
 investimento_drenagem <- function(state) {
   input <- state$input$drenagem
-  data("snis_ap", package = "rsan")
-  ano <- rsan:::nome_para_ano(input$snis_ap)
   ano_inicial <- 2021
   ano_final <- state$input$geral$ano
   ano_corrente <- state$input$geral$ano_corrente
   depreciacao <- rsan::depreciacao_para_vida_util(input$deprec_drenagem)
 
-  tabela <- snis_ap[[paste0("ano", ano)]]
+  tabela <- rsan:::load_snis_ap(input$snis_ap)
   tabela <- rsan:::densidade_urbana(tabela)
   tabela <- rsan:::precipitacao(tabela)
   tabela <- rsan:::adiciona_indices_drenagem(tabela)
@@ -139,8 +140,8 @@ investimento_residuos <- function(state) {
 
   # Consolida os dados de Unidades de Processamento (SNIS-prestadores)
   rlog::log_info("residuos: carregando snis-rs data")
-  data(snis_rs, package = "rsan")
-  compostagem <- rsan::quantidade_compostagem_municipio(snis_rs$ano2020)
+  snis_rs <- rsan:::load_snis_rs(input$snis_rs)
+  compostagem <- rsan::quantidade_compostagem_municipio(snis_rs)
 
   # Consolidação dos dados para classificação
   rlog::log_info("residuos: consolidando dados para classificação")

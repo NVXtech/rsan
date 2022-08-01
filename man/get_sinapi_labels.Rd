@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_sinapi.R
 \name{get_sinapi_labels}
 \alias{get_sinapi_labels}
-\title{Retorna dados do SINAPI}
+\title{Retorna os rótulos dos dados do SINAPI disponívei}
 \usage{
 get_sinapi_labels()
 }
@@ -10,7 +10,7 @@ get_sinapi_labels()
 um vetor com os dados disponiveis
 }
 \description{
-Retorna dados do SINAPI
+Retorna os rótulos dos dados do SINAPI disponívei
 }
 \examples{
 \dontrun{

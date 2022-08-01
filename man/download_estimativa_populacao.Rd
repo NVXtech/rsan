@@ -4,10 +4,13 @@
 \alias{download_estimativa_populacao}
 \title{Cria conjunto de dados de estimativas populacionais por município do IBGE}
 \usage{
-download_estimativa_populacao()
+download_estimativa_populacao(year)
+}
+\arguments{
+\item{year}{ano que deseja baixar}
 }
 \value{
-nada
+um \code{data.frame} com a estimativa populacional
 }
 \description{
 Cria conjunto de dados de estimativas populacionais por município do IBGE

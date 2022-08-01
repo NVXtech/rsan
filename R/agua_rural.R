@@ -475,22 +475,26 @@ rodar_modulo_rural_agua <- function(state) {
     ano <- input$geral$ano
     param <- input$agua # parametros
     ano_censo <- 2010
-
+    rlog::log_info("água:rural: carregando dados")
     data("agua_esgoto_rural", package = "rsan")
     agua_esgoto_rural <- get("agua_esgoto_rural")
     seguranca_hidrica <- agua_esgoto_rural$seguranca_hidrica
     custo_producao <- agua_esgoto_rural$custo_producao
     custo_distribuicao <- agua_esgoto_rural$custo_distribuicao
 
+    rlog::log_info("água:rural: calculando setores")
     setores_rurais <- c(4:8)
     tabela <- agua_esgoto_rural$censo
     tabela <- filtra_setores_rurais(tabela, setores_rurais)
     tabela <- codigo_setor_para_municipio(tabela)
     tabela <- adiciona_taxa_crescimento(tabela, taxas_projecao)
+    rlog::log_info("água:rural: projecao de domicilios")
     tabela <- fazer_projecao_domicilio(tabela, ano_censo, ano)
     tabela <- densidade_setor(tabela)
+    rlog::log_info("água:rural: classificando setores")
     tabela <- classifica_densidade_setor(tabela)
     tabela <- classifica_deficit_setor(tabela)
+    rlog::log_info("água:rural: adicionando novos campos")
     tabela <- rsan:::adiciona_estado(tabela)
     tabela <- rsan:::adiciona_regiao(tabela)
     tabela <- rsan:::adiciona_deficit_rural_agua(
@@ -498,7 +502,7 @@ rodar_modulo_rural_agua <- function(state) {
     )
     tabela <- adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
     tabela <- fracao_coletivo_individual_agua(tabela)
-
+    rlog::log_info("água:rural: calculando custos")
     tabela <- custo_individual_agua(
         tabela,
         custo = param$custo_rural_individual,
@@ -510,6 +514,7 @@ rodar_modulo_rural_agua <- function(state) {
     tabela <- domicilios_com_deficit_agua(tabela)
     tabela <- habitantes_com_deficit_agua(tabela)
     tabela <- domicilios_adequados_com_agua(tabela)
+    rlog::log_info("água:rural: calculando necessidade")
     tabela <- investimento_rural_agua(tabela)
     tabela <- capacidade_instalada_rural_agua(tabela)
 
@@ -537,6 +542,7 @@ rodar_modulo_rural_agua <- function(state) {
         input$geral$ano_corrente,
         input$agua$vida_util
     )
+    rlog::log_info("água:rural: consolidando necessidade")
     tabela <- consolida_investimentos_rural_agua(tabela)
 
     state$agua_rural <- rsan:::adiciona_pais(tabela)

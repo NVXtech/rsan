@@ -2,19 +2,16 @@
 % Please edit documentation in R/data_ibge_populacao.R
 \name{get_censo_years}
 \alias{get_censo_years}
-\title{Lista de anos de população estimada pelo Censo
+\title{Lista de anos da população estimada pelo Censo
 que estão disponíveis para download no ftp do IBGE}
 \usage{
 get_censo_years()
-}
-\arguments{
-\item{url}{}
 }
 \value{
 lista de anos do censo disponíveis
 }
 \description{
-Lista de anos de população estimada pelo Censo
+Lista de anos da população estimada pelo Censo
 que estão disponíveis para download no ftp do IBGE
 }
 \examples{

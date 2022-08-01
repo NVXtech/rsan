@@ -30,8 +30,8 @@ geral <- list(
 )
 
 projecao <- list(
-  fonte1 = "populacao_censo_2010",
-  fonte2 = "populacao_estimada_2021"
+  fonte1 = "censo_2010",
+  fonte2 = "estimativa_2021"
 )
 
 agua <- list(
@@ -102,6 +102,8 @@ valores_triagem <- c(
 
 residuos <- list(
   snis = "snis_2020",
+  snis_rs = "ano2020",
+
   # coleta comum
   valor_caminhao = 484709.23,
   deprec_coleta_indiferenciada = 10,
@@ -124,7 +126,7 @@ residuos <- list(
 )
 
 drenagem <- list(
-  snis_ap = "snis_2020",
+  snis_ap = "ano2020",
   modo = 2,
   deprec_drenagem = 2,
   investimento_per_capita = 10000,

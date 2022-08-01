@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_sinapi.R
 \name{sinapi_id_to_name}
 \alias{sinapi_id_to_name}
-\title{Transforma id sinapi em nome legível}
+\title{Transforma id SINAPI em nome legível}
 \usage{
 sinapi_id_to_name(id)
 }
@@ -10,5 +10,5 @@ sinapi_id_to_name(id)
 um \code{character} com o nome
 }
 \description{
-Transforma id sinapi em nome legível
+Transforma id SINAPI em nome legível
 }

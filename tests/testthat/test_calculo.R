@@ -2,5 +2,15 @@ test_that("calculos estão rodando", {
     setwd(file.path("../../"))
     app_state <- list(input = get_default_input())
     state <- rodar_modelo(app_state)
-    expect_true(!is.null(state))
+    testthat::expect_true(!is.null(state))
+
+    valores <- dplyr::group_by(state$necessidade, componente)
+    valores <- dplyr::summarise(
+        valores,
+        total = sum(necessidade_investimento, na.rm = TRUE)
+    )
+    componente <- c("agua", "drenagem", "esgoto", "residuos")
+    total <- c(240238483806., 545380927768., 334163032430., 204641640753.)
+    expected <- dplyr::tibble(componente, total)
+    testthat::expect_equal(valores, expected)
 })

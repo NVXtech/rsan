@@ -2,18 +2,18 @@
 % Please edit documentation in R/data_ibge_populacao.R
 \name{list_files_from_ftp}
 \alias{list_files_from_ftp}
-\title{List of files/folders in a FTP folder}
+\title{Lista os arquivos e pastas de um FTP}
 \usage{
 list_files_from_ftp(url)
 }
 \arguments{
-\item{url}{}
+\item{url}{local (URL) que deseja a lista de arquivo}
 }
 \value{
 list of files and folders
 }
 \description{
-List of files/folders in a FTP folder
+Lista os arquivos e pastas de um FTP
 }
 \examples{
 list_files_from_ftp("ftp.ibge.gov.br/Censos/")

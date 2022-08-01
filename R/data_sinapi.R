@@ -143,12 +143,14 @@ integrity_sinapi <- function() {
 update_sinapi <- function(ano, mes) {
   id <- paste0("dt", ano, mes)
   sinapi <- rsan:::load_data("sinapi")
-  sinapi[[id]] <- download_sinapi(ano, mes)
-  save(sinapi, file = rsan:::get_data_path("sinapi"))
+  try({
+    sinapi[[id]] <- download_sinapi(ano, mes)
+    save(sinapi, file = rsan:::get_data_path("sinapi"))
+  })
   return(!is.null(sinapi[[id]]))
 }
 
-#' Retorna dados do SINAPI
+#' Retorna os rótulos dos dados do SINAPI disponívei
 #'
 #' @return um vetor com os dados disponiveis
 #' @export
@@ -161,7 +163,7 @@ get_sinapi_labels <- function() {
   return(names(rsan:::load_data("sinapi")))
 }
 
-#' Transforma id sinapi em nome legível
+#' Transforma id SINAPI em nome legível
 #'
 #' @return um `character` com o nome
 #' @export

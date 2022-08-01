@@ -24,7 +24,7 @@
 #'   \item{PRECO_XX}{27 colunas com preço do estado (sigla XX) ex: PRECO_AC é o preço no ACRE.}
 #' }
 #' @source \url{https://www.caixa.gov.br/poder-publico/modernizacao-gestao/sinapi/}
-"sinapi_202112"
+"sinapi"
 
 #' Municípios do Brasil
 #'

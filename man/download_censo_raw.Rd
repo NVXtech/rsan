@@ -4,10 +4,13 @@
 \alias{download_censo_raw}
 \title{Cria conjunto de dados do censo IBGE}
 \usage{
-download_censo_raw()
+download_censo_raw(year)
+}
+\arguments{
+\item{year}{ano que deseja baixar}
 }
 \value{
-Dataframe com informações dos conjuntos de dados baixados
+um \code{data.frame} com a estimativa populacional pelo Censo
 }
 \description{
 Cria conjunto de dados do censo IBGE

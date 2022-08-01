@@ -1,9 +1,15 @@
-datasets <- c("populacao", "municipio", "snis", "sinapi", "projeto")
+datasets <- c(
+  "populacao", "municipio",
+  "snis", "snis_ap", "snis_rs",
+  "sinapi", "projeto"
+)
 
 create_functions <- list(
   "populacao" = rsan:::create_populacao,
   "municipio" = rsan:::create_municipio,
   "snis" = rsan:::create_snis,
+  "snis_ap" = rsan:::create_snis_ap,
+  "snis_rs" = rsan:::create_snis_rs,
   "sinapi" = rsan:::create_sinapi,
   "projeto" = rsan:::create_projeto
 )
@@ -12,6 +18,8 @@ integrity_functions <- list(
   "populacao" = rsan:::integrity_populacao,
   "municipio" = rsan:::integrity_municipio,
   "snis" = rsan:::integrity_snis,
+  "snis_ap" = rsan:::integrity_snis_ap,
+  "snis_rs" = rsan:::integrity_snis_rs,
   "sinapi" = rsan:::integrity_sinapi,
   "projeto" = rsan:::integrity_projeto
 )
