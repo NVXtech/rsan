@@ -228,7 +228,7 @@ download_estimativa_populacao <- function(year) {
 #' }
 create_populacao <- function() {
   rlog::log_info("Carregando estimativa populacao IBGE 2010")
-  data("populacao_estimada_2021")
+  data("populacao_estimada_2021", package = "rsan")
   estimativa2021 <- get("populacao_estimada")
 
   rlog::log_info("Carregando censo IBGE 2010")
