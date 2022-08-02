@@ -12,13 +12,12 @@
 rodar_projecao_populacional <- function(state) {
   input <- state$input$projecao
   fonte1 <- rsan:::load_ibge(input$fonte1)
-  fonte1 <- rsan:::adicionar_proporcao_urbana_rural(fonte1)
-  if (grepl(".*censo.*", input$fonte2)) {
-    # TODO: implementar para caso a fonte seja outro censo
-    shiny::showNotification("Fonte de dados 2 não pode ser censo!", type = "error")
-    return()
-  }
+  fonte2_nao_censo <- !grepl(".*censo.*", input$fonte2)
   fonte2 <- rsan:::load_ibge(input$fonte2)
+  if (fonte2_nao_censo) {
+    fonte2 <- rsan:::preenche_situacao(fonte1, fonte2)
+  }
+
   ano1 <- rsan:::nome_para_ano(input$fonte1)
   ano2 <- rsan:::nome_para_ano(input$fonte2)
   state$input$geral$ano_populacao_fonte1 <- ano1
@@ -30,9 +29,6 @@ rodar_projecao_populacional <- function(state) {
   rlog::log_info("projecao: calculando taxa de crescimento")
   consolidado <- rsan:::calcula_taxa_crescimento(consolidado, ano1, ano2)
   state$taxas_projecao <- consolidado
-
-  rlog::log_info("projecao: calculando crescimento_urbano_rural")
-  consolidado <- rsan:::calcular_urbana_rural_fonte2(consolidado)
 
   rlog::log_info("projecao: calculando projecao")
   state$projecao <- rsan:::calcula_projecao(
@@ -66,19 +62,20 @@ investimento_drenagem <- function(state) {
   depreciacao <- rsan::depreciacao_para_vida_util(input$deprec_drenagem)
 
   tabela <- rsan:::load_snis_ap(input$snis_ap)
+  tabela <- rsan:::area_urbana(tabela)
   tabela <- rsan:::densidade_urbana(tabela)
   tabela <- rsan:::precipitacao(tabela)
   tabela <- rsan:::adiciona_indices_drenagem(tabela)
   tabela <- rsan:::adiciona_projecao_populacao(state$projecao, ano_final, tabela)
-  tabela <- rsan:::area_urbana(tabela)
+  tabela <- rsan:::capacidade_instalada_drenagem(tabela)
 
   if (input$modo == 1) { # Investimento per capita constante
-    tabela <- investimento_constante(tabela, input$investimento_per_capita)
+    tabela <- rsan:::investimento_constante(tabela, input$investimento_per_capita)
   } else { # Investimento per capita por regressão
-    tabela <- aplica_regressao_multipla_drenagem(tabela, input)
+    tabela <- rsan:::aplica_regressao_multipla_drenagem(tabela, input)
   }
-  tabela <- capacidade_instalada_drenagem(tabela)
-  tabela <- rsan::calcula_reposicao_parcial(
+
+  tabela <- rsan:::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada",
     "investimento_expansao",
@@ -89,8 +86,8 @@ investimento_drenagem <- function(state) {
     depreciacao
   )
   tabela <- rsan:::investimento_cadastro(tabela, input$custo_cadastro)
-  tabela <- investimento_total_drenagem(tabela)
-  tabela <- rsan::adiciona_pais(tabela)
+  tabela <- rsan:::investimento_total_drenagem(tabela)
+  tabela <- rsan:::adiciona_pais(tabela)
   state$drenagem <- tabela
   state$necessidade <- dplyr::bind_rows(
     tbl_longa_investimento_drenagem(tabela),

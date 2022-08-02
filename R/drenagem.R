@@ -72,10 +72,15 @@ tbl_longa_investimento_drenagem <- function(tabela) {
 #' tabela <- capacidade_instalada_drenagem(tabela)
 #' }
 capacidade_instalada_drenagem <- function(tabela) {
-  # TODO: fazer capacidade intalada
+  data("investimento_existente", package = "rsan")
+  investimento_existente <- get("investimento_existente")
+  tabela <- dplyr::left_join(
+    tabela, investimento_existente,
+    by = "codigo_municipio"
+  )
   tabela <- dplyr::mutate(
     tabela,
-    capacidade_instalada = investimento_expansao * 0.0
+    capacidade_instalada = investimento_existente
   )
   return(tabela)
 }
@@ -92,7 +97,7 @@ capacidade_instalada_drenagem <- function(tabela) {
 investimento_constante <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
-    investimento_expansao = populacao_urbana * valor
+    investimento_expansao = populacao_urbana * valor - capacidade_instalada
   )
   return(tabela)
 }
@@ -109,7 +114,7 @@ aplica_regressao_drenagem <- function(tabela, modelo) {
     tabela,
     modelo = stats::predict(modelo, tabela),
     investimento_modelo = modelo * GE006,
-    investimento_expansao = investimento_modelo # TODO arrumar para trocar pelo investimento do plano
+    investimento_expansao = investimento_modelo - capacidade_instalada # TODO arrumar para trocar pelo investimento do plano
   )
   return(tabela)
 }
@@ -133,7 +138,7 @@ aplica_regressao_multipla_drenagem <- function(tabela, parametros) {
       precipitacao_moda * fp +
       densidade_urbana * fd +
       caracteristicas_fisicas * fc +
-      infraestrutura * fi) * populacao_urbana, 0.0)
+      infraestrutura * fi) * populacao_urbana - capacidade_instalada, 0.0)
   )
   return(tabela)
 }
@@ -287,7 +292,7 @@ precipitacao <- function(tabela) {
 densidade_urbana <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    densidade_urbana = GE006 / GE002
+    densidade_urbana = GE006 / area_urbana
   )
   return(tabela)
 }
@@ -305,9 +310,11 @@ densidade_urbana <- function(tabela) {
 #' tabela <- area_urbana(tabela)
 #' }
 area_urbana <- function(tabela) {
-  tabela <- dplyr::mutate(
-    tabela,
-    area_urbana = GE002
+  data("area_urbana_municipio", package = "rsan")
+  area_urbana_municipio <- get("area_urbana_municipio")
+  tabela <- dplyr::left_join(
+    tabela, area_urbana_municipio,
+    by = "codigo_municipio"
   )
   return(tabela)
 }

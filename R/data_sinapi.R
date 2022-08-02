@@ -60,7 +60,6 @@ download_sinapi <- function(year, month) {
       } else {
         next
       }
-      print(arquivo)
       utils::unzip(tmp_file,
         exdir = tmp_dir,
         files = c(arquivo), unzip = "unzip"

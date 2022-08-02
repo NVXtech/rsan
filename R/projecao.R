@@ -70,13 +70,47 @@ junta_fontes_populacao <- function(fonte1, fonte2) {
 calcula_taxa_crescimento <-
   function(tabela, ano_fonte1, ano_fonte2) {
     potencia <- 1.0 / (ano_fonte2 - ano_fonte1)
-    tabela$taxa_de_crescimento <-
-      ((
-        tabela$populacao_total_fonte2 / tabela$populacao_total_fonte1
-      )^potencia) - 1
+    tabela <- dplyr::mutate(
+      tabela,
+      taxa_de_crescimento = -1.0 +
+        (populacao_total_fonte2 / populacao_total_fonte1)^potencia,
+      taxa_de_crescimento_urbana = -1.0 +
+        (populacao_urbana_fonte2 / populacao_urbana_fonte1)^potencia,
+      taxa_de_crescimento_rural = -1.0 +
+        (populacao_urbana_fonte2 / populacao_urbana_fonte1)^potencia
+    )
     return(tabela)
   }
 
+#' Preenche situação
+#' As situações urbana e rural são estimadas mantendo-se a mesma proporção da fonte1.
+#'
+#' @param fonte1 é a fonte de dados de população mais antiga.
+#' @param fonte2 é a fonte de dados de população mais recente.
+#'
+#' @return Um `data.frame` contendo
+#' @export
+preenche_situacao <- function(fonte1, fonte2) {
+  fonte1 <- dplyr::mutate(
+    fonte1,
+    relativa_urbana = populacao_urbana / populacao_total,
+    relativa_rural = populacao_rural / populacao_total
+  )
+  fonte1 <- dplyr::select(
+    fonte1, codigo_municipio, relativa_urbana, relativa_rural
+  )
+  fonte2 <- dplyr::left_join(fonte2, fonte1, by = "codigo_municipio")
+  fonte2 <- dplyr::mutate(
+    fonte2,
+    populacao_urbana = populacao_total * relativa_urbana,
+    populacao_rural = populacao_total * relativa_rural
+  )
+  fonte2 <- dplyr::select(
+    fonte2, codigo_municipio,
+    populacao_total, populacao_urbana, populacao_rural
+  )
+  return(fonte2)
+}
 
 #' Calcula a população urbana e rural da fonte 2
 #'
@@ -125,14 +159,20 @@ calcula_projecao <- function(tabela, ano_inicial, ano_final) {
       "populacao_urbana_fonte2",
       "populacao_rural_fonte2"
     )
+  nome_campo_taxa <-
+    c(
+      "taxa_de_crescimento",
+      "taxa_de_crescimento_urbana",
+      "taxa_de_crescimento_rural"
+    )
   dfs <- tibble::tibble()
   for (i in 1:length(tipo)) {
     time <- (ano_inicial:ano_final)
     for (t in time) {
       new_table <- dplyr::select(tabela, codigo_municipio)
       new_table <- dplyr::mutate(new_table, tipo_populacao = tipo[i], ano = t)
-      new_table["populacao"] <-
-        tabela[[nome_campo[i]]] * ((1 + tabela$taxa_de_crescimento)^(t - ano_inicial))
+      new_table["populacao"] <- tabela[[nome_campo[i]]] *
+        ((1 + tabela[[nome_campo_taxa[i]]])^(t - ano_inicial))
       dfs <- dplyr::bind_rows(dfs, new_table)
     }
   }
