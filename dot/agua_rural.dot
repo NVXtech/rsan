@@ -1,0 +1,48 @@
+digraph Projecao {
+    fontname = "Segoe UI"
+    ratio="fill"
+    size="8.3,11.7!"
+    margin=0
+
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    #condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"]
+    censo, parametros_interface, taxas_crescimento,
+    seguranca_hidrica, deficit_pnad, custo_producao,
+    custo_distribuicao, custo_rural_individual
+    [shape=parallelogram fillcolor=deepskyblue]
+    
+    censo -> filtra_setores_rurais
+    filtra_setores_rurais -> codigo_setor_para_municipio
+    codigo_setor_para_municipio -> adiciona_taxa_crescimento
+    taxas_crescimento -> adiciona_taxa_crescimento
+    adiciona_taxa_crescimento 
+    -> fazer_projecao_domicilio
+    -> densidade_setor
+    -> classifica_densidade_setor
+    -> classifica_deficit_setor
+    -> adiciona_estado
+    -> adiciona_regiao
+    -> adiciona_deficit_rural_agua 
+    deficit_pnad-> adiciona_deficit_rural_agua 
+    -> adiciona_seguranca_hidrica
+    seguranca_hidrica -> adiciona_seguranca_hidrica
+    -> fracao_coletivo_individual_agua
+    -> custo_individual_agua
+    custo_rural_individual -> custo_individual_agua
+    -> custo_producao_agua
+    custo_producao -> custo_producao_agua
+    -> custo_distribuicao_agua
+    custo_distribuicao -> custo_distribuicao_agua
+    -> domicilios_com_deficit_agua
+    -> habitantes_com_deficit_agua
+    -> domicilios_adequados_com_agua
+    -> investimento_rural_agua
+    -> capacidade_instalada_rural_agua
+    -> calcula_reposicao_parcial_distribuicao
+    -> calcula_reposicao_parcial_producao
+    -> consolida_investimentos_rural_agua
+    parametros_interface -> custo_individual_agua
+    parametros_interface -> calcula_reposicao_parcial_distribuicao
+    parametros_interface -> calcula_reposicao_parcial_producao
+}
+

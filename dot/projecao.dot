@@ -1,0 +1,16 @@
+digraph Projecao {
+    fontname = "Segoe UI"
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"]
+    fonte1, fonte2, taxas_crescimento, projecao_populacional [shape=parallelogram fillcolor=deepskyblue]
+
+    fonte1 -> junta_fontes_populacao
+    fonte2 -> condition
+    condition -> preenche_situacao[label="N"]
+    preenche_situacao -> junta_fontes_populacao
+    condition -> junta_fontes_populacao[label="S"]
+    junta_fontes_populacao -> calcula_taxa_crescimento
+    calcula_taxa_crescimento -> calcula_projecao
+    calcula_projecao -> projecao_populacional
+    calcula_taxa_crescimento -> taxas_crescimento
+}
