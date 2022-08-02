@@ -493,9 +493,16 @@ substitui_por_faixa_populacional <- function(tabela,
 #' tabela <- dplyr::tibble(CS001 = c("Sim", "Não"))
 #' mask <- mascara_coleta_seletiva(tabela)
 mascara_coleta_seletiva <- function(tabela) {
-  mask <- tabela$CS001 == "Sim"
-  mask[is.na(mask)] <- FALSE
-  return(mask)
+  tabela <- dplyr::mutate(
+    tabela,
+    CO063 = ifelse(CS001 == "Sim", CO063, NA),
+    CO064 = ifelse(CS001 == "Sim", CO064, NA),
+    CO065 = ifelse(CS001 == "Sim", CO065, NA),
+    CO066 = ifelse(CS001 == "Sim", CO066, NA),
+    CO067 = ifelse(CS001 == "Sim", CO067, NA),
+    CO068 = ifelse(CS001 == "Sim", CO068, NA)
+  )
+  return(tabela)
 }
 
 #' Atendimento relativo para coleta seletiva
@@ -652,14 +659,9 @@ capacidade_instalada_coleta_indiferenciada <- function(tabela, valor) {
 #' @return um `data.frame` contendo a coluna `numero_caminhoes_bau`
 #' @export
 numero_caminhoes_bau <- function(tabela) {
-  tabela$mask <- mascara_coleta_seletiva(tabela)
   tabela <- dplyr::mutate(
     tabela,
-    numero_caminhoes_bau = ifelse(mask, CO063 + CO064 + CO065 + CO066 + CO067 + CO068, NA)
-  )
-  tabela <- dplyr::select(
-    tabela,
-    -mask
+    numero_caminhoes_bau = CO063 + CO064 + CO065 + CO066 + CO067 + CO068
   )
 }
 

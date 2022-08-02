@@ -154,15 +154,17 @@ investimento_residuos <- function(state) {
   # Classificação por faixas populacionais
   rlog::log_info("residuos: classificando por faixa populacional")
   limites <- as.integer(c(0, 10e3, 30e3, 100e3, 250e3, 1e6, 4e6))
-  tabela <- rsan::classifica_faixa_populacional(tabela, limites)
+  tabela <- rsan:::classifica_faixa_populacional(tabela, limites)
+  tabela <- rsan:::mascara_coleta_seletiva(tabela)
 
 
   # Agrupamento por faixa usado para preenchimento
-  rlog::log_info("residuos: agregando por faixa populacional")
+  rlog::log_info("residuos: agregando por faixa populacional para brasil todo")
   media_faixa <- rsan:::media_por_faixa(tabela)
   soma_faixa <- rsan:::soma_por_faixa(tabela)
   soma_faixa <- rsan:::numero_caminhoes(soma_faixa)
   soma_faixa <- rsan:::numero_caminhoes_bau(soma_faixa)
+
   soma_faixa <- rsan:::densidade_caminhoes(soma_faixa)
   soma_faixa <- rsan:::densidade_caminhoes_bau(soma_faixa)
 
@@ -179,10 +181,11 @@ investimento_residuos <- function(state) {
   )
   soma_regiao_faixa <- rsan:::taxa_geracao_residuos(soma_regiao_faixa)
 
-  # Preenchimento
+  # Preenchimento por municipio
   tabela <- rsan:::preenche_geracao_residuos(tabela, soma_regiao_faixa)
   tabela <- rsan:::disposicao_inadequada(tabela)
   # Fim do preenchimento
+
 
   tabela <- rsan:::soma_por_estado_faixa(tabela)
   tabela$numero_municipios <- conta$numero_municipios

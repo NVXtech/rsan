@@ -10,11 +10,11 @@ test_that("calculos estão rodando", {
         total = sum(necessidade_investimento, na.rm = TRUE)
     )
     componente <- c("agua", "drenagem", "esgoto", "residuos")
-    total <- c(240238483806., 478254161220., 334163032430., 204641640753.)
+    total <- c(240238483806., 478254161220., 334163032430., 122893122849.)
     expected <- dplyr::tibble(componente, total)
     testthat::expect_equal(valores, expected)
-    valores <- dplyr::filter(state$necessidade, componente == "drenagem")
-    valores <- dplyr::group_by(valores, destino)
+    valores <- dplyr::filter(state$necessidade, componente == "residuos", destino == "expansao")
+    valores <- dplyr::group_by(valores, regiao, etapa)
     valores <- dplyr::summarise(
         valores,
         total = sum(necessidade_investimento, na.rm = TRUE)
@@ -25,4 +25,5 @@ test_that("calculos estão rodando", {
         decimal.mark = ",",
         scientific = FALSE
     )
+    print(valores)
 })
