@@ -21,8 +21,10 @@ quantidade_compostagem_municipio <- function(tabela) {
   )
   tabela <- rsan:::codigo6_para_codigo_ibge(tabela, "Código")
   tabela <- dplyr::group_by(tabela, codigo_municipio)
-  tabela <-
-    dplyr::summarise(tabela, quantidade_compostagem = sum(UP080))
+  tabela <- dplyr::summarise(
+    tabela,
+    quantidade_compostagem = sum(UP080)
+  )
   return(tabela)
 }
 
@@ -505,6 +507,103 @@ mascara_coleta_seletiva <- function(tabela) {
   return(tabela)
 }
 
+
+#' Preenche atendimento coleta seletiva
+#'
+#' 1. Filtra os municipios que tem coleta seletiva
+#' 2. Calcula o atendimento relativo por regiao e faixa
+#' 3. Preenche os municípios que tem coleta seletiva e que nao forneceram dados.
+#'    Os valores do atendimento é calculado pela populacao_urbana * média relativa de atendimento da regiao e faixa populacional do município.
+#' 4. Se a populacao atentida for maior que a populacao urbana define a populacao atendida igual a populacao urbana
+#'
+#' @param tabela um `data.frame` com as colunas "codigo_municipio", "regiao", "faixa", "POP_URB", "CS050", "CS001"
+#'
+#' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_seletiva
+#' @export
+preenche_atendimento_coleta_seletiva <- function(tabela) {
+  vars <- c("codigo_municipio", "regiao", "faixa", "POP_URB", "CS050", "CS001")
+  regiao_faixa <- dplyr::select(tabela, dplyr::all_of(vars))
+  regiao_faixa <- dplyr::filter(regiao_faixa, CS001 == "Sim")
+  regiao_faixa <- dplyr::mutate(regiao_faixa,
+    POP_URB = ifelse(POP_URB > 0, POP_URB, NA),
+    CS050 = ifelse(CS050 > 0, CS050, NA)
+  )
+  regiao_faixa <- stats::na.omit(regiao_faixa)
+  regiao_faixa <- dplyr::group_by(regiao_faixa, regiao, faixa)
+  regiao_faixa <- dplyr::summarise(regiao_faixa, POP_URB = sum(POP_URB), CS050 = sum(CS050))
+  regiao_faixa <- dplyr::transmute(
+    regiao_faixa,
+    regiao = regiao,
+    faixa = faixa,
+    relativo = CS050 / POP_URB
+  )
+  tabela <- dplyr::left_join(
+    tabela,
+    regiao_faixa,
+    by = c("regiao", "faixa")
+  )
+  tabela <- dplyr::mutate(
+    tabela,
+    CS050 = ifelse(
+      CS001 == "Sim" & is.na(CS050),
+      relativo * POP_URB,
+      CS050
+    ),
+    CS050 = ifelse(
+      CS050 > POP_URB,
+      POP_URB,
+      CS050
+    )
+  )
+  tabela$relativo <- NULL
+  return(tabela)
+}
+
+#' Preenche caminhao bau
+#'
+#' 1. Filtra os municipios que tem coleta seletiva
+#' 2. Calcula a quantidade de caminhões bau por faixa
+#'
+#' @param tabela_por_municipio um `data.frame` com as colunas "codigo_municipio", "faixa", "CS001", "CS050", "CO064", "CO065", "CO066", "CO067", "CO068"
+#' @param estado_faixa um `data.frame` com as colunas "estado", "faixa", "POP_URB", "CS050", "CS001"
+#'
+#' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_seletiva
+#' @export
+preenche_densidade_caminhao_bau <- function(tabela_por_municipio, estado_faixa) {
+  vars <- c("faixa", "CS001", "CS050", "CO063", "CO064", "CO065", "CO066", "CO067", "CO068")
+  por_faixa <- dplyr::select(tabela_por_municipio, dplyr::all_of(vars))
+  por_faixa <- dplyr::filter(por_faixa, CS001 == "Sim")
+  por_faixa[is.na(por_faixa)] <- 0.0
+  por_faixa <- dplyr::transmute(por_faixa,
+    faixa = faixa,
+    CS050 = CS050,
+    numero_caminhoes_bau = CO063 + CO064 + CO065 + CO066 + CO067 + CO068
+  )
+  por_faixa <- dplyr::group_by(por_faixa, faixa)
+  por_faixa <- dplyr::summarise(por_faixa,
+    numero_caminhoes_bau = sum(numero_caminhoes_bau), CS050 = sum(CS050)
+  )
+  por_faixa <- dplyr::transmute(
+    por_faixa,
+    faixa = faixa,
+    densidade_caminhoes_bau = ifelse(CS050 > 0, CS050 / numero_caminhoes_bau, NA)
+  )
+  # Valore obtidos do relatório
+  por_faixa$densidade_caminhoes_bau[1] <- 2172.700
+  por_faixa$densidade_caminhoes_bau[2] <- 4771.364
+  por_faixa$densidade_caminhoes_bau[3] <- 8992.435
+  por_faixa$densidade_caminhoes_bau[4] <- 13433.316
+  por_faixa$densidade_caminhoes_bau[5] <- 21839.400
+  por_faixa$densidade_caminhoes_bau[6] <- 13146.273
+  por_faixa$densidade_caminhoes_bau[7] <- 48173.000
+
+  estado_faixa <- dplyr::left_join(
+    estado_faixa, por_faixa,
+    by = "faixa"
+  )
+  return(estado_faixa)
+}
+
 #' Atendimento relativo para coleta seletiva
 #'
 #' @param tabela um `data.frame` com as colunas `CS050` e `POP_URB`
@@ -587,9 +686,13 @@ capacidade_instalada_coleta_seletiva <- function(tabela, valor) {
 #' tabela <- numero_caminhoes(tabela)
 #' }
 numero_caminhoes <- function(tabela) {
+  vars <- c("CO054", "CO055", "CO056", "CO057", "CO058", "CO059")
+  for (var in vars) {
+    tabela[[var]][is.na(tabela[[var]])] <- 0
+  }
   tabela <- dplyr::mutate(
     tabela,
-    numero_caminhoes = CO054 + CO055 + CO056 + CO057 + CO058 + CO059
+    numero_caminhoes = round(CO054 + CO055 + CO056 + CO057 + CO058 + CO059)
   )
 }
 
@@ -649,6 +752,57 @@ capacidade_instalada_coleta_indiferenciada <- function(tabela, valor) {
   )
 }
 
+#' Preenche atendimento coleta indiferenciada
+#'
+#' 1. Filtra os municipios que tem coleta indiferenciada
+#' 2. Calcula o atendimento relativo por regiao e faixa
+#' 3. Preenche os municípios que tem coleta indiferenciada e que nao forneceram dados.
+#'    Os valores do atendimento é calculado pela populacao_urbana * média relativa de atendimento da regiao e faixa populacional do município.
+#' 4. Se a populacao atentida for maior que a populacao urbana define a populacao atendida igual a populacao urbana
+#'
+#' @param tabela um `data.frame` com as colunas "codigo_municipio", "regiao", "faixa", "POP_URB", "CO164"
+#'
+#' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_indiferenciada
+#' @export
+preenche_atendimento_coleta_indiferenciada <- function(tabela) {
+  vars <- c("codigo_municipio", "regiao", "faixa", "POP_TOT", "CO164", "CO021")
+  regiao_faixa <- dplyr::select(tabela, dplyr::all_of(vars))
+  regiao_faixa <- dplyr::mutate(regiao_faixa,
+    POP_TOT = ifelse(POP_TOT > 0, POP_TOT, NA),
+    CO164 = ifelse(CO164 > 0, CO164, NA)
+  )
+  # TODO: Excel considera a POP_TOT quando não tem CO164, creio que o certo é não considerar
+  # regiao_faixa <- stats::na.omit(regiao_faixa)
+  regiao_faixa <- dplyr::group_by(regiao_faixa, regiao, faixa)
+  regiao_faixa <- dplyr::summarise(regiao_faixa, POP_TOT = sum(POP_TOT, na.rm = TRUE), CO164 = sum(CO164, na.rm = TRUE))
+  regiao_faixa <- dplyr::transmute(
+    regiao_faixa,
+    regiao = regiao,
+    faixa = faixa,
+    relativo = CO164 / POP_TOT
+  )
+  tabela <- dplyr::left_join(
+    tabela,
+    regiao_faixa,
+    by = c("regiao", "faixa")
+  )
+  tabela <- dplyr::mutate(
+    tabela,
+    CO164 = ifelse(
+      is.na(CO164),
+      round(relativo * POP_TOT),
+      CO164
+    ),
+    CO164 = ifelse(
+      CO164 > POP_TOT,
+      POP_TOT,
+      CO164
+    )
+  )
+  tabela$relativo <- NULL
+  return(tabela)
+}
+
 
 #' Número de caminhões baú
 #'
@@ -694,7 +848,7 @@ meta_plansab_residuo <- function(tabela) {
   data("plansab", package = "rsan")
   plansab <- get("plansab")
   vars <- c("regiao", "meta_coleta", "meta_compostagem", "meta_reaproveitamento")
-  plansab <- dplyr::select(plansab, all_of(vars))
+  plansab <- dplyr::select(plansab, dplyr::all_of(vars))
   tabela <- dplyr::left_join(
     tabela,
     plansab,
@@ -730,7 +884,7 @@ disposicao_inadequada <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
     disposicao_inadequada = ifelse(tipo_disposicao == "Inadequada", 1.0, 0.0),
-    residuos_disposicao_inadequada = CO119 * disposicao_inadequada
+    residuos_disposicao_inadequada = total_residuos * disposicao_inadequada
   )
 }
 
@@ -759,27 +913,19 @@ atendimento_relativo_residuos <- function(tabela) {
 #'
 #' @param tabela um `data.frame` contendo as colunas POP_TOT, CO119, CO164, CS009 e populacao_total
 #'
-#' @return um `data.frame` contendo as colunas taxa_geracao_residuos, total_residuos, total_residuos_projecaoe e percentual_recuperado
+#' @return um `data.frame` contendo as colunas taxa_geracao_residuos, total_residuos, total_residuos_projecaoe
 #' @export
 geracao_residuos <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    taxa_geracao_residuos = ifelse(
-      CO164 > 0,
-      CO119 / CO164,
-      NA
-    ),
     total_residuos = taxa_geracao_residuos * POP_TOT,
     total_residuos_projecao = taxa_geracao_residuos * populacao_total,
-    percentual_recuperado = ifelse(
-      CO119 > 0,
-      CS009 / CO119,
-      NA
-    )
   )
 }
 
 #' Taxa de geração de resíduos (t/hab)
+#'
+#' Calcula geração de resíduos para municípios com pesagem
 #'
 #' @param tabela um `data.frame` contendo as colunas CO119, CO164, CO119_litoral e CO164_litoral
 #'
@@ -788,8 +934,13 @@ geracao_residuos <- function(tabela) {
 taxa_geracao_residuos <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    taxa_geracao_residuos = CO119 / CO164,
-    taxa_geracao_residuos_litoral = CO119_litoral / CO164_litoral,
+    taxa_geracao_residuos = ifelse(
+      CO021 == "Sim" & CO164 > 0,
+      CO119 / CO164, NA
+    ),
+    taxa_geracao_residuos_litoral = ifelse(CO021 == "Sim" & CO164_litoral > 0,
+      CO119_litoral / CO164_litoral, NA
+    ),
   )
 }
 
@@ -1156,7 +1307,7 @@ regionaliza_triagem <- function(tabela, cenario) {
 #' @return um `data.frame` contendo a coluna `demanda_tranbordo`
 #' @export
 regionaliza_compostagem <- function(tabela, cenario) {
-  rlog::log_info(sprintf("residuos: regionalizando cenario %s", cenario))
+  rlog::log_info(sprintf("residuos: compostagem regionalizando cenario %s", cenario))
   if (cenario == "C") {
     tabela <- regionaliza100(tabela, campo = "demanda_compostagem")
     return(tabela)
@@ -1232,15 +1383,11 @@ regionaliza_aterro <- function(tabela, cenario) {
 }
 
 
-#' Preenche residuo gerado
+#' Preenche taxa de geração de resíduos
 #'
 #' O campo de quantidade gerada de residuos (CO119) é prenchido pela taxa média por regiao e estado.
 #'
 #' @param tabela um `data.frame` com as colunas a serem preenchidas
-#' @param tabela_faixa um `data.frame` contendo os valores que serão base para o preenchimento devem conter a coluna com os nomes fornecidos em `campo` e `campo_faixa`
-#' @param preencher_campo um `character` com o nome da coluna a ser preenchida
-#' @param campo_regiao um `character` com o nome da coluna região
-#' @param campo_faixa um `character` com o nome da coluna faixa populacional
 #'
 #' @return o mesmo `data.frame` com a coluna preenchida (CO119)
 #' @export
@@ -1249,51 +1396,120 @@ regionaliza_aterro <- function(tabela, cenario) {
 #' \dontrun{
 #' tabela <- preenche_por_regiao_faixa_populacional(tabela, densidade)
 #' }
-preenche_geracao_residuos <- function(tabela,
-                                      tabela_faixa,
-                                      preencher_campo = "CO119",
-                                      campo_regiao = "regiao",
-                                      campo_faixa = "faixa") {
-  tabela_faixa <- dplyr::select(
-    tabela_faixa,
-    dplyr::all_of(c(
-      "taxa_geracao_residuos",
-      "taxa_geracao_residuos_litoral",
-      campo_regiao,
-      campo_faixa
-    ))
+preenche_taxa_geracao_residuos <- function(tabela) {
+  regiao_faixa <- rsan:::divide_residuo_litoraneo(tabela)
+  regiao_faixa <- rsan:::taxa_geracao_residuos(regiao_faixa)
+  regiao_faixa <- dplyr:::filter(regiao_faixa, CO021 == "Sim")
+  regiao_faixa <- rsan:::soma_por_estado_faixa(
+    regiao_faixa,
+    campo_estado = "regiao"
+  )
+  regiao_faixa <- dplyr::transmute(
+    regiao_faixa,
+    regiao = regiao,
+    faixa = faixa,
+    taxa_geracao_residuos_rf = ifelse(
+      CO164 > 0, CO119 / CO164, NA
+    ),
+    taxa_geracao_residuos_litoral_rf = ifelse(
+      CO164_litoral > 0, CO119_litoral / CO164_litoral, NA
+    ),
   )
 
-  # transforma valores negativos e nulos em NA
-  mask <- tabela[[preencher_campo]] <= 0
-  tabela[[preencher_campo]][mask] <- NA
-  # transforma muncípios sem pesagem em NA
-  mask <- tabela$CO021 == "Não"
-  tabela[[preencher_campo]][mask] <- NA
-
+  # preenche taxa_geracao
   tabela <- dplyr::left_join(tabela,
-    tabela_faixa,
-    by = c(campo_regiao, campo_faixa)
+    regiao_faixa,
+    by = c("regiao", "faixa")
   )
-
   tabela <- dplyr::mutate(
     tabela,
-    estimativa_nao_litoral = taxa_geracao_residuos * POP_TOT,
-    estimativa_litoral = taxa_geracao_residuos_litoral * POP_TOT,
-    estimativa = ifelse(litoral == "Sim", estimativa_litoral, estimativa_nao_litoral)
+    taxa_geracao_residuos = ifelse(
+      CO021 == "Sim",
+      ifelse(CO164 > 0, CO119 / CO164, NA),
+      ifelse(
+        litoral == "Sim",
+        taxa_geracao_residuos_litoral_rf,
+        taxa_geracao_residuos_rf
+      )
+    ),
+    taxa_geracao_residuos = ifelse(
+      is.na(taxa_geracao_residuos),
+      ifelse(
+        litoral == "Sim",
+        taxa_geracao_residuos_litoral_rf,
+        taxa_geracao_residuos_rf
+      ),
+      taxa_geracao_residuos
+    )
   )
-
-  mask <- is.na(tabela[[preencher_campo]])
-  tabela[[preencher_campo]][mask] <- tabela$estimativa[mask]
-
   campos_para_remover <- c(
-    "estimativa", "estimativa_litoral", "estimativa_nao_litoral",
-    "taxa_geracao_residuos", "taxa_geracao_residuos_litoral"
+    "taxa_geracao_residuos_rf",
+    "taxa_geracao_residuos_litoral_rf"
+  )
+  tabela <- dplyr::select(tabela, -dplyr::all_of(campos_para_remover))
+  return(tabela)
+}
+
+#' Preenche quantidade coletada de residuos
+#'
+#' O campo de quantidade coletada de residuos (CO119) é prenchido pela taxa média por regiao e estado.
+#'
+#' @param tabela um `data.frame` com as colunas a serem preenchidas
+#'
+#' @return o mesmo `data.frame` com a coluna preenchida (CO119)
+#' @export
+preenche_quantidade_coletada <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    CO119 = ifelse(
+      is.na(CO119) | CO021 != "Sim",
+      taxa_geracao_residuos * CO164,
+      CO119
+    )
   )
 
-  tabela <- dplyr::select(
-    tabela,
-    -dplyr::all_of(campos_para_remover)
-  )
   return(tabela)
+}
+
+#' Preenche caminhao
+#'
+#' 1. Calcula a quantidade de caminhões por faixa
+#'
+#' @param tabela_por_municipio um `data.frame` com as colunas "codigo_municipio", "faixa", "CS001", "CS050", "CO064", "CO065", "CO066", "CO067", "CO068"
+#' @param estado_faixa um `data.frame` com as colunas "estado", "faixa", "POP_URB", "CS050", "CS001"
+#'
+#' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_seletiva
+#' @export
+densidade_caminhao_por_estado_faixa <- function(tabela_faixa, tabela_por_municipio, metodo = "media") {
+  vars <- c(
+    "estado", "faixa",
+    "densidade_caminhoes", "CO164", "numero_caminhoes"
+  )
+  tabela_por_municipio <- dplyr::select(
+    tabela_por_municipio, dplyr::all_of(vars)
+  )
+  tabela_por_municipio <- dplyr::group_by(
+    tabela_por_municipio,
+    estado, faixa
+  )
+  if (metodo == "soma") {
+    tabela_por_municipio <- dplyr::summarise(
+      tabela_por_municipio,
+      CO164 = sum(CO164, na.rm = TRUE),
+      numero_caminhoes = sum(numero_caminhoes, na.rm = TRUE),
+      densidade_caminhoes = CO164 / numero_caminhoes
+    )
+  } else {
+    tabela_por_municipio <- dplyr::summarise(
+      tabela_por_municipio,
+      densidade_caminhoes = mean(densidade_caminhoes, na.rm = TRUE),
+    )
+  }
+  tabela_faixa$densidade_caminhoes <- NULL
+  tabela_faixa <- dplyr::left_join(
+    tabela_faixa,
+    tabela_por_municipio,
+    by = c("estado", "faixa")
+  )
+  return(tabela_faixa)
 }

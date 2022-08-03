@@ -1,0 +1,16 @@
+digraph Residuo {
+    fontname = "Segoe UI"
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    // condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"]
+    snis, snis_unidades_processamento [shape=parallelogram fillcolor=deepskyblue]
+
+    snis -> adiciona_projecao_populacao
+    -> adiciona_unidades_processamento
+    snis_unidades_processamento -> adiciona_unidades_processamento
+    adiciona_unidades_processamento -> adiciona_pais
+    -> adiciona_estado
+    -> adiciona_regiao
+    -> adiciona_tipo_disposicao
+    -> adiciona_classificacao_litoranea
+    -> classifica_faixa_populacional
+}

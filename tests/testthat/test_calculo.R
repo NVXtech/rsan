@@ -25,5 +25,6 @@ test_that("calculos estão rodando", {
         decimal.mark = ",",
         scientific = FALSE
     )
+    writexl::write_xlsx(valores, "valores.xlsx")
     print(valores)
 })

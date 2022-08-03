@@ -13,5 +13,5 @@ taxa_geracao_residuos(tabela)
 um \code{data.frame} contendo as colunas taxa_geracao_residuos, taxa_geracao_residuos_litoral
 }
 \description{
-Taxa de geração de resíduos (t/hab)
+Calcula geração de resíduos para municípios com pesagem
 }

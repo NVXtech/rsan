@@ -10,7 +10,7 @@ geracao_residuos(tabela)
 \item{tabela}{um \code{data.frame} contendo as colunas POP_TOT, CO119, CO164, CS009 e populacao_total}
 }
 \value{
-um \code{data.frame} contendo as colunas taxa_geracao_residuos, total_residuos, total_residuos_projecaoe e percentual_recuperado
+um \code{data.frame} contendo as colunas taxa_geracao_residuos, total_residuos, total_residuos_projecaoe
 }
 \description{
 Geração de resíduos
