@@ -2,7 +2,7 @@
 % Please edit documentation in R/residuos.R
 \name{densidade_caminhao_por_estado_faixa}
 \alias{densidade_caminhao_por_estado_faixa}
-\title{Preenche caminhao}
+\title{Densidade de caminhão por estado e faixa}
 \usage{
 densidade_caminhao_por_estado_faixa(
   tabela_faixa,
@@ -11,15 +11,17 @@ densidade_caminhao_por_estado_faixa(
 )
 }
 \arguments{
-\item{tabela_por_municipio}{um \code{data.frame} com as colunas "codigo_municipio", "faixa", "CS001", "CS050", "CO064", "CO065", "CO066", "CO067", "CO068"}
+\item{tabela_faixa}{um \code{data.frame} com as colunas "estado", "faixa" para adicionar}
 
-\item{estado_faixa}{um \code{data.frame} com as colunas "estado", "faixa", "POP_URB", "CS050", "CS001"}
+\item{tabela_por_municipio}{um \code{data.frame} contendo as colunas "estado", "faixa", "densidade_caminhoes", "CO164", "numero_caminhoes"}
+
+\item{metodo}{metodo "soma" ou "media"}
 }
 \value{
-um \code{data.frame} contendo a coluna atendimento_relativo_coleta_seletiva
+um \code{data.frame} contendo a coluna densidade_caminhoes
 }
 \description{
-\enumerate{
-\item Calcula a quantidade de caminhões por faixa
-}
+Calcula a quantidade de caminhões por faixa
+método soma: divisão da população atendida (CO164) pela soma do numero de caminhoes
+método media: média das densidades por munícipio (padrão)
 }

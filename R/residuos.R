@@ -250,7 +250,8 @@ capacidade_instalada_aterro <- function(tabela, vida_util) {
 demanda_triagem <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    demanda_triagem = meta_reaproveitamento / 100.0 * total_residuos_projecao - pmax(CS026, 0.0),
+    demanda_triagem = pmax(meta_reaproveitamento / 100.0 * total_residuos_projecao -
+      projecao_reaproveitamento, 0.0),
   )
 }
 
@@ -1467,18 +1468,20 @@ preenche_quantidade_coletada <- function(tabela) {
       CO119
     )
   )
-
   return(tabela)
 }
 
-#' Preenche caminhao
+#' Densidade de caminhão por estado e faixa
 #'
-#' 1. Calcula a quantidade de caminhões por faixa
+#' Calcula a quantidade de caminhões por faixa
+#' método soma: divisão da população atendida (CO164) pela soma do numero de caminhoes
+#' método media: média das densidades por munícipio (padrão)
 #'
-#' @param tabela_por_municipio um `data.frame` com as colunas "codigo_municipio", "faixa", "CS001", "CS050", "CO064", "CO065", "CO066", "CO067", "CO068"
-#' @param estado_faixa um `data.frame` com as colunas "estado", "faixa", "POP_URB", "CS050", "CS001"
+#' @param tabela_faixa um `data.frame` com as colunas "estado", "faixa" para adicionar
+#' @param tabela_por_municipio  um `data.frame` contendo as colunas "estado", "faixa", "densidade_caminhoes", "CO164", "numero_caminhoes"
+#' @param metodo metodo "soma" ou "media"
 #'
-#' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_seletiva
+#' @return um `data.frame` contendo a coluna densidade_caminhoes
 #' @export
 densidade_caminhao_por_estado_faixa <- function(tabela_faixa, tabela_por_municipio, metodo = "media") {
   vars <- c(
@@ -1512,4 +1515,60 @@ densidade_caminhao_por_estado_faixa <- function(tabela_faixa, tabela_por_municip
     by = c("estado", "faixa")
   )
   return(tabela_faixa)
+}
+
+#' Reaproveitamento de resíduos relativo
+#'
+#' Calcula o reaproveitamento de resíduos recuperados pela divisão da quantidade total recuperada (CS009)
+#' divida pela quandidade total coletada.
+#'
+#' @param tabela_faixa um `data.frame` com as colunas "estado", "faixa" para adicionar
+#' @param tabela_por_municipio  um `data.frame` contendo as colunas "estado", "faixa", "CS001", "CS009", "CO119"
+#'
+#' @return um `data.frame` contendo a coluna reaproveitamento_relativo
+#' @export
+reaproveitamento_relativo <- function(tabela_faixa, tabela_por_municipio) {
+  vars <- c("estado", "faixa", "CS001", "CS009", "CO119")
+  tabela_por_municipio <- dplyr::select(
+    tabela_por_municipio, dplyr::all_of(vars)
+  )
+  # tabela_por_municipio <- dplyr::filter(tabela_por_municipio, CS001 == "Sim")
+  tabela_por_municipio <- dplyr::group_by(
+    tabela_por_municipio,
+    estado,
+    faixa
+  )
+  tabela_por_municipio <- dplyr::summarise(
+    tabela_por_municipio,
+    recuperado = sum(CS009, na.rm = TRUE),
+    CO119 = sum(CO119, na.rm = TRUE)
+  )
+
+  tabela_por_municipio <- dplyr::transmute(
+    tabela_por_municipio,
+    estado = estado,
+    faixa = faixa,
+    reaproveitamento_relativo = ifelse(CO119 > 0, recuperado / CO119, 0)
+  )
+  tabela_faixa <- dplyr::left_join(
+    tabela_faixa,
+    tabela_por_municipio,
+    by = c("estado", "faixa")
+  )
+  return(tabela_faixa)
+}
+
+#' Projeção do reaproveitamento
+#'
+#' @param tabela um `data.frame` contendo as colunas "estado", "faixa", "reaproveitamento_relativo", "total_residuos_projecao"
+#'
+#' @return um `data.frame` contendo a coluna reaproveitamento_relativo
+#' @export
+#'
+projecao_reaproveitamento <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    projecao_reaproveitamento = reaproveitamento_relativo * total_residuos_projecao,
+    projecao_reaproveitamento = ifelse(is.na(projecao_reaproveitamento), 0.0, projecao_reaproveitamento)
+  )
 }

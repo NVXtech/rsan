@@ -14,7 +14,7 @@ test_that("calculos estão rodando", {
     expected <- dplyr::tibble(componente, total)
     testthat::expect_equal(valores, expected)
     valores <- dplyr::filter(state$necessidade, componente == "residuos", destino == "expansao")
-    valores <- dplyr::group_by(valores, regiao, etapa)
+    # valores <- dplyr::group_by(valores, etapa)
     valores <- dplyr::summarise(
         valores,
         total = sum(necessidade_investimento, na.rm = TRUE)

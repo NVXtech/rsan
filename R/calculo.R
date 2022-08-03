@@ -98,7 +98,7 @@ investimento_drenagem <- function(state) {
 
 residuos_snis_fields <- c(
   "codigo_municipio", "POP_TOT", "POP_URB", "Estado",
-  "CO164", "CO050", "CO119", "CO021", "CS026",
+  "CO164", "CO050", "CO119", "CO021", "CS026", "CS009",
   "CO054", "CO055", "CO056", "CO057", "CO058", "CO059",
   "CO063", "CO064", "CO065", "CO066", "CO067", "CO068",
   "CS001", "CS009", "CS050"
@@ -187,8 +187,6 @@ investimento_residuos <- function(state) {
   tabela <- rsan:::soma_por_estado_faixa(tabela)
   tabela$numero_municipios <- conta$numero_municipios
   tabela <- rsan:::cria_faixas_vazias(tabela)
-  vremove <- c("Estado")
-  writexl::write_xlsx(dplyr::select(tabela, -dplyr::all_of(vremove)), "por_faixa.xlsx")
 
   # Transbordo
   tabela <- rsan:::demanda_transbordo(tabela)
@@ -233,12 +231,11 @@ investimento_residuos <- function(state) {
 
   # Compostagem
   rlog::log_info("residuos: investimento em compostagem")
-  tabela <- demanda_compostagem(tabela)
-  tabela <- preco_unidade_faixa(tabela, preco_unidade_compostagem)
-  tabela <- regionaliza_compostagem(tabela, cenario_regionalizacao)
-  tabela <- investimento_expansao_compostagem(tabela, vida_util_compostagem)
-  writexl::write_xlsx(tabela, "compostagem.xlsx")
-  tabela <- capacidade_instalada_compostagem(tabela, vida_util_compostagem)
+  tabela <- rsan:::demanda_compostagem(tabela)
+  tabela <- rsan:::preco_unidade_faixa(tabela, preco_unidade_compostagem)
+  tabela <- rsan:::regionaliza_compostagem(tabela, cenario_regionalizacao)
+  tabela <- rsan:::investimento_expansao_compostagem(tabela, vida_util_compostagem)
+  tabela <- rsan:::capacidade_instalada_compostagem(tabela, vida_util_compostagem)
   tabela <- rsan::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_compostagem",
@@ -270,6 +267,8 @@ investimento_residuos <- function(state) {
 
   # Triagem
   rlog::log_info("residuos: investimento em triagem")
+  tabela <- reaproveitamento_relativo(tabela, tabela_por_municipio)
+  tabela <- projecao_reaproveitamento(tabela)
   tabela <- demanda_triagem(tabela)
   tabela <- preco_unidade_faixa(tabela, preco_unidade_triagem)
   tabela <- regionaliza_triagem(tabela, cenario_regionalizacao)
@@ -285,6 +284,8 @@ investimento_residuos <- function(state) {
     ano_corrente,
     rsan::depreciacao_para_vida_util(input$deprec_triagem)
   )
+  vremove <- c("Estado")
+  writexl::write_xlsx(dplyr::select(tabela, -dplyr::all_of(vremove)), "por_faixa.xlsx")
 
   rlog::log_info("residuos: totalizando investimentos")
   tabela <- rsan:::investimento_residuos_total(tabela)
