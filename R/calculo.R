@@ -169,15 +169,6 @@ investimento_residuos <- function(state) {
   tabela <- rsan:::disposicao_inadequada(tabela)
 
   tabela_por_municipio <- tabela
-  writexl::write_xlsx(tabela_por_municipio, "por_municipio.xlsx")
-
-
-  # Agrupamento por faixa usado para preenchimento
-  rlog::log_info("residuos: agregando por faixa populacional para brasil todo")
-  soma_faixa <- rsan:::soma_por_faixa(tabela)
-  soma_faixa <- rsan:::numero_caminhoes(soma_faixa)
-  soma_faixa <- rsan:::densidade_caminhoes(soma_faixa)
-
 
   # Agrupamento por estado e faixa populacional
   rlog::log_info("residuos: agregando por estado e faixa populacional")
@@ -236,7 +227,7 @@ investimento_residuos <- function(state) {
   tabela <- rsan:::regionaliza_compostagem(tabela, cenario_regionalizacao)
   tabela <- rsan:::investimento_expansao_compostagem(tabela, vida_util_compostagem)
   tabela <- rsan:::capacidade_instalada_compostagem(tabela, vida_util_compostagem)
-  tabela <- rsan::calcula_reposicao_parcial(
+  tabela <- rsan:::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_compostagem",
     "investimento_expansao_compostagem",
@@ -249,12 +240,12 @@ investimento_residuos <- function(state) {
 
   # Aterro
   rlog::log_info("residuos: investimento em aterro")
-  tabela <- preco_unidade_faixa(tabela, preco_unidade_aterro)
-  tabela <- demanda_aterro(tabela, vida_util_aterro)
-  tabela <- regionaliza_aterro(tabela, cenario_regionalizacao)
-  tabela <- investimento_expansao_aterro(tabela)
-  tabela <- capacidade_instalada_aterro(tabela, vida_util_aterro)
-  tabela <- rsan::calcula_reposicao_parcial(
+  tabela <- rsan:::preco_unidade_faixa(tabela, preco_unidade_aterro)
+  tabela <- rsan:::demanda_aterro(tabela, vida_util_aterro)
+  tabela <- rsan:::regionaliza_aterro(tabela, cenario_regionalizacao)
+  tabela <- rsan:::investimento_expansao_aterro(tabela)
+  tabela <- rsan:::capacidade_instalada_aterro(tabela, vida_util_aterro)
+  tabela <- rsan:::calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_aterro",
     "investimento_expansao_aterro",
@@ -284,8 +275,6 @@ investimento_residuos <- function(state) {
     ano_corrente,
     rsan::depreciacao_para_vida_util(input$deprec_triagem)
   )
-  vremove <- c("Estado")
-  writexl::write_xlsx(dplyr::select(tabela, -dplyr::all_of(vremove)), "por_faixa.xlsx")
 
   rlog::log_info("residuos: totalizando investimentos")
   tabela <- rsan:::investimento_residuos_total(tabela)

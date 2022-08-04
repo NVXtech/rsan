@@ -1,0 +1,15 @@
+digraph Residuo {
+    fontname = "Segoe UI"
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    // condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"
+    informacoes_por_estado_faixa, expansao_coleta_indiferenciada, metas_plansab, deficit [shape=parallelogram fillcolor=deepskyblue]
+
+    informacoes_por_estado_faixa -> caminhao_por_estado_faixa
+    -> metas_plansab_residuo
+    metas_plansab -> metas_plansab_residuo
+    -> deficit_coleta_indiferenciada -> deficit
+    -> investimento_expansao_coleta_indiferenciada 
+    -> capacidade_instalada_coleta_indiferenciada
+    -> calcula_reposicao_parcial
+    investimento_expansao_coleta_indiferenciada -> expansao_coleta_indiferenciada
+}

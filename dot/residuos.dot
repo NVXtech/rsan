@@ -2,15 +2,28 @@ digraph Residuo {
     fontname = "Segoe UI"
     node [shape=box, style=filled, fillcolor=aquamarine3]
     // condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"]
-    snis, snis_unidades_processamento [shape=parallelogram fillcolor=deepskyblue]
+    snis, snis_unidades_processamento,
+    informacoes_por_estado_faixa, informacoes_por_municipio [shape=parallelogram fillcolor=deepskyblue]
 
     snis -> adiciona_projecao_populacao
     -> adiciona_unidades_processamento
     snis_unidades_processamento -> adiciona_unidades_processamento
-    adiciona_unidades_processamento -> adiciona_pais
+    -> adiciona_pais
     -> adiciona_estado
     -> adiciona_regiao
     -> adiciona_tipo_disposicao
     -> adiciona_classificacao_litoranea
+    -> numero_caminhoes
+    -> densidade_caminhoes
     -> classifica_faixa_populacional
+    -> mascara_coleta_seletiva
+    -> preenche_atendimento_coleta_seletiva
+    -> preenche_atendimento_coleta_indiferenciada
+    -> preenche_taxa_geracao_residuos
+    -> preenche_quantidade_coletada
+    -> geracao_residuos
+    -> disposicao_inadequada
+    -> agrega_por_estado_faixa
+    -> informacoes_por_estado_faixa
+    disposicao_inadequada -> informacoes_por_municipio
 }

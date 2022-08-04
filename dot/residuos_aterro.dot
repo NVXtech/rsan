@@ -1,0 +1,13 @@
+digraph Residuo {
+    fontname = "Segoe UI"
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    informacoes_por_estado_faixa, expansao_aterro [shape=parallelogram fillcolor=deepskyblue]
+
+    informacoes_por_estado_faixa -> preco_unidade_faixa
+    -> demanda_aterro
+    -> regionaliza_aterro
+    -> investimento_expansao_aterro
+    -> capacidade_instalada_aterro
+    -> calcula_reposicao_parcial
+    -> expansao_aterro
+}

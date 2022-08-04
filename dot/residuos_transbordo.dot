@@ -1,0 +1,10 @@
+digraph Residuo {
+    fontname = "Segoe UI"
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    // condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"
+    informacoes_por_estado_faixa, expansao_transbordo [shape=parallelogram fillcolor=deepskyblue]
+    informacoes_por_estado_faixa -> demanda_transbordo
+    -> regionaliza_transbordo
+    -> investimento_expansao_transbordo
+    -> expansao_transbordo
+}

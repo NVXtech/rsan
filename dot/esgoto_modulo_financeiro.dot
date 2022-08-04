@@ -1,0 +1,12 @@
+digraph G {
+    fontname = "Segoe UI"
+    margin=0
+
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    snis, custos_expansao, custos_reposicao [shape=parallelogram fillcolor=deepskyblue]
+
+    snis -> capacidade_instalada_esgoto
+    custos_expansao -> capacidade_instalada_esgoto
+    -> calcula_reposicao_parcial
+    -> custos_reposicao
+}

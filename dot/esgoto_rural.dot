@@ -1,0 +1,45 @@
+digraph Projecao {
+    fontname = "Segoe UI"
+    margin=0
+    graph [ ratio = compress];
+
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    #condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"]
+    censo, parametros_interface, taxas_crescimento, seguranca_hidrica, deficit_pnad, custo_coleta, custo_tratamento [shape=parallelogram fillcolor=deepskyblue]
+    
+    censo -> filtra_setores_rurais
+    filtra_setores_rurais -> codigo_setor_para_municipio
+    codigo_setor_para_municipio -> adiciona_taxa_crescimento
+    taxas_crescimento -> adiciona_taxa_crescimento
+    adiciona_taxa_crescimento 
+    -> fazer_projecao_domicilio
+    -> densidade_setor
+    -> classifica_densidade_setor
+    -> classifica_deficit_setor
+    -> adiciona_estado
+    -> adiciona_regiao
+    -> adiciona_deficit_rural_agua 
+    deficit_pnad-> adiciona_deficit_rural_agua 
+    -> adiciona_deficit_rural_esgoto
+    deficit_pnad-> adiciona_deficit_rural_esgoto
+    adiciona_deficit_rural_esgoto -> adiciona_seguranca_hidrica
+    seguranca_hidrica -> adiciona_seguranca_hidrica
+    -> fracao_coletivo_individual_agua
+    -> custo_individual_esgoto
+    -> custo_coleta_esgoto
+    custo_coleta -> custo_coleta_esgoto
+    -> custo_tratamento_esgoto
+    custo_tratamento -> custo_tratamento_esgoto
+    -> domicilios_com_deficit_esgoto
+    -> habitantes_com_deficit_esgoto
+    -> domicilios_adequados_com_esgoto
+    -> investimento_rural_esgoto
+    -> capacidade_instalada_rural_esgoto
+    -> calcula_reposicao_parcial_coleta
+    -> calcula_reposicao_parcial_tratamento
+    -> consolida_investimentos_rural_esgoto
+    parametros_interface -> custo_individual_esgoto
+    parametros_interface -> calcula_reposicao_parcial_distribuicao
+    parametros_interface -> calcula_reposicao_parcial_producao
+}
+

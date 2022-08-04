@@ -1,0 +1,17 @@
+digraph G {
+    fontname = "Segoe UI"
+    margin=0
+
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    #condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"]
+    snis, demanda, projecao_populacional  [shape=parallelogram fillcolor=deepskyblue]
+
+    snis -> calcula_densidades 
+    -> preenche_densidades
+    -> adiciona_projecao_populacao
+    -> calcula_deficit
+    -> calcula_demanda
+    -> demanda
+
+    projecao_populacional -> adiciona_projecao_populacao
+}

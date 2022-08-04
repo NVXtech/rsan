@@ -1,0 +1,16 @@
+digraph G {
+    fontname = "Segoe UI"
+    margin=0
+
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    sinapi, projeto_coleta, projeto_tratamento, densidades, custos_expansao  [shape=parallelogram fillcolor=deepskyblue]
+
+    projeto_coleta -> calcula_precos_coleta
+    sinapi -> calcula_precos_coleta
+    projeto_tratamento -> calcula_precos_tratamento
+    calcula_precos_tratamento -> calcula_custo_expansao
+    calcula_precos_coleta -> calcula_custo_expansao
+    -> custos_expansao
+    densidades -> calcula_custo_expansao
+
+}

@@ -1,0 +1,30 @@
+digraph G {
+    fontname = "Segoe UI"
+    margin=0
+
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    condition [shape=diamond fillcolor=antiquewhite1 label="Método é \nValor Constate?"]
+    snis_ap, area_urbana, precipitacao, capacidade_instalada,
+    indices, projecao_populacional, necessidade [shape=parallelogram fillcolor=deepskyblue]
+
+    snis_ap -> adiciona_area_urbana
+    area_urbana -> adiciona_area_urbana
+    -> densidade_urbana
+    -> adiciona_precipitacao
+    precipitacao -> adiciona_precipitacao
+    -> adiciona_indices_drenagem
+    indices -> adiciona_indices_drenagem
+    -> adiciona_projecao
+    projecao_populacional -> adiciona_projecao
+    -> adiciona_capacidade_instalada
+    capacidade_instalada -> adiciona_capacidade_instalada
+    -> condition
+    condition -> investimento_constante[label="S"]
+    condition -> aplica_regressao_multipla_drenagem[label="N"]
+    investimento_constante -> calcula_reposicao_parcial 
+    aplica_regressao_multipla_drenagem -> calcula_reposicao_parcial 
+    calcula_reposicao_parcial -> investimento_cadastro_tecnico
+    -> investimento_total_drenagem
+    -> adiciona_pais
+    -> necessidade
+}

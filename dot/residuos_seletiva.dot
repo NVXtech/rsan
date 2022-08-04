@@ -1,0 +1,16 @@
+digraph Residuo {
+    fontname = "Segoe UI"
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    // condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"
+    informacoes_por_estado_faixa, informacoes_por_municipio,
+    expansao_coleta_seletiva, deficit [shape=parallelogram fillcolor=deepskyblue]
+
+    informacoes_por_estado_faixa -> preenche_densidade_caminhao_bau
+    -> atendimento_relativo_coleta_seletiva
+    -> deficit_coleta_seletiva -> deficit
+    -> investimento_expansao_coleta_seletiva 
+    -> capacidade_instalada_coleta_seletiva
+    -> calcula_reposicao_parcial
+    investimento_expansao_coleta_seletiva -> expansao_coleta_seletiva
+    informacoes_por_municipio -> preenche_densidade_caminhao_bau
+}

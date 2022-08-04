@@ -10,3 +10,8 @@ R/data
 .RData
 .Ruserdata
 /*.sqlite
+/dot/*.svg
+/dot/*.png
+!/data-raw/*.xlsx
+!/data-raw/*.xls
+!/data-raw/*.csv

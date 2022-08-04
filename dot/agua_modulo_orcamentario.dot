@@ -1,0 +1,16 @@
+digraph G {
+    fontname = "Segoe UI"
+    margin=0
+
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    sinapi, projeto_distribuicao, projeto_producao, densidades, custos_expansao  [shape=parallelogram fillcolor=deepskyblue]
+
+    projeto_distribuicao -> calcula_precos_distribuicao
+    sinapi -> calcula_precos_distribuicao
+    projeto_producao -> calcula_precos_producao
+    calcula_precos_producao -> calcula_custo_expansao
+    calcula_precos_distribuicao -> calcula_custo_expansao
+    -> custos_expansao
+    densidades -> calcula_custo_expansao
+
+}

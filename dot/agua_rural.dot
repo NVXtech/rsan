@@ -1,15 +1,13 @@
 digraph Projecao {
     fontname = "Segoe UI"
-    ratio="fill"
-    size="8.3,11.7!"
     margin=0
+    graph [ ratio = compress ];
 
     node [shape=box, style=filled, fillcolor=aquamarine3]
     #condition [shape=diamond fillcolor=antiquewhite1 label="É censo?"]
     censo, parametros_interface, taxas_crescimento,
     seguranca_hidrica, deficit_pnad, custo_producao,
-    custo_distribuicao, custo_rural_individual
-    [shape=parallelogram fillcolor=deepskyblue]
+    custo_distribuicao, custo_rural_individual [shape=parallelogram fillcolor=deepskyblue]
     
     censo -> filtra_setores_rurais
     filtra_setores_rurais -> codigo_setor_para_municipio
@@ -22,7 +20,7 @@ digraph Projecao {
     -> classifica_deficit_setor
     -> adiciona_estado
     -> adiciona_regiao
-    -> adiciona_deficit_rural_agua 
+    -> adiciona_deficit_rural_agua
     deficit_pnad-> adiciona_deficit_rural_agua 
     -> adiciona_seguranca_hidrica
     seguranca_hidrica -> adiciona_seguranca_hidrica

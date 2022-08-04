@@ -1,0 +1,13 @@
+digraph Residuo {
+    fontname = "Segoe UI"
+    node [shape=box, style=filled, fillcolor=aquamarine3]
+    informacoes_por_estado_faixa, expansao_compostagem [shape=parallelogram fillcolor=deepskyblue]
+
+    informacoes_por_estado_faixa -> demanda_compostagem
+    -> preco_unidade_faixa
+    -> regionaliza_compostagem
+    -> investimento_expansao_compostagem
+    -> capacidade_instalada_compostagem
+    -> calcula_reposicao_parcial
+    -> expansao_compostagem
+}
