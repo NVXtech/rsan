@@ -21,7 +21,7 @@ tabela contendo os campos:
 \item{regiao}
 \item{componente}
 \item{situacao}
-\item{etapa}
+\item{subsistema}
 \item{deficit}
 }
 }

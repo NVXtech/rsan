@@ -32,7 +32,7 @@ investimento_total_drenagem <- function(tabela) {
 #'  \item{componente}
 #'  \item{situacao}
 #'  \item{destino}
-#'  \item{etapa}
+#'  \item{subsistema}
 #' }
 #'
 #' @export
@@ -56,7 +56,7 @@ tbl_longa_investimento_drenagem <- function(tabela) {
     tabela,
     componente = "drenagem",
     situacao = "urbana",
-    etapa = "drenagem_urbana"
+    subsistema = "drenagem_urbana"
   )
 }
 

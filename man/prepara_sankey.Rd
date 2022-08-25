@@ -10,7 +10,7 @@ prepara_sankey(tabela, colunas)
 \item{tabela}{o \code{data.frame} longo com dados de investimento}
 
 \item{colunas}{um \code{vector} com a lista de coluns para serem utilizadas.
-Os items podem ser "situacao", "destino", "componente", "etapa".}
+Os items podem ser "situacao", "destino", "componente", "subsistema".}
 }
 \value{
 uma lista (\code{list}) que guarda todos os dados para o sankey plot

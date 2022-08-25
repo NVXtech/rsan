@@ -583,7 +583,7 @@ consolida_investimentos_agua <- function(tabela) {
 #'  \item{componente}
 #'  \item{situacao}
 #'  \item{destino}
-#'  \item{etapa}
+#'  \item{subsistema}
 #'  \item{necessidade_investimento}
 #' }
 #'
@@ -601,7 +601,7 @@ tbl_longa_investimentos_agua <- function(tabela) {
   tabela <- tidyr::pivot_longer(
     tabela,
     cols = starts_with("custo_"),
-    names_to = c("destino", "etapa"),
+    names_to = c("destino", "subsistema"),
     names_pattern = "custo_(.*?)_(.*)",
     values_to = "necessidade_investimento"
   )
@@ -627,7 +627,7 @@ tbl_longa_investimentos_agua <- function(tabela) {
 #'  \item{regiao}
 #'  \item{componente}
 #'  \item{situacao}
-#'  \item{etapa}
+#'  \item{subsistema}
 #'  \item{deficit}
 #' }
 #'
@@ -646,7 +646,7 @@ tbl_longa_deficit_agua <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
     componente = "agua",
-    etapa = "producao_distribuicao",
+    subsistema = "producao_distribuicao",
     deficit = as.integer(deficit)
   )
 }

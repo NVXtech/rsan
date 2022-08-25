@@ -254,7 +254,7 @@ consolida_investimentos_rural_esgoto <- function(tabela) {
 #'  \item{componente}
 #'  \item{situacao}
 #'  \item{destino}
-#'  \item{etapa}
+#'  \item{subsistema}
 #' }
 #'
 #' @export
@@ -272,7 +272,7 @@ tbl_longa_investimentos_esgoto_rural <- function(tabela) {
     tabela <- tidyr::pivot_longer(
         tabela,
         cols = starts_with("investimento_"),
-        names_to = c("destino", "etapa"),
+        names_to = c("destino", "subsistema"),
         names_pattern = "investimento_(.*?)_(.*)",
         values_to = "necessidade_investimento"
     )
@@ -298,7 +298,7 @@ tbl_longa_investimentos_esgoto_rural <- function(tabela) {
 #'  \item{regiao}
 #'  \item{componente}
 #'  \item{situacao}
-#'  \item{etapa}
+#'  \item{subsistema}
 #'  \item{deficit}
 #' }
 #'
@@ -317,7 +317,7 @@ tbl_longa_deficit_esgoto_rural <- function(tabela) {
     tabela <- dplyr::mutate(
         tabela,
         componente = "esgoto",
-        etapa = "coleta_tratamento",
+        subsistema = "coleta_tratamento",
         deficit = as.integer(deficit)
     )
 }

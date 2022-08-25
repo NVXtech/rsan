@@ -5,7 +5,7 @@ tabela_necessidade_vazia <- function() {
         "regiao" = character(),
         "situacao" = character(),
         "destino" = character(),
-        "etapa" = character(),
+        "subsistema" = character(),
         "necessidade_investimento" = double()
     )
 }
@@ -23,7 +23,7 @@ tabela_necessidade_vazia <- function() {
 consolida_investimentos_tabela_longa <- function(state) {
     componentes <- c("agua", "esgoto", "residuos", "drenagem")
     chaves <- c("estado", "regiao")
-    colunas <- c(chaves, "situacao", "destino", "etapa", "investimento")
+    colunas <- c(chaves, "situacao", "destino", "subsistema", "investimento")
 
     tabelas_para_juntar <- c()
     for (componente in componentes) {
@@ -41,7 +41,7 @@ consolida_investimentos_tabela_longa <- function(state) {
 #' Prepara tabela para plotar gráfico estilo sankey
 #' @param tabela o `data.frame` longo com dados de investimento
 #' @param colunas um `vector` com a lista de coluns para serem utilizadas.
-#' Os items podem ser "situacao", "destino", "componente", "etapa".
+#' Os items podem ser "situacao", "destino", "componente", "subsistema".
 #' @return uma lista (`list`) que guarda todos os dados para o sankey plot
 #' @export
 prepara_sankey <- function(tabela, colunas) {
@@ -116,7 +116,7 @@ tabela_deficit_vazia <- function() {
         "regiao" = character(),
         "componente" = character(),
         "situacao" = character(),
-        "etapa" = character(),
+        "subsistema" = character(),
         "deficit" = integer()
     )
 }

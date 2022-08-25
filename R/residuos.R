@@ -110,7 +110,7 @@ investimento_residuos_total <- function(tabela) {
 #'  \item{componente}
 #'  \item{situacao}
 #'  \item{destino}
-#'  \item{etapa}
+#'  \item{subsistema}
 #' }
 #'
 #' @export
@@ -134,7 +134,7 @@ tbl_longa_investimento_residuos <- function(tabela) {
   tabela <- tidyr::pivot_longer(
     tabela,
     cols = colunas[3:length(colunas)],
-    names_to = c("destino", "etapa"),
+    names_to = c("destino", "subsistema"),
     names_pattern = "investimento_(.*?)_(.*)",
     values_to = "necessidade_investimento"
   )
@@ -161,7 +161,7 @@ tbl_longa_investimento_residuos <- function(tabela) {
 #'  \item{regiao}
 #'  \item{componente}
 #'  \item{situacao}
-#'  \item{etapa}
+#'  \item{subsistema}
 #'  \item{deficit}
 #' }
 #'
@@ -177,7 +177,7 @@ tbl_longa_deficit_residuos <- function(tabela) {
   tabela <- tidyr::pivot_longer(
     tabela,
     cols = starts_with("deficit_"),
-    names_to = "etapa",
+    names_to = "subsistema",
     names_pattern = "deficit_(.*)",
     values_to = "deficit"
   )

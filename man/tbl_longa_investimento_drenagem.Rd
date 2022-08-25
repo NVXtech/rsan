@@ -22,7 +22,7 @@ tabela contendo os campos:
 \item{componente}
 \item{situacao}
 \item{destino}
-\item{etapa}
+\item{subsistema}
 }
 }
 \description{
