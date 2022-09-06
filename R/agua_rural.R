@@ -230,7 +230,7 @@ investimento_rural_agua <- function(tabela) {
         investimento_agua_rural_expansao = investimento_expansao_individual +
             investimento_expansao_producao_agua +
             investimento_expansao_distribuicao_agua,
-        investimento_agua_rural_coletivo = 0.0,
+        # investimento_agua_rural_coletivo = investimento_expansao_producao_agua + investimento_expansao_distribuicao_agua,
     )
 }
 
