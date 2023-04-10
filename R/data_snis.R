@@ -4,12 +4,16 @@
 #' @export
 create_snis <- function() {
   data("snis2020", package = "rsan")
-  df_snis <- snis2020
-  save(df_snis, file = rsan:::get_data_path("snis_2020"))
+  df_snis2020 <- snis2020
+  save(df_snis2020, file = rsan:::get_data_path("snis_2020"))
 
-  nome <- c("SNIS 2020")
-  ano <- c(2020)
-  caminho <- c("snis_2020")
+  data("snis2021", package = "rsan")
+  df_snis2021 <- snis2021
+  save(df_snis2021, file = rsan:::get_data_path("snis_2021"))
+
+  nome <- c("SNIS 2021", "SNIS 2020")
+  ano <- c(2021, 2020)
+  caminho <- c("snis_2021", "snis_2020")
   snis <- data.frame(nome, ano, caminho)
 
   save(snis, file = rsan:::get_data_path("snis"))

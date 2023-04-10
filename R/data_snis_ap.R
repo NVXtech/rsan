@@ -5,13 +5,21 @@
 #' @return um `data.frame` contendo os dados do SNIS
 #' @export
 download_snis_ap <- function(year) {
-    snis_base_url <- "http://www.snis.gov.br/downloads/diagnosticos/"
-    download_url <- paste0(
+    if (year>=2020){
+      snis_base_url <- "https://www.gov.br/mdr/pt-br/assuntos/saneamento/snis/produtos-do-snis/diagnosticos/"
+      download_url <- paste0(
         snis_base_url,
-        sprintf("ap/%s/Planilhas_AP%s.zip", year, year)
-    )
+        sprintf("Planilhas_AP%s.zip", year)
+      )
+    } else {
+      snis_base_url <- "https://www.gov.br/mdr/pt-br/assuntos/saneamento/snis/diagnosticos-anteriores-do-snis/aguas-pluviais/"
+      download_url <- paste0(
+        snis_base_url,
+        sprintf("%s/Planilhas_AP%s.zip", year, year)
+      )
+    }
     temp_zipfile <- tempfile(fileext = ".zip")
-    tmp_dir <- tempdir()
+    tmp_dir <- tempdir(check = TRUE)
     curl::curl_download(download_url, temp_zipfile)
     if (file.exists(temp_zipfile)) {
         try(
@@ -20,9 +28,10 @@ download_snis_ap <- function(year) {
                 exdir = tmp_dir, unzip = "unzip"
             )
         )
-        xls_fname <- dir(path = tmp_dir, pattern = ".*informa.*")
+        print(tmp_dir)
+        xls_fname <- dir(path = tmp_dir, pattern = ".*nforma.*")
         if (length(xls_fname) == 0) {
-            rlog::log_warn(sprintf("Could not extract snis ap for %s", year))
+            rlog::log_warn(sprintf("Could not extract snis ap for %s!", year))
             return(NULL)
         }
         file.rename(

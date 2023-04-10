@@ -11,6 +11,19 @@
 #' @source \url{http://www.snis.gov.br/}
 "snis2020"
 
+#' SNIS 2021
+#'
+#' Dataset contendo as informações e indicadores do SNIS do ano de 2021.
+#'
+#' @format A data frame with 5570 rows and 608 variables
+#' \describe{
+#'   \item{codigo_municipio}{codigo ibge do municipio}
+#'   \item{`CODIGO`}{codigo do indicador ou informacao do SNIS ex: AG001}
+#'   ... todas variáveis do snis
+#' }
+#' @source \url{http://www.snis.gov.br/}
+"snis2021"
+
 #' SINAPI Dezembro de 2021
 #'
 #' Dataset contendo preços e índices para a construção civil.

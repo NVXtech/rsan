@@ -12,7 +12,11 @@ read_planilha_unidades <- function(year, dir) {
     )
     skips <- c(11, 11)
     for (i in 1:length(skips)) {
-        file_name <- file.path(dir, sprintf(filenames[i], year))
+        if (year >= 2021) {
+            file_name <- file.path(dir, sprintf("Planilhas_RS%s", year), sprintf(filenames[i], year))
+        } else {
+            file_name <- file.path(dir, sprintf(filenames[i], year))
+        }
         tabela <- readxl::read_xlsx(file_name, skip = skips[i])
         if (i == 1) {
             unidades <- tabela
@@ -30,10 +34,10 @@ read_planilha_unidades <- function(year, dir) {
 #' @return um `data.frame` contendo os dados do SNIS
 #' @export
 download_snis_rs <- function(year) {
-    snis_base_url <- "http://www.snis.gov.br/downloads/diagnosticos/"
+    snis_base_url <- "https://www.gov.br/mdr/pt-br/assuntos/saneamento/snis/produtos-do-snis/diagnosticos/"
     snis_rs <- list()
     download_url <- paste0(
-        snis_base_url, sprintf("rs/%s/Planilhas_RS%s.zip", year, year)
+        snis_base_url, sprintf("Planilhas_RS%s.zip", year)
     )
     destfile <- tempfile(fileext = ".zip")
     tmp_dir <- tempdir(check = TRUE)
