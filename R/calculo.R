@@ -56,11 +56,11 @@ rodar_projecao_populacional <- function(state) {
 #' }
 investimento_drenagem <- function(state) {
   input <- state$input$drenagem
-  ano_inicial <- 2021
+  ano_inicial <- rsan:::nome_para_ano(input$snis_ap) + 1
   ano_final <- state$input$geral$ano
   ano_corrente <- state$input$geral$ano_corrente
   depreciacao <- rsan::depreciacao_para_vida_util(input$deprec_drenagem)
-
+  rlog::log_info(sprintf("Drenagem anoi=%s anof=%s", ano_inicial, ano_final))
   tabela <- rsan:::load_snis_ap(input$snis_ap)
   tabela <- rsan:::area_urbana(tabela)
   tabela <- rsan:::densidade_urbana(tabela)
@@ -131,8 +131,9 @@ investimento_residuos <- function(state) {
   preco_unidade_triagem <- tabela_preco_unidade_residuos(input, "triagem")
   vida_util_triagem <- input$vida_util_triagem
 
-  ano_inicial <- 2021
+  ano_inicial <- rsan:::nome_para_ano(input$snis_rs) + 1
   ano_final <- ano
+  rlog::log_info(sprintf("Residuos anoi=%s anof=%s", ano_inicial, ano_final))
   ano_corrente <- state$input$geral$ano_corrente
   cenario_regionalizacao <- "A"
 

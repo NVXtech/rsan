@@ -475,6 +475,7 @@ rodar_modulo_rural_agua <- function(state) {
     ano <- input$geral$ano
     param <- input$agua # parametros
     ano_censo <- 2010
+    ano_inicial <- 2021
     rlog::log_info("água:rural: carregando dados")
     data("agua_esgoto_rural", package = "rsan")
     agua_esgoto_rural <- get("agua_esgoto_rural")
@@ -523,7 +524,7 @@ rodar_modulo_rural_agua <- function(state) {
         "capacidade_instalada_distribuicao_agua",
         "investimento_expansao_distribuicao_agua",
         "investimento_reposicao_distribuicao_agua",
-        2021,
+        ano_inicial,
         ano,
         input$geral$ano_corrente,
         input$agua$vida_util
@@ -537,7 +538,7 @@ rodar_modulo_rural_agua <- function(state) {
         "capacidade_instalada_producao_agua",
         "investimento_expansao_producao_agua",
         "investimento_reposicao_producao_agua",
-        2021,
+        ano_inicial,
         ano,
         input$geral$ano_corrente,
         input$agua$vida_util

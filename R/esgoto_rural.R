@@ -336,6 +336,7 @@ rodar_modulo_rural_esgoto <- function(state) {
     input <- state$input
     taxas_projecao <- state$taxas_projecao
     ano <- input$geral$ano
+    ano_inicial <- 2021
     ano_censo <- 2010
 
     data("agua_esgoto_rural", package = "rsan")
@@ -379,7 +380,7 @@ rodar_modulo_rural_esgoto <- function(state) {
         "capacidade_instalada_coleta_esgoto",
         "investimento_expansao_coleta_esgoto",
         "investimento_reposicao_coleta_esgoto",
-        2021,
+        ano_inicial,
         ano,
         input$geral$ano_corrente,
         input$esgoto$vida_util
@@ -389,7 +390,7 @@ rodar_modulo_rural_esgoto <- function(state) {
         "capacidade_instalada_tratamento_esgoto",
         "investimento_expansao_tratamento_esgoto",
         "investimento_reposicao_tratamento_esgoto",
-        2021,
+        ano_inicial,
         ano,
         input$geral$ano_corrente,
         input$esgoto$vida_util

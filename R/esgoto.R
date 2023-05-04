@@ -341,7 +341,8 @@ rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
     custo <- orcamentario$custo
     tabela <- capacidade_instalada_esgoto(snis_data, custo)
     ano_final <- input$geral$ano
-    ano_inicial <- 2021
+    ano_inicial <- rsan:::nome_para_ano(input$esgoto$snis) + 1
+    rlog::log_info(sprintf("Esgoto anoi=%s anof=%s", ano_inicial, ano_final))
     ano_corrente <- input$geral$ano_corrente
 
     vars <- list(
