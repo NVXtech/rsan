@@ -51,7 +51,8 @@ download_sinapi <- function(year, month) {
           "CODIGO", "DESCRICAO DO INSUMO",
           "UNIDADE DE MEDIDA", "PRECO MEDIANO R$"
         )
-        if (as.integer(year) >= 2022 & as.integer(month) >= 6) {
+        yearmonth <- paste0(year, month)
+        if (as.integer(yearmonth) >= 202206) {
           colunas[3] <- "UNIDADE"
         }
         nomes <- c("CODIGO", "DESCRICAO", "UNIDADE", coluna_preco)
