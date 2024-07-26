@@ -1,6 +1,6 @@
 Package: rsan
 Title: Necessidade de Investimento em Saneamento no Brasil
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: 
     person("Julio", "Werner", , "juliowerner@gmail.com",
         role = c("aut", "cre"),
@@ -16,7 +16,7 @@ Imports:
     dplyr,
     tidyr,
     stringr,
-    readxl (<= 1.3.1),
+    readxl,
     writexl,
     jsonlite,
     stats,
