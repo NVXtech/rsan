@@ -44,7 +44,7 @@ fix_snis_colnames <- function(data) {
     "codigo_municipio"
   colnames(data) <- new_names
   data <-
-    dplyr::mutate(data, dplyr::across(codigo_municipio, as.character))
+    dplyr::mutate(data, dplyr::across(codigo_municipio, \(x) as.character(x)))
   return(data)
 }
 

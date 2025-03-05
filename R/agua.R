@@ -250,8 +250,7 @@ calcula_precos_distribuicao <-
       df <- dplyr::bind_rows(df, filtered)
     }
     df <- dplyr::group_by(df, projeto, estado)
-    df <-
-      dplyr::summarise(df, dplyr::across(-c("codigo", "tipo"), sum, na.rm = TRUE))
+    df <- dplyr::summarise(df, dplyr::across(-c("codigo", "tipo"), \(x) sum(x, na.rm = TRUE)))
     df <- dplyr::mutate(df, preco = round(preco, 2))
     return(df)
   }
@@ -437,7 +436,7 @@ calcula_preco_unidades_producao <-
       )
     df <- dplyr::group_by(df, unidade, estado)
     df <-
-      dplyr::summarise(df, dplyr::across(-c("TIPO", "fator", "quantidade", "vazao"), sum, na.rm = TRUE))
+      dplyr::summarise(df, dplyr::across(-c("TIPO", "fator", "quantidade", "vazao"), \(x) sum(x, na.rm = TRUE)))
 
     df <- dplyr::left_join(df, porcentagem, by = "unidade")
     df <- dplyr::mutate(df, preco = round(preco * percent, 2))

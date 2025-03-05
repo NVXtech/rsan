@@ -16,11 +16,11 @@ soma_por_faixa <- function(tabela, campo_faixa = "faixa") {
     tabela <- dplyr::group_by(tabela, .data[[campo_faixa]])
     tabela <-
         dplyr::summarise(tabela,
-            dplyr::across(where(is.numeric), ~ sum(.x, na.rm = TRUE)),
+            dplyr::across(where(is.numeric), \(x) sum(x, na.rm = TRUE)),
             dplyr::across(
                 where(is.character),
-                ~ ifelse(length(unique(.x)) == 1 &
-                    length(.x) >= 1, dplyr::first(.x), NA)
+                \(x) ifelse(length(unique(x)) == 1 &
+                    length(x) >= 1, dplyr::first(x), NA)
             ),
             .groups = "drop"
         )
@@ -48,11 +48,11 @@ media_por_faixa <- function(tabela, campo_faixa = "faixa") {
         dplyr::group_by(tabela, .data[[campo_faixa]])
     tabela <-
         dplyr::summarise(tabela,
-            dplyr::across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+            dplyr::across(where(is.numeric), \(x) mean(x, na.rm = TRUE)),
             dplyr::across(
                 where(is.character),
-                ~ ifelse(length(unique(.x)) == 1 &
-                    length(.x) >= 1, dplyr::first(.x), NA)
+                \(x) ifelse(length(unique(x)) == 1 &
+                    length(x) >= 1, dplyr::first(x), NA)
             ),
             .groups = "drop"
         )
@@ -73,11 +73,11 @@ somar_por_campo <- function(tabela, campo) {
     tabela <- dplyr::group_by(tabela, .data[[campo]])
     tabela <- dplyr::summarise(
         tabela,
-        dplyr::across(where(is.numeric), ~ sum(.x, na.rm = TRUE)),
+        dplyr::across(where(is.numeric), \(x) sum(x, na.rm = TRUE)),
         dplyr::across(
             where(is.character),
-            ~ ifelse(length(unique(.x)) == 1 &
-                length(.x) >= 1, dplyr::first(.x), NA)
+            \(x) ifelse(length(unique(x)) == 1 &
+                length(x) >= 1, dplyr::first(x), NA)
         ),
         .groups = "drop"
     )
@@ -174,11 +174,11 @@ soma_por_estado_faixa <- function(tabela,
                                   campo_faixa = "faixa") {
     tabela <- dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
     tabela <- dplyr::summarise(tabela,
-        dplyr::across(where(is.numeric), ~ sum(.x, na.rm = TRUE)),
+        dplyr::across(where(is.numeric), \(x) sum(x, na.rm = TRUE)),
         dplyr::across(
             where(is.character),
-            ~ ifelse(length(unique(.x)) == 1 &
-                length(.x) >= 1, dplyr::first(.x), NA)
+            \(x) ifelse(length(unique(x)) == 1 &
+                length(x) >= 1, dplyr::first(x), NA)
         ),
         .groups = "drop"
     )
@@ -241,11 +241,11 @@ media_por_estado_faixa <- function(tabela,
         dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
     tabela <-
         dplyr::summarise(tabela,
-            dplyr::across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+            dplyr::across(where(is.numeric), \(x) mean(x, na.rm = TRUE)),
             dplyr::across(
                 where(is.character),
-                ~ ifelse(length(unique(.x)) == 1 &
-                    length(.x) >= 1, dplyr::first(.x), NA)
+                \(x) ifelse(length(unique(x)) == 1 &
+                    length(x) >= 1, dplyr::first(x), NA)
             ),
             .groups = "drop"
         )
