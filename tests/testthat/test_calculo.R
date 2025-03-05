@@ -68,5 +68,5 @@ test_that("calculos estão rodando", {
     )
     relativo <- dplyr::mutate(relativo, fator = abs(total.x - total.y) / total.x * 100)
     print(relativo, n = 13)
-    testthat::expect_equal(valores, expected, tolerance = 1.0)
+    testthat::expect_equal(tibble::as_tibble(valores), expected, tolerance = 1.0)
 })

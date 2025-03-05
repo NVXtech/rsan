@@ -6,7 +6,7 @@ test_that("limit_classification", {
   output <- classifica_faixa_populacional(input, limites)
   expected <- input
   expected$faixa <- faixa
-  expect_true(dplyr::all_equal(expected, output))
+  expect_true(all.equal(expected, output))
 })
 
 
@@ -22,7 +22,7 @@ test_that("soma_por_estado_faixa is working", {
   faixa <- c(1, 3, 2, 4)
   valor <- c(2, 4, 6, 8)
   expected <- dplyr::tibble(Estado, faixa, valor)
-  expect_true(dplyr::all_equal(expected, output))
+  expect_true(all.equal(expected, output))
 })
 
 
@@ -38,7 +38,7 @@ test_that("conta_municipios_por_estado_faixa", {
   faixa <- c(1, 3, 2, 4)
   numero_municipios <- as.integer(c(2, 2, 2, 2))
   expected <- dplyr::tibble(Estado, faixa, numero_municipios)
-  test_result <- dplyr::all_equal(expected, output)
+  test_result <- all.equal(expected, output)
   expect_true(test_result)
 })
 
@@ -57,7 +57,7 @@ test_that("soma_por_estado_faixa keep character cols", {
   faixa <- c(1, 3, 2, 4)
   valor <- c(2, 4, 6, 8)
   expected <- dplyr::tibble(Estado, faixa, valor, regiao)
-  expect_true(dplyr::all_equal(expected, output))
+  expect_true(all.equal(expected, output))
 })
 
 test_that("soma_por_faixa is working", {
@@ -70,7 +70,10 @@ test_that("soma_por_faixa is working", {
   faixa <- c(1, 3, 2, 4)
   valor <- c(2, 4, 6, 8)
   expected <- dplyr::tibble(faixa, valor)
-  expect_true(dplyr::all_equal(expected, output))
+  # sort by faixa to compare
+  output <- output[order(output$faixa), ]
+  expected <- expected[order(expected$faixa), ]
+  expect_true(all.equal(expected, output))
 })
 
 test_that("adiciona preco unidade", {

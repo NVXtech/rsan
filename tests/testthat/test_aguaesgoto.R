@@ -7,11 +7,11 @@ test_that("classificacão de municipio esta correta", {
 
   df_in <- dplyr::tibble(populacao_total, populacao_urbana, populacao_rural)
   df_out <- dplyr::tibble(
-    populacao_total, populacao_urbana, populacao_rural, classificacao, cenario
+    populacao_total, populacao_urbana, populacao_rural, cenario,classificacao,
   )
 
   output <- classifica_municipio(df_in)
-  expect_true(dplyr::all_equal(output, df_out))
+  expect_true(all.equal(output, df_out))
 })
 
 test_that("adiciona_estados adiciona coluna com estado corretamente", {
@@ -22,7 +22,7 @@ test_that("adiciona_estados adiciona coluna com estado corretamente", {
   expected_output <- dplyr::tibble(codigo_municipio, estado)
 
   df_out <- adiciona_estado(input)
-  expect_true(dplyr::all_equal(expected_output, df_out))
+  expect_true(all.equal(expected_output, df_out))
 })
 
 test_that("adiciona_regiao adiciona coluna com regiao corretamente", {
@@ -34,7 +34,7 @@ test_that("adiciona_regiao adiciona coluna com regiao corretamente", {
 
 
   df_out <- adiciona_regiao(input)
-  expect_true(dplyr::all_equal(expected_output, df_out))
+  expect_true(all.equal(expected_output, df_out))
 })
 
 test_that("adiciona_pais adiciona coluna pais preenchido com a constante Brasil", {
@@ -46,7 +46,7 @@ test_that("adiciona_pais adiciona coluna pais preenchido com a constante Brasil"
 
 
   df_out <- adiciona_pais(input)
-  expect_true(dplyr::all_equal(expected_output, df_out))
+  expect_true(all.equal(expected_output, df_out))
 })
 
 test_that("testa calculo de reposicao/depreciacao total", {
@@ -68,7 +68,7 @@ test_that("testa calculo de reposicao/depreciacao total", {
     ano_final,
     vida_util
   )
-  expect_true(dplyr::all_equal(expected, df_out))
+  expect_true(all.equal(expected, df_out))
 })
 
 test_that("testa calculo de reposicao/depreciacao parcial", {
@@ -92,7 +92,7 @@ test_that("testa calculo de reposicao/depreciacao parcial", {
     ano_reposicao,
     vida_util
   )
-  expect_true(dplyr::all_equal(expected, df_out))
+  expect_true(all.equal(expected, df_out))
 })
 
 
@@ -118,7 +118,8 @@ test_that("se o custo relativo dos projeto tipo producao de água está correto"
 
   df_out <- rsan::calcula_custo_relativo_producao(preco_unidade, projeto_producao)
   df_out <- dplyr::mutate(df_out, custo_relativo = round(custo_relativo, 2))
-  expect_true(dplyr::all_equal(expected_output, df_out))
+  df_out <- dplyr::as_tibble(df_out)
+  expect_true(all.equal(expected_output, df_out))
 })
 
 test_that("Se o custo relativo dos projeto tipo de tratamento de esgoto está correto", {
@@ -144,7 +145,8 @@ test_that("Se o custo relativo dos projeto tipo de tratamento de esgoto está co
     preco_unidade, projeto_tratamento
   )
   df_out <- dplyr::mutate(df_out, custo_relativo = round(custo_relativo, 2))
-  expect_true(dplyr::all_equal(expected_output, df_out))
+  df_out <- dplyr::as_tibble(df_out)
+  expect_true(all.equal(expected_output, df_out))
 })
 
 test_that("Se o fator de perda esta correto", {
@@ -163,5 +165,5 @@ test_that("Testa density filling", {
 
   df_out <- fill_missing_density(df_in, c("densidade"))
   df_out <- dplyr::mutate(df_out, densidade = round(densidade, 0))
-  expect_true(dplyr::all_equal(expected, df_out))
+  expect_true(all.equal(expected, df_out))
 })
