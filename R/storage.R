@@ -22,6 +22,9 @@ get_data_path <- function(name) {
 #' path <- get_data_dir()
 get_data_dir <- function() {
   root <- file.path(getwd(), "data")
+  if (!dir.exists(root)) {
+    dir.create(root)
+  }
   return(root)
 }
 
