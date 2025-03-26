@@ -1,15 +1,15 @@
 Package: rsan
 Title: Necessidade de Investimento em Saneamento no Brasil
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: 
     person("Julio", "Werner", , "juliowerner@gmail.com",
         role = c("aut", "cre"),
-        comment = c(ORCID = "YOUR-ORCID-ID"))
+        comment = c(ORCID = "0000-0002-1877-1052"))
 Description: Reune as ferramentas necessárias para estimar as necessidade de investimento em saneamento no Brasil.
 License: License_restricts_use
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.3.2
 Imports:
     curl,
     httr,
