@@ -5,23 +5,23 @@ datasets <- c(
 )
 
 create_functions <- list(
-  "populacao" = rsan::create_populacao,
-  "municipio" = rsan::create_municipio,
-  "snis" = rsan::create_snis,
-  "snis_ap" = rsan::create_snis_ap,
-  "snis_rs" = rsan::create_snis_rs,
-  "sinapi" = rsan::create_sinapi,
-  "projeto" = rsan::create_projeto
+  "populacao" = create_populacao,
+  "municipio" = create_municipio,
+  "snis" = create_snis,
+  "snis_ap" = create_snis_ap,
+  "snis_rs" = create_snis_rs,
+  "sinapi" = create_sinapi,
+  "projeto" = create_projeto
 )
 
 integrity_functions <- list(
-  "populacao" = rsan::integrity_populacao,
-  "municipio" = rsan::integrity_municipio,
-  "snis" = rsan::integrity_snis,
-  "snis_ap" = rsan::integrity_snis_ap,
-  "snis_rs" = rsan::integrity_snis_rs,
-  "sinapi" = rsan::integrity_sinapi,
-  "projeto" = rsan::integrity_projeto
+  "populacao" = integrity_populacao,
+  "municipio" = integrity_municipio,
+  "snis" = integrity_snis,
+  "snis_ap" = integrity_snis_ap,
+  "snis_rs" = integrity_snis_rs,
+  "sinapi" = integrity_sinapi,
+  "projeto" = integrity_projeto
 )
 
 #' Verifica se o conjunto de dados existe

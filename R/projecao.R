@@ -193,6 +193,24 @@ nome_para_ano <- function(path) {
   strtoi(gsub("[^0-9]", "", path))
 }
 
+#' Retorna a projecao de população de um tipo e ano
+#'
+#' @param tabela projecao da populacao
+#' @param ano é o Ano que se deseja a projeção
+#' @param tipo é o tipo de população (total, rural ou urbana)
+#'
+#' @return dados da projeção para um determinado tipo de população
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' tabela <- get_populacao(tabela, 2033, "urbana")
+#' }
+get_populacao <- function(tabela, ano, tipo) {
+  year <- ano
+  pop <- dplyr::filter(tabela, tipo_populacao == tipo & ano == year)
+  return(pop)
+}
 
 test_projecao <- function(){
   app_state <- list(input = get_default_input())
