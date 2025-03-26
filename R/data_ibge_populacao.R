@@ -66,11 +66,12 @@ get_censo_years <- function() {
   return(output)
 }
 
-#'
+#' Retorna o diretório de trabalho onde os dados serão armazenados
 #' @return The directory where datasets are stored
 #' @export
 #'
 #' @examples
+#' wd <- workspace_dir()
 workspace_dir <- function() {
   path <- file.path(getwd(),"dados")
   if (!dir.exists(path)){
