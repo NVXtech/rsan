@@ -31,7 +31,7 @@ geral <- list(
 
 projecao <- list(
   fonte1 = "censo_2010",
-  fonte2 = "estimativa_2021"
+  fonte2 = "censo_2022"
 )
 
 agua <- list(

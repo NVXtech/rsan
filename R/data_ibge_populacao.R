@@ -66,6 +66,69 @@ get_censo_years <- function() {
   return(output)
 }
 
+#'
+#' @return The directory where datasets are stored
+#' @export
+#'
+#' @examples
+workspace_dir <- function() {
+  path <- file.path(getwd(),"dados")
+  if (!dir.exists(path)){
+    dir.create(path)
+  }
+  subdirs <- c("brutos", "processados", "resultados")
+  for (subdir in subdirs){
+    subpath <- file.path(path, subdir)
+    if (!dir.exists(subpath)){
+      dir.create(subpath)
+    }
+  }
+  return(path)
+}
+
+raw_data_dir <- function() {
+  return(file.path(workspace_dir(), "brutos"))
+}
+
+
+populacao_municipio <- function(tabela){
+  tabela <- dplyr::select(tabela, codigo_municipio, municipio, situacao, populacao)
+  tabela <- dplyr::mutate(tabela, situacao = dplyr::if_else(is.na(situacao), "Rural", situacao))
+  tabela <- dplyr::group_by(tabela, codigo_municipio, municipio, situacao)
+  tabela <- dplyr::summarise(tabela, populacao = sum(populacao, na.rm=TRUE))
+  tabela <- dplyr::ungroup(tabela)
+  tabela <- tidyr::pivot_wider(tabela, names_from = situacao, values_from = populacao)
+  tabela <- dplyr::mutate(tabela, Rural = dplyr::if_else(is.na(Rural), 0, Rural))
+  tabela <- dplyr::mutate(tabela, Urbana = dplyr::if_else(is.na(Urbana), 0, Urbana))
+  tabela <- dplyr::mutate(tabela, populacao_total = Rural + Urbana, codigo_municipio = as.character(codigo_municipio))
+  names(tabela) <- c("codigo_municipio", "municipio", "populacao_rural", "populacao_urbana", "populacao_total")
+  return(tabela)
+}
+
+censo_2022 <- function() {
+  url <- "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_xlsx/Agregados_por_setores_basico_BR.zip"
+  dest <- file.path(raw_data_dir(), "ibge", "censo", "censo_2022.xlsx")
+  if (!file.exists(dest)) {
+    if (!dir.exists(dirname(dest))) {
+      dir.create(dirname(dest), recursive = TRUE)
+    }
+    tmp_file <- tempfile(fileext = ".zip")
+    curl::curl_download(url, tmp_file)
+    lista <- utils::unzip(tmp_file, list = TRUE)
+    utils::unzip(tmp_file, exdir = dirname(dest))
+    rlog::log_info(sprintf("Renaming %s", lista[1]))
+    file.rename(file.path(dirname(dest), lista[1]), dest)
+  }
+  tabela <- readxl::read_xlsx(dest)
+
+  tabela <- dplyr::select(tabela, CD_MUN, NM_MUN, SITUACAO, v0001)
+  labels <- c("codigo_municipio", "municipio", "situacao", "populacao")
+  names(tabela) <- labels
+  tabela <- populacao_municipio(tabela)
+  return(tabela)
+}
+
+
 
 #' Cria conjunto de dados do censo IBGE
 #'
@@ -80,6 +143,9 @@ download_censo_raw <- function(year) {
   if (year < 2010) {
     rlog::log_error("Anos menores que 2010 não possuem formato compatível.")
     return()
+  }
+  if (year == 2022) {
+    return(censo_2022())
   }
   col_names <- c(
     "codigo_municipio",
@@ -234,10 +300,13 @@ create_populacao <- function() {
   rlog::log_info("Carregando censo IBGE 2010")
   data("populacao_censo_2010", package = "rsan")
   censo2010 <- get("df_censo")
+  rlog::log_info("Carregando censo IBGE 2022")
+  censo2022 <- censo_2022()
 
   rlog::log_info("juntando estimativas populacional")
   ibge_populacao <- list(
     censo_2010 = censo2010,
+    censo_2022 = censo2022,
     estimativa_2021 = estimativa2021
   )
   save(ibge_populacao, file = rsan::get_data_path(ibge_tag))

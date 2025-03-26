@@ -3,7 +3,6 @@ test_that("populacao IBGE é criado", {
     create_populacao()
     ibge_populacao <- load_data("ibge_populacao")
     unlink(get_data_path("ibge_populacao"))
-
     expect_false(is.null(ibge_populacao))
 })
 

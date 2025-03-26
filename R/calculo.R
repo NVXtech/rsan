@@ -17,22 +17,22 @@ rodar_projecao_populacional <- function(state) {
   if (fonte2_nao_censo) {
     fonte2 <- rsan:::preenche_situacao(fonte1, fonte2)
   }
-
-  ano1 <- rsan:::nome_para_ano(input$fonte1)
-  ano2 <- rsan:::nome_para_ano(input$fonte2)
-  state$input$geral$ano_populacao_fonte1 <- ano1
-  state$input$geral$ano_populacao_fonte2 <- ano2
+  ano_inicial <- state$input$geral$ano_corrente
+  ano_final <- state$input$geral$ano
+  ano_fonte1 <- rsan::nome_para_ano(input$fonte1)
+  ano_fonte2 <- rsan::nome_para_ano(input$fonte2)
+  state$input$geral$ano_populacao_fonte1 <- ano_fonte1
+  state$input$geral$ano_populacao_fonte2 <- ano_fonte2
 
   rlog::log_info("projecao: consolidando fontes")
-  consolidado <- rsan:::junta_fontes_populacao(fonte1, fonte2)
-
+  consolidado <- rsan::junta_fontes_populacao(fonte1, fonte2)
   rlog::log_info("projecao: calculando taxa de crescimento")
-  consolidado <- rsan:::calcula_taxa_crescimento(consolidado, ano1, ano2)
+  consolidado <- rsan::calcula_taxa_crescimento(consolidado, ano_fonte1, ano_fonte2)
   state$taxas_projecao <- consolidado
 
   rlog::log_info("projecao: calculando projecao")
   state$projecao <- rsan:::calcula_projecao(
-    consolidado, ano2, state$input$geral$ano
+    consolidado, ano_inicial, ano_final, ano_fonte1
   )
 
   rlog::log_info(sprintf(
@@ -329,3 +329,4 @@ rodar_modelo <- function(state) {
   rlog::log_info("rodada terminada")
   return(state)
 }
+
