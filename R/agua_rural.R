@@ -405,7 +405,7 @@ tbl_longa_investimentos_agua_rural <- function(tabela) {
         "investimento_reposicao_distribuicao_agua"
     )
     tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- rsan::somar_por_campo(tabela, "estado")
     tabela <- tidyr::pivot_longer(
         tabela,
         cols = starts_with("investimento_"),
@@ -443,7 +443,7 @@ tbl_longa_investimentos_agua_rural <- function(tabela) {
 tbl_longa_deficit_agua_rural <- function(tabela) {
     colunas <- c("estado", "regiao", "deficit_rural")
     tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- rsan::somar_por_campo(tabela, "estado")
     tabela <- tidyr::pivot_longer(
         tabela,
         cols = starts_with("deficit_"),
@@ -496,9 +496,9 @@ rodar_modulo_rural_agua <- function(state) {
     tabela <- classifica_densidade_setor(tabela)
     tabela <- classifica_deficit_setor(tabela)
     rlog::log_info("água:rural: adicionando novos campos")
-    tabela <- rsan:::adiciona_estado(tabela)
-    tabela <- rsan:::adiciona_regiao(tabela)
-    tabela <- rsan:::adiciona_deficit_rural_agua(
+    tabela <- rsan::adiciona_estado(tabela)
+    tabela <- rsan::adiciona_regiao(tabela)
+    tabela <- rsan::adiciona_deficit_rural_agua(
         tabela, agua_esgoto_rural$deficit_pnad
     )
     tabela <- adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
@@ -546,7 +546,7 @@ rodar_modulo_rural_agua <- function(state) {
     rlog::log_info("água:rural: consolidando necessidade")
     tabela <- consolida_investimentos_rural_agua(tabela)
 
-    state$agua_rural <- rsan:::adiciona_pais(tabela)
+    state$agua_rural <- rsan::adiciona_pais(tabela)
 
     state$necessidade <- dplyr::bind_rows(
         tbl_longa_investimentos_agua_rural(state$agua_rural),

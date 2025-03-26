@@ -268,7 +268,7 @@ tbl_longa_investimentos_esgoto_rural <- function(tabela) {
         "investimento_reposicao_tratamento_esgoto"
     )
     tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- rsan::somar_por_campo(tabela, "estado")
     tabela <- tidyr::pivot_longer(
         tabela,
         cols = starts_with("investimento_"),
@@ -306,7 +306,7 @@ tbl_longa_investimentos_esgoto_rural <- function(tabela) {
 tbl_longa_deficit_esgoto_rural <- function(tabela) {
     colunas <- c("estado", "regiao", "deficit_rural")
     tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- rsan::somar_por_campo(tabela, "estado")
     tabela <- tidyr::pivot_longer(
         tabela,
         cols = starts_with("deficit_"),
@@ -347,22 +347,22 @@ rodar_modulo_rural_esgoto <- function(state) {
 
     setores_rurais <- c(4:8)
     tabela <- agua_esgoto_rural$censo
-    tabela <- rsan:::filtra_setores_rurais(tabela, setores_rurais)
-    tabela <- rsan:::codigo_setor_para_municipio(tabela)
-    tabela <- rsan:::adiciona_taxa_crescimento(tabela, taxas_projecao)
-    tabela <- rsan:::fazer_projecao_domicilio(tabela, ano_censo, ano)
-    tabela <- rsan:::densidade_setor(tabela)
-    tabela <- rsan:::classifica_densidade_setor(tabela)
-    tabela <- rsan:::classifica_deficit_setor(tabela)
-    tabela <- rsan:::adiciona_estado(tabela)
-    tabela <- rsan:::adiciona_regiao(tabela)
-    tabela <- rsan:::adiciona_deficit_rural_agua( # Usado para classificação coletivo_individual
+    tabela <- rsan::filtra_setores_rurais(tabela, setores_rurais)
+    tabela <- rsan::codigo_setor_para_municipio(tabela)
+    tabela <- rsan::adiciona_taxa_crescimento(tabela, taxas_projecao)
+    tabela <- rsan::fazer_projecao_domicilio(tabela, ano_censo, ano)
+    tabela <- rsan::densidade_setor(tabela)
+    tabela <- rsan::classifica_densidade_setor(tabela)
+    tabela <- rsan::classifica_deficit_setor(tabela)
+    tabela <- rsan::adiciona_estado(tabela)
+    tabela <- rsan::adiciona_regiao(tabela)
+    tabela <- rsan::adiciona_deficit_rural_agua( # Usado para classificação coletivo_individual
         tabela, agua_esgoto_rural$deficit_pnad
     )
     tabela <- adiciona_deficit_rural_esgoto(
         tabela, agua_esgoto_rural$deficit_pnad
     )
-    tabela <- rsan:::adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
+    tabela <- rsan::adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
     tabela <- fracao_coletivo_individual_esgoto(tabela)
 
     tabela <- custo_individual_esgoto(tabela, input$esgoto)

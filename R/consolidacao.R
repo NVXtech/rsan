@@ -33,7 +33,7 @@ consolida_investimentos_tabela_longa <- function(state) {
         tabelas_para_juntar <- c(tabelas_para_juntar, tbl)
     }
     tabela <- dplyr::bind_rows(tabelas_para_juntar)
-    tabela <- rsan:::adiciona_pais(tabela)
+    tabela <- rsan::adiciona_pais(tabela)
     state$necessidade <- tabela
     return(state)
 }

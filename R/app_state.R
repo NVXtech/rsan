@@ -49,8 +49,8 @@ app_state_exists <- function() {
 #' @examples
 #' check_and_create_data_folder()
 check_and_create_data_folder <- function() {
-  if (!file.exists((rsan:::get_data_dir()))) {
-    dir.create((rsan:::get_data_dir()))
+  if (!file.exists((rsan::get_data_dir()))) {
+    dir.create((rsan::get_data_dir()))
   }
 }
 

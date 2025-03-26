@@ -44,7 +44,7 @@ tbl_longa_investimento_drenagem <- function(tabela) {
     "investimento_cadastro"
   )
   tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-  tabela <- rsan:::somar_por_campo(tabela, "estado")
+  tabela <- rsan::somar_por_campo(tabela, "estado")
   tabela <- tidyr::pivot_longer(
     tabela,
     cols = c("investimento_expansao", "investimento_reposicao", "investimento_cadastro"),

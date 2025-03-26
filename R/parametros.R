@@ -18,9 +18,9 @@ salva_parametros <- function(state, input, name) {
     state$input <- list()
   }
   params <- shiny::isolate(shiny::reactiveValuesToList(input))
-  params <- rsan:::remove_shiny_classes(params)
+  params <- rsan::remove_shiny_classes(params)
   state$input[[name]] <- params
-  rsan:::save_state(state)
+  rsan::save_state(state)
   return(state)
 }
 

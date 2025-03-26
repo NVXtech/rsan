@@ -206,7 +206,7 @@ tbl_longa_investimentos_esgoto <- function(tabela) {
         "custo_reposicao_coleta_esgoto"
     )
     tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- rsan::somar_por_campo(tabela, "estado")
     tabela <- tidyr::pivot_longer(
         tabela,
         cols = starts_with("custo_"),
@@ -244,7 +244,7 @@ tbl_longa_investimentos_esgoto <- function(tabela) {
 tbl_longa_deficit_esgoto <- function(tabela) {
     colunas <- c("estado", "regiao", "deficit_urbana")
     tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-    tabela <- rsan:::somar_por_campo(tabela, "estado")
+    tabela <- rsan::somar_por_campo(tabela, "estado")
     tabela <- tidyr::pivot_longer(
         tabela,
         cols = starts_with("deficit_"),
@@ -273,7 +273,7 @@ tbl_longa_deficit_esgoto <- function(tabela) {
 #' orca <- rodar_modulo_orcamentario_esgoto(input, demografico)
 #' }
 rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
-    sinapi <- rsan:::load_sinapi(input$esgoto$sinapi)
+    sinapi <- rsan::load_sinapi(input$esgoto$sinapi)
 
     data("projeto_coleta_esgoto", package = "rsan")
     coleta <- calcula_precos_distribuicao(
@@ -341,7 +341,7 @@ rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
     custo <- orcamentario$custo
     tabela <- capacidade_instalada_esgoto(snis_data, custo)
     ano_final <- input$geral$ano
-    ano_inicial <- rsan:::nome_para_ano(input$esgoto$snis) + 1
+    ano_inicial <- rsan::nome_para_ano(input$esgoto$snis) + 1
     rlog::log_info(sprintf("Esgoto anoi=%s anof=%s", ano_inicial, ano_final))
     ano_corrente <- input$geral$ano_corrente
 
@@ -404,7 +404,7 @@ investimento_esgoto <- function(state) {
     state$esgoto <- tabela
 
     rlog::log_info("esgoto: rodando módulo rural")
-    state <- rsan:::rodar_modulo_rural_esgoto(state)
+    state <- rsan::rodar_modulo_rural_esgoto(state)
 
     state$necessidade <- dplyr::bind_rows(
         tbl_longa_investimentos_esgoto(tabela),

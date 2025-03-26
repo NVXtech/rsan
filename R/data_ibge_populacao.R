@@ -361,7 +361,7 @@ integrity_populacao <- function() {
 #' df <- get_sinapi_data(sinapi)
 #' }
 get_populacao_labels <- function() {
-  return(names(rsan:::load_data(ibge_tag)))
+  return(names(rsan::load_data(ibge_tag)))
 }
 
 #' Retorna os rótulos dos dados do IBGE disponíveis (somente censo)
@@ -374,7 +374,7 @@ get_populacao_labels <- function() {
 #' df <- get_sinapi_data(sinapi)
 #' }
 get_censo_labels <- function() {
-  output <- names(rsan:::load_data(ibge_tag))
+  output <- names(rsan::load_data(ibge_tag))
   return(output[grepl("censo.*", output)])
 }
 
@@ -399,7 +399,7 @@ ibge_id_to_name <- function(id) {
 #' @return o conjunto de dados do SINAPI
 #' @export
 load_ibge <- function(id) {
-  rsan:::load_data(ibge_tag)[[id]]
+  rsan::load_data(ibge_tag)[[id]]
 }
 
 #' Atualiza dados do censo IBGE
@@ -410,10 +410,10 @@ load_ibge <- function(id) {
 #' @export
 update_ibge_censo <- function(ano) {
   id <- paste0("censo_", ano)
-  ibge_populacao <- rsan:::load_data(ibge_tag)
+  ibge_populacao <- rsan::load_data(ibge_tag)
   try({
     ibge_populacao[[id]] <- download_censo_raw(ano)
-    save(ibge_populacao, file = rsan:::get_data_path(ibge_tag))
+    save(ibge_populacao, file = rsan::get_data_path(ibge_tag))
   })
   return(!is.null(ibge_populacao[[id]]))
 }
@@ -426,10 +426,10 @@ update_ibge_censo <- function(ano) {
 #' @export
 update_ibge_estimativa <- function(ano) {
   id <- paste0("estimativa_", ano)
-  ibge_populacao <- rsan:::load_data(ibge_tag)
+  ibge_populacao <- rsan::load_data(ibge_tag)
   try({
     ibge_populacao[[id]] <- download_estimativa_populacao(ano)
-    save(ibge_populacao, file = rsan:::get_data_path(ibge_tag))
+    save(ibge_populacao, file = rsan::get_data_path(ibge_tag))
   })
   return(!is.null(ibge_populacao[[id]]))
 }

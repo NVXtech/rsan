@@ -63,10 +63,10 @@ download_snis_ap <- function(year) {
 #' @export
 update_snis_ap <- function(ano) {
     id <- paste0("ano", ano)
-    snis_ap <- rsan:::load_data("snis_ap")
+    snis_ap <- rsan::load_data("snis_ap")
     try({
         snis_ap[[id]] <- download_snis_ap(ano)
-        save(snis_ap, file = rsan:::get_data_path("snis_ap"))
+        save(snis_ap, file = rsan::get_data_path("snis_ap"))
     })
     return(!is.null(snis_ap[[id]]))
 }
@@ -77,7 +77,7 @@ update_snis_ap <- function(ano) {
 #' @return um `list` contendo os anos para tentar baixar
 #' @export
 get_snis_ap_list <- function() {
-    ids <- names(rsan:::load_data("snis_ap"))
+    ids <- names(rsan::load_data("snis_ap"))
     output <- list()
     for (id in ids) {
         year <- substr(id, 4, 7)
@@ -94,7 +94,7 @@ get_snis_ap_list <- function() {
 #' @return o conjunto de dados do SNIS
 #' @export
 load_snis_ap <- function(id) {
-    rsan:::load_data("snis_ap")[[id]]
+    rsan::load_data("snis_ap")[[id]]
 }
 
 #' Cria armazenamento local dos dados do SNIS-AP
@@ -104,7 +104,7 @@ load_snis_ap <- function(id) {
 create_snis_ap <- function() {
     data("snis_ap", package = "rsan")
     snis_ap <- get("snis_ap")
-    save(snis_ap, file = rsan:::get_data_path("snis_ap"))
+    save(snis_ap, file = rsan::get_data_path("snis_ap"))
 }
 
 #' Verifica a integridade dos dados do SNIS-AP
