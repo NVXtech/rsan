@@ -294,23 +294,9 @@ download_estimativa_populacao <- function(year) {
 #' create_populacao()
 #' }
 create_populacao <- function() {
-  rlog::log_info("Carregando estimativa populacao IBGE 2010")
-  data("populacao_estimada_2021", package = "rsan")
-  estimativa2021 <- get("populacao_estimada")
-
-  rlog::log_info("Carregando censo IBGE 2010")
-  data("populacao_censo_2010", package = "rsan")
-  censo2010 <- get("df_censo")
-  rlog::log_info("Carregando censo IBGE 2022")
-  censo2022 <- censo_2022()
-
-  rlog::log_info("juntando estimativas populacional")
-  ibge_populacao <- list(
-    censo_2010 = censo2010,
-    censo_2022 = censo2022,
-    estimativa_2021 = estimativa2021
-  )
+  data("ibge_populacao", package = "rsan")
   save(ibge_populacao, file = get_data_path(ibge_tag))
+  rlog::log_info("Populacao criada")
 }
 
 #' Limpa armazenamento de dados populacionais

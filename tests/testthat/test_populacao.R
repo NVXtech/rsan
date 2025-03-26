@@ -11,7 +11,7 @@ test_that("retorno lista de rotulos de populacao", {
     create_populacao()
     labels <- get_populacao_labels()
     unlink(get_data_path("ibge_populacao"))
-    expected <- c("censo_2010", "estimativa_2021")
+    expected <- c("censo_2010", "censo_2022", "estimativa_2021", "estimativa_2024")
     expect_equal(labels, expected)
 })
 
@@ -20,7 +20,7 @@ test_that("retorno lista de rotulos de censo", {
     create_populacao()
     labels <- get_censo_labels()
     unlink(get_data_path("ibge_populacao"))
-    expected <- c("censo_2010")
+    expected <- c("censo_2010", "censo_2022")
     expect_equal(labels, expected)
 })
 
