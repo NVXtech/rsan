@@ -4,7 +4,7 @@
 \alias{calcula_projecao}
 \title{Calcula a projeção populacional para cada ano dentro do período requerido.}
 \usage{
-calcula_projecao(tabela, ano_inicial, ano_final)
+calcula_projecao(tabela, ano_inicial, ano_final, ano_fonte1)
 }
 \arguments{
 \item{tabela}{Um tibble() contendo os dados de populacao (total, rural, urbana) e taxa de crescimento}
