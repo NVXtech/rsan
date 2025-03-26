@@ -4,7 +4,7 @@ download_all_snis_rs <- function() {
   snis_rs <- list()
   for (year in years) {
       list_name <- paste0("ano", year)
-      try(snis_rs[[list_name]] <- rsan::download_snis_rs(year))
+      try(snis_rs[[list_name]] <- download_snis_rs(year))
   }
   return(snis_rs)
 }

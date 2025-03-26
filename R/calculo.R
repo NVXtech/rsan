@@ -11,27 +11,27 @@
 #' }
 rodar_projecao_populacional <- function(state) {
   input <- state$input$projecao
-  fonte1 <- rsan::load_ibge(input$fonte1)
+  fonte1 <- load_ibge(input$fonte1)
   fonte2_nao_censo <- !grepl(".*censo.*", input$fonte2)
-  fonte2 <- rsan::load_ibge(input$fonte2)
+  fonte2 <- load_ibge(input$fonte2)
   if (fonte2_nao_censo) {
-    fonte2 <- rsan::preenche_situacao(fonte1, fonte2)
+    fonte2 <- preenche_situacao(fonte1, fonte2)
   }
   ano_inicial <- state$input$geral$ano_corrente
   ano_final <- state$input$geral$ano
-  ano_fonte1 <- rsan::nome_para_ano(input$fonte1)
-  ano_fonte2 <- rsan::nome_para_ano(input$fonte2)
+  ano_fonte1 <- nome_para_ano(input$fonte1)
+  ano_fonte2 <- nome_para_ano(input$fonte2)
   state$input$geral$ano_populacao_fonte1 <- ano_fonte1
   state$input$geral$ano_populacao_fonte2 <- ano_fonte2
 
   rlog::log_info("projecao: consolidando fontes")
-  consolidado <- rsan::junta_fontes_populacao(fonte1, fonte2)
+  consolidado <- junta_fontes_populacao(fonte1, fonte2)
   rlog::log_info("projecao: calculando taxa de crescimento")
-  consolidado <- rsan::calcula_taxa_crescimento(consolidado, ano_fonte1, ano_fonte2)
+  consolidado <- calcula_taxa_crescimento(consolidado, ano_fonte1, ano_fonte2)
   state$taxas_projecao <- consolidado
 
   rlog::log_info("projecao: calculando projecao")
-  state$projecao <- rsan::calcula_projecao(
+  state$projecao <- calcula_projecao(
     consolidado, ano_inicial, ano_final, ano_fonte1
   )
 
@@ -56,26 +56,26 @@ rodar_projecao_populacional <- function(state) {
 #' }
 investimento_drenagem <- function(state) {
   input <- state$input$drenagem
-  ano_inicial <- rsan::nome_para_ano(input$snis_ap) + 1
+  ano_inicial <- nome_para_ano(input$snis_ap) + 1
   ano_final <- state$input$geral$ano
   ano_corrente <- state$input$geral$ano_corrente
-  depreciacao <- rsan::depreciacao_para_vida_util(input$deprec_drenagem)
+  depreciacao <- depreciacao_para_vida_util(input$deprec_drenagem)
   rlog::log_info(sprintf("Drenagem anoi=%s anof=%s", ano_inicial, ano_final))
-  tabela <- rsan::load_snis_ap(input$snis_ap)
-  tabela <- rsan::area_urbana(tabela)
-  tabela <- rsan::densidade_urbana(tabela)
-  tabela <- rsan::precipitacao(tabela)
-  tabela <- rsan::adiciona_indices_drenagem(tabela)
-  tabela <- rsan::adiciona_projecao_populacao(state$projecao, ano_final, tabela)
-  tabela <- rsan::capacidade_instalada_drenagem(tabela)
+  tabela <- load_snis_ap(input$snis_ap)
+  tabela <- area_urbana(tabela)
+  tabela <- densidade_urbana(tabela)
+  tabela <- precipitacao(tabela)
+  tabela <- adiciona_indices_drenagem(tabela)
+  tabela <- adiciona_projecao_populacao(state$projecao, ano_final, tabela)
+  tabela <- capacidade_instalada_drenagem(tabela)
 
   if (input$modo == 1) { # Investimento per capita constante
-    tabela <- rsan::investimento_constante(tabela, input$investimento_per_capita)
+    tabela <- investimento_constante(tabela, input$investimento_per_capita)
   } else { # Investimento per capita por regressão
-    tabela <- rsan::aplica_regressao_multipla_drenagem(tabela, input)
+    tabela <- aplica_regressao_multipla_drenagem(tabela, input)
   }
 
-  tabela <- rsan::calcula_reposicao_parcial(
+  tabela <- calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada",
     "investimento_expansao",
@@ -85,9 +85,9 @@ investimento_drenagem <- function(state) {
     ano_corrente,
     depreciacao
   )
-  tabela <- rsan::investimento_cadastro(tabela, input$custo_cadastro)
-  tabela <- rsan::investimento_total_drenagem(tabela)
-  tabela <- rsan::adiciona_pais(tabela)
+  tabela <- investimento_cadastro(tabela, input$custo_cadastro)
+  tabela <- investimento_total_drenagem(tabela)
+  tabela <- adiciona_pais(tabela)
   state$drenagem <- tabela
   state$necessidade <- dplyr::bind_rows(
     tbl_longa_investimento_drenagem(tabela),
@@ -131,7 +131,7 @@ investimento_residuos <- function(state) {
   preco_unidade_triagem <- tabela_preco_unidade_residuos(input, "triagem")
   vida_util_triagem <- input$vida_util_triagem
 
-  ano_inicial <- rsan::nome_para_ano(input$snis_rs) + 1
+  ano_inicial <- nome_para_ano(input$snis_rs) + 1
   ano_final <- ano
   rlog::log_info(sprintf("Residuos anoi=%s anof=%s", ano_inicial, ano_final))
   ano_corrente <- state$input$geral$ano_corrente
@@ -139,60 +139,60 @@ investimento_residuos <- function(state) {
 
   # Consolida os dados de Unidades de Processamento (SNIS-prestadores)
   rlog::log_info("residuos: carregando snis-rs data")
-  snis_rs <- rsan::load_snis_rs(input$snis_rs)
-  compostagem <- rsan::quantidade_compostagem_municipio(snis_rs)
+  snis_rs <- load_snis_rs(input$snis_rs)
+  compostagem <- quantidade_compostagem_municipio(snis_rs)
 
   # Consolidação dos dados para classificação
   rlog::log_info("residuos: consolidando dados para classificação")
-  tabela <- rsan::get_snis_data(input$snis, residuos_snis_fields)
-  tabela <- rsan::adiciona_projecao_populacao(state$projecao, ano, tabela)
+  tabela <- get_snis_data(input$snis, residuos_snis_fields)
+  tabela <- adiciona_projecao_populacao(state$projecao, ano, tabela)
   tabela <- dplyr::left_join(tabela, compostagem, by = "codigo_municipio")
-  tabela <- rsan::adiciona_pais(tabela)
-  tabela <- rsan::adiciona_estado(tabela)
-  tabela <- rsan::adiciona_regiao(tabela)
-  tabela <- rsan::adiciona_tipo_disposicao(tabela)
-  tabela <- rsan::adiciona_classificacao_litoranea(tabela)
-  tabela <- rsan::numero_caminhoes(tabela)
-  tabela <- rsan::densidade_caminhoes(tabela)
+  tabela <- adiciona_pais(tabela)
+  tabela <- adiciona_estado(tabela)
+  tabela <- adiciona_regiao(tabela)
+  tabela <- adiciona_tipo_disposicao(tabela)
+  tabela <- adiciona_classificacao_litoranea(tabela)
+  tabela <- numero_caminhoes(tabela)
+  tabela <- densidade_caminhoes(tabela)
 
   # Classificação por faixas populacionais
   rlog::log_info("residuos: classificando por faixa populacional")
   limites <- as.integer(c(0, 10e3, 30e3, 100e3, 250e3, 1e6, 4e6))
-  tabela <- rsan::classifica_faixa_populacional(tabela, limites)
+  tabela <- classifica_faixa_populacional(tabela, limites)
 
   # Preenchimentos
-  tabela <- rsan::mascara_coleta_seletiva(tabela)
-  tabela <- rsan::preenche_atendimento_coleta_seletiva(tabela)
-  tabela <- rsan::preenche_atendimento_coleta_indiferenciada(tabela)
-  tabela <- rsan::preenche_taxa_geracao_residuos(tabela)
-  tabela <- rsan::preenche_quantidade_coletada(tabela)
-  tabela <- rsan::geracao_residuos(tabela)
-  tabela <- rsan::disposicao_inadequada(tabela)
+  tabela <- mascara_coleta_seletiva(tabela)
+  tabela <- preenche_atendimento_coleta_seletiva(tabela)
+  tabela <- preenche_atendimento_coleta_indiferenciada(tabela)
+  tabela <- preenche_taxa_geracao_residuos(tabela)
+  tabela <- preenche_quantidade_coletada(tabela)
+  tabela <- geracao_residuos(tabela)
+  tabela <- disposicao_inadequada(tabela)
 
   tabela_por_municipio <- tabela
 
   # Agrupamento por estado e faixa populacional
   rlog::log_info("residuos: agregando por estado e faixa populacional")
-  # media <- rsan::media_por_estado_faixa(tabela)
-  conta <- rsan::conta_municipios_por_estado_faixa(tabela, campo_estado = "estado")
+  # media <- media_por_estado_faixa(tabela)
+  conta <- conta_municipios_por_estado_faixa(tabela, campo_estado = "estado")
 
-  tabela <- rsan::soma_por_estado_faixa(tabela)
+  tabela <- soma_por_estado_faixa(tabela)
   tabela$numero_municipios <- conta$numero_municipios
-  tabela <- rsan::cria_faixas_vazias(tabela)
+  tabela <- cria_faixas_vazias(tabela)
 
   # Transbordo
-  tabela <- rsan::demanda_transbordo(tabela)
-  tabela <- rsan::regionaliza_transbordo(tabela, cenario_regionalizacao)
-  tabela <- rsan::investimento_expansao_transbordo(tabela, custo_transbordo)
+  tabela <- demanda_transbordo(tabela)
+  tabela <- regionaliza_transbordo(tabela, cenario_regionalizacao)
+  tabela <- investimento_expansao_transbordo(tabela, custo_transbordo)
 
   # Coleta indiferenciada
   rlog::log_info("residuos: investimento em coleta indiferenciada")
-  tabela <- rsan::densidade_caminhao_por_estado_faixa(tabela, tabela_por_municipio)
-  tabela <- rsan::meta_plansab_residuo(tabela)
-  tabela <- rsan::deficit_coleta_indiferenciada(tabela)
-  tabela <- rsan::investimento_expansao_coleta_indiferenciada(tabela, valor_caminhao)
-  tabela <- rsan::capacidade_instalada_coleta_indiferenciada(tabela, valor_caminhao)
-  tabela <- rsan::calcula_reposicao_parcial(
+  tabela <- densidade_caminhao_por_estado_faixa(tabela, tabela_por_municipio)
+  tabela <- meta_plansab_residuo(tabela)
+  tabela <- deficit_coleta_indiferenciada(tabela)
+  tabela <- investimento_expansao_coleta_indiferenciada(tabela, valor_caminhao)
+  tabela <- capacidade_instalada_coleta_indiferenciada(tabela, valor_caminhao)
+  tabela <- calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_coleta_indiferenciada",
     "investimento_expansao_coleta_indiferenciada",
@@ -200,17 +200,17 @@ investimento_residuos <- function(state) {
     ano_inicial,
     ano_final,
     ano_corrente,
-    rsan::depreciacao_para_vida_util(input$deprec_coleta_indiferenciada)
+    depreciacao_para_vida_util(input$deprec_coleta_indiferenciada)
   )
 
   # Coleta seletiva
   rlog::log_info("residuos: investimento em coleta seletiva")
-  tabela <- rsan::preenche_densidade_caminhao_bau(tabela_por_municipio, tabela)
-  tabela <- rsan::atendimento_relativo_coleta_seletiva(tabela)
-  tabela <- rsan::deficit_coleta_seletiva(tabela)
-  tabela <- rsan::investimento_expansao_coleta_seletiva(tabela, valor_caminhao_bau)
-  tabela <- rsan::capacidade_instalada_coleta_seletiva(tabela, valor_caminhao_bau)
-  tabela <- rsan::calcula_reposicao_parcial(
+  tabela <- preenche_densidade_caminhao_bau(tabela_por_municipio, tabela)
+  tabela <- atendimento_relativo_coleta_seletiva(tabela)
+  tabela <- deficit_coleta_seletiva(tabela)
+  tabela <- investimento_expansao_coleta_seletiva(tabela, valor_caminhao_bau)
+  tabela <- capacidade_instalada_coleta_seletiva(tabela, valor_caminhao_bau)
+  tabela <- calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_coleta_seletiva",
     "investimento_expansao_coleta_seletiva",
@@ -218,17 +218,17 @@ investimento_residuos <- function(state) {
     ano_inicial,
     ano_final,
     ano_corrente,
-    rsan::depreciacao_para_vida_util(input$deprec_coleta_seletiva)
+    depreciacao_para_vida_util(input$deprec_coleta_seletiva)
   )
 
   # Compostagem
   rlog::log_info("residuos: investimento em compostagem")
-  tabela <- rsan::demanda_compostagem(tabela)
-  tabela <- rsan::preco_unidade_faixa(tabela, preco_unidade_compostagem)
-  tabela <- rsan::regionaliza_compostagem(tabela, cenario_regionalizacao)
-  tabela <- rsan::investimento_expansao_compostagem(tabela, vida_util_compostagem)
-  tabela <- rsan::capacidade_instalada_compostagem(tabela, vida_util_compostagem)
-  tabela <- rsan::calcula_reposicao_parcial(
+  tabela <- demanda_compostagem(tabela)
+  tabela <- preco_unidade_faixa(tabela, preco_unidade_compostagem)
+  tabela <- regionaliza_compostagem(tabela, cenario_regionalizacao)
+  tabela <- investimento_expansao_compostagem(tabela, vida_util_compostagem)
+  tabela <- capacidade_instalada_compostagem(tabela, vida_util_compostagem)
+  tabela <- calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_compostagem",
     "investimento_expansao_compostagem",
@@ -236,17 +236,17 @@ investimento_residuos <- function(state) {
     ano_inicial,
     ano_final,
     ano_corrente,
-    rsan::depreciacao_para_vida_util(input$deprec_compostagem)
+    depreciacao_para_vida_util(input$deprec_compostagem)
   )
 
   # Aterro
   rlog::log_info("residuos: investimento em aterro")
-  tabela <- rsan::preco_unidade_faixa(tabela, preco_unidade_aterro)
-  tabela <- rsan::demanda_aterro(tabela, vida_util_aterro)
-  tabela <- rsan::regionaliza_aterro(tabela, cenario_regionalizacao)
-  tabela <- rsan::investimento_expansao_aterro(tabela)
-  tabela <- rsan::capacidade_instalada_aterro(tabela, vida_util_aterro)
-  tabela <- rsan::calcula_reposicao_parcial(
+  tabela <- preco_unidade_faixa(tabela, preco_unidade_aterro)
+  tabela <- demanda_aterro(tabela, vida_util_aterro)
+  tabela <- regionaliza_aterro(tabela, cenario_regionalizacao)
+  tabela <- investimento_expansao_aterro(tabela)
+  tabela <- capacidade_instalada_aterro(tabela, vida_util_aterro)
+  tabela <- calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_aterro",
     "investimento_expansao_aterro",
@@ -254,7 +254,7 @@ investimento_residuos <- function(state) {
     ano_inicial,
     ano_final,
     ano_corrente,
-    rsan::depreciacao_para_vida_util(input$deprec_aterro)
+    depreciacao_para_vida_util(input$deprec_aterro)
   )
 
   # Triagem
@@ -266,7 +266,7 @@ investimento_residuos <- function(state) {
   tabela <- regionaliza_triagem(tabela, cenario_regionalizacao)
   tabela <- investimento_expansao_triagem(tabela, vida_util_triagem)
   tabela <- capacidade_instalada_triagem(tabela, vida_util_triagem)
-  tabela <- rsan::calcula_reposicao_parcial(
+  tabela <- calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada_triagem",
     "investimento_expansao_triagem",
@@ -274,11 +274,11 @@ investimento_residuos <- function(state) {
     ano_inicial,
     ano_final,
     ano_corrente,
-    rsan::depreciacao_para_vida_util(input$deprec_triagem)
+    depreciacao_para_vida_util(input$deprec_triagem)
   )
 
   rlog::log_info("residuos: totalizando investimentos")
-  tabela <- rsan::investimento_residuos_total(tabela)
+  tabela <- investimento_residuos_total(tabela)
   state$residuos <- tabela
 
   rlog::log_info("residuos: consolidando")
@@ -309,22 +309,22 @@ rodar_modelo <- function(state) {
   state <- rodar_projecao_populacional(state)
 
   rlog::log_info("criando novas tabelas de consolidação")
-  state$necessidade <- rsan::tabela_necessidade_vazia()
-  state$deficit <- rsan::tabela_deficit_vazia()
+  state$necessidade <- tabela_necessidade_vazia()
+  state$deficit <- tabela_deficit_vazia()
 
   rlog::log_info("água: iniciando módulo")
-  state <- rsan::investimento_agua(state)
+  state <- investimento_agua(state)
 
   rlog::log_info("esgoto: iniciando módulo")
-  state <- rsan::investimento_esgoto(state)
+  state <- investimento_esgoto(state)
 
   rlog::log_info("drenagem: iniciando módulo")
   state <- investimento_drenagem(state)
 
   rlog::log_info("residuos: iniciando módulo")
   state <- investimento_residuos(state)
-  state$necessidade <- rsan::adiciona_pais(state$necessidade)
-  state$deficit <- rsan::adiciona_pais(state$deficit)
+  state$necessidade <- adiciona_pais(state$necessidade)
+  state$deficit <- adiciona_pais(state$deficit)
 
   rlog::log_info("rodada terminada")
   return(state)

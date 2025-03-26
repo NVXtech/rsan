@@ -18,7 +18,7 @@ create_municipio <- function() {
   municipio <- jsonlite::fromJSON(rawToChar(res$content))
   labels <- c("codigo_municipio", "municipio", "codigo_microregiao", "microregiao", "codigo_mesoregiao", "mesoregiao", "codgio_regiao_imediata", "regiao_imediata", "codigo_regiaointermediaria", "regiaintermediaria", "codigo_UF", "UF", "Estado", "codigo_regiao", "regiao_sigla", "regiao")
   names(municipio) <- labels
-  save(municipio, file = rsan::get_data_path("municipio"))
+  save(municipio, file = get_data_path("municipio"))
 }
 
 #' Verifica a integridade dos dados locais de munícipio
@@ -30,7 +30,7 @@ create_municipio <- function() {
 #' is_ok <- integrity_muncipio()
 integrity_municipio <- function() {
   # TODO: create an better integrity check
-  exists <- rsan::check_data_exists("municipio")
+  exists <- check_data_exists("municipio")
   if (exists) {
     rlog::log_info("municipio dataset is OK")
   } else {

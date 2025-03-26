@@ -44,7 +44,7 @@ tbl_longa_investimento_drenagem <- function(tabela) {
     "investimento_cadastro"
   )
   tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-  tabela <- rsan::somar_por_campo(tabela, "estado")
+  tabela <- somar_por_campo(tabela, "estado")
   tabela <- tidyr::pivot_longer(
     tabela,
     cols = c("investimento_expansao", "investimento_reposicao", "investimento_cadastro"),
@@ -218,12 +218,12 @@ prepara_regressao <- function(plano, tabela) {
 #' @export
 corrige_plano_drenagem <- function(data) {
   data(plano_drenagem, package = "rsan")
-  igp <- rsan::get_igp()
+  igp <- get_igp()
   plano_drenagem <- dplyr::mutate(
     plano_drenagem,
     data_inicial = as.Date(paste0(as.character(ano_plano), "-06-30")),
     data_final = as.Date(data),
-    taxa_igp = rsan::get_taxa_igp(igp, data_inicial, data_final), # fix get_taxa_igp
+    taxa_igp = get_taxa_igp(igp, data_inicial, data_final), # fix get_taxa_igp
     investimento_corrigido = investimento * taxa_igp
   )
   return(plano_drenagem)

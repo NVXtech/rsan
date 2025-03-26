@@ -3,11 +3,11 @@ areas_url <-
 
 
 get_anos_ibge_area <- function() {
-  rsan::listFilesFromFTP(areas_url)
+  listFilesFromFTP(areas_url)
 }
 
 get_ultimo_ano_ibge_area <- function() {
-  anos <- rsan::listFilesFromFTP(areas_url)
+  anos <- listFilesFromFTP(areas_url)
   max(anos)
 }
 
@@ -15,7 +15,7 @@ load_ultimo_ibge_area <- function() {
   col_names <- c("id", "codigo_uf", "estado", "estado_sigla", "codigo_municipio", "municipio", "area")
   col_types <- c("numeric", "text", "text", "text", "text", "text", "numeric")
   ano <- get_ultimo_ano_ibge_area()
-  files <- rsan::listFilesFromFTP(paste0(areas_url, ano, "/"))
+  files <- listFilesFromFTP(paste0(areas_url, ano, "/"))
   for (file in files) {
     if (grepl(".*xls", file)) {
       url_to_download <- paste0(areas_url, ano, "/", file)

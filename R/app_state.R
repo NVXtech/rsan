@@ -26,7 +26,7 @@ load_app_state <- function() {
 #' @examples
 #' path <- app_state_file_name()
 app_state_filename <- function() {
-  file.path(rsan::get_data_dir(), state_file_name)
+  file.path(get_data_dir(), state_file_name)
 }
 
 #' Verifica se o arquivo de estado da aplicação ja foi salvo
@@ -49,8 +49,8 @@ app_state_exists <- function() {
 #' @examples
 #' check_and_create_data_folder()
 check_and_create_data_folder <- function() {
-  if (!file.exists((rsan::get_data_dir()))) {
-    dir.create((rsan::get_data_dir()))
+  if (!file.exists((get_data_dir()))) {
+    dir.create((get_data_dir()))
   }
 }
 

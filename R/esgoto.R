@@ -135,8 +135,8 @@ calcula_custo_expansao_tratamento <- function(demanda, tratamento) {
 #' )
 #' }
 calcula_custo_expansao_esgoto <- function(demanda, coleta, tratamento) {
-    tabela <- rsan::calcula_custo_extensao(demanda, coleta, "coleta_esgoto")
-    tabela <- rsan::calcula_custo_expansao_tratamento(tabela, tratamento)
+    tabela <- calcula_custo_extensao(demanda, coleta, "coleta_esgoto")
+    tabela <- calcula_custo_expansao_tratamento(tabela, tratamento)
     return(tabela)
 }
 
@@ -206,7 +206,7 @@ tbl_longa_investimentos_esgoto <- function(tabela) {
         "custo_reposicao_coleta_esgoto"
     )
     tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-    tabela <- rsan::somar_por_campo(tabela, "estado")
+    tabela <- somar_por_campo(tabela, "estado")
     tabela <- tidyr::pivot_longer(
         tabela,
         cols = starts_with("custo_"),
@@ -244,7 +244,7 @@ tbl_longa_investimentos_esgoto <- function(tabela) {
 tbl_longa_deficit_esgoto <- function(tabela) {
     colunas <- c("estado", "regiao", "deficit_urbana")
     tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-    tabela <- rsan::somar_por_campo(tabela, "estado")
+    tabela <- somar_por_campo(tabela, "estado")
     tabela <- tidyr::pivot_longer(
         tabela,
         cols = starts_with("deficit_"),
@@ -273,7 +273,7 @@ tbl_longa_deficit_esgoto <- function(tabela) {
 #' orca <- rodar_modulo_orcamentario_esgoto(input, demografico)
 #' }
 rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
-    sinapi <- rsan::load_sinapi(input$esgoto$sinapi)
+    sinapi <- load_sinapi(input$esgoto$sinapi)
 
     data("projeto_coleta_esgoto", package = "rsan")
     coleta <- calcula_precos_distribuicao(
@@ -337,11 +337,11 @@ capacidade_instalada_esgoto <- function(snis, custo) {
 #'
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
-    snis_data <- rsan::get_snis_data(input$esgoto$snis, snis_fields)
+    snis_data <- get_snis_data(input$esgoto$snis, snis_fields)
     custo <- orcamentario$custo
     tabela <- capacidade_instalada_esgoto(snis_data, custo)
     ano_final <- input$geral$ano
-    ano_inicial <- rsan::nome_para_ano(input$esgoto$snis) + 1
+    ano_inicial <- nome_para_ano(input$esgoto$snis) + 1
     rlog::log_info(sprintf("Esgoto anoi=%s anof=%s", ano_inicial, ano_final))
     ano_corrente <- input$geral$ano_corrente
 
@@ -361,7 +361,7 @@ rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
     )
 
     for (var in vars) {
-        tabela <- rsan::calcula_reposicao_parcial(
+        tabela <- calcula_reposicao_parcial(
             tabela,
             var$capacidade,
             var$custo,
@@ -399,12 +399,12 @@ investimento_esgoto <- function(state) {
     rlog::log_info("esgoto: rodando módulo financeiro")
     financeiro <- rodar_modulo_financeiro_esgoto(input, orcamentario)
     tabela <- consolida_investimentos_esgoto(financeiro)
-    tabela <- rsan::adiciona_pais(tabela)
-    tabela <- rsan::adiciona_regiao(tabela)
+    tabela <- adiciona_pais(tabela)
+    tabela <- adiciona_regiao(tabela)
     state$esgoto <- tabela
 
     rlog::log_info("esgoto: rodando módulo rural")
-    state <- rsan::rodar_modulo_rural_esgoto(state)
+    state <- rodar_modulo_rural_esgoto(state)
 
     state$necessidade <- dplyr::bind_rows(
         tbl_longa_investimentos_esgoto(tabela),

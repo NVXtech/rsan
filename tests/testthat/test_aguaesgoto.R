@@ -116,7 +116,7 @@ test_that("se o custo relativo dos projeto tipo producao de água está correto"
   custo_relativo <- c(2.62, 1.76, 1.87, 1.35)
   expected_output <- dplyr::tibble(estado, cenario, custo_relativo)
 
-  df_out <- rsan::calcula_custo_relativo_producao(preco_unidade, projeto_producao)
+  df_out <- calcula_custo_relativo_producao(preco_unidade, projeto_producao)
   df_out <- dplyr::mutate(df_out, custo_relativo = round(custo_relativo, 2))
   df_out <- dplyr::as_tibble(df_out)
   expect_true(all.equal(expected_output, df_out))
@@ -141,7 +141,7 @@ test_that("Se o custo relativo dos projeto tipo de tratamento de esgoto está co
   custo_relativo <- c(3.94, 8.32, 3.09, 7.97)
   expected_output <- dplyr::tibble(estado, cenario, custo_relativo)
 
-  df_out <- rsan::calcula_custo_relativo_tratamento(
+  df_out <- calcula_custo_relativo_tratamento(
     preco_unidade, projeto_tratamento
   )
   df_out <- dplyr::mutate(df_out, custo_relativo = round(custo_relativo, 2))

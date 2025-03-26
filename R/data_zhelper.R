@@ -31,7 +31,7 @@ integrity_functions <- list(
 #' @return `logical` sendo TRUE conjunto de dados encontrado e FALSE conjunto inexistente
 #' @export
 dataset_exists <- function(name) {
-  file.exists(rsan::get_data_path(name))
+  file.exists(get_data_path(name))
 }
 
 #' Cria um dataset

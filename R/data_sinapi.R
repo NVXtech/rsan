@@ -23,7 +23,7 @@ download_sinapi <- function(year, month) {
   month <- sprintf("%02.f", as.integer(month))
   type <- "NaoDesonerado"
   z <- 0
-  for (state in rsan::states_acronym()) {
+  for (state in states_acronym()) {
     url <- paste0(
       "https://www.caixa.gov.br/Downloads/sinapi-a-partir-jul-2009-",
       tolower(state), "/SINAPI_ref_Insumos_Composicoes_",
@@ -113,7 +113,7 @@ create_sinapi <- function() {
   sinapi <- list(
     dt202112 = sinapi_202112
   )
-  save(sinapi, file = rsan::get_data_path("sinapi"))
+  save(sinapi, file = get_data_path("sinapi"))
 }
 
 #' Armazena dados sinapi
@@ -121,7 +121,7 @@ create_sinapi <- function() {
 #' @return um `logical` sendo `TRUE` integridade OK.
 #' @export
 integrity_sinapi <- function() {
-  pop <- rsan::load_data("sinapi")
+  pop <- load_data("sinapi")
   for (caminho in pop$caminho) {
     if (!file.exists(get_data_path(caminho))) {
       rlog::log_info(sprintf("%s dataset not found", caminho))
@@ -142,10 +142,10 @@ integrity_sinapi <- function() {
 #' @export
 update_sinapi <- function(ano, mes) {
   id <- paste0("dt", ano, mes)
-  sinapi <- rsan::load_data("sinapi")
+  sinapi <- load_data("sinapi")
   try({
     sinapi[[id]] <- download_sinapi(ano, mes)
-    save(sinapi, file = rsan::get_data_path("sinapi"))
+    save(sinapi, file = get_data_path("sinapi"))
   })
   return(!is.null(sinapi[[id]]))
 }
@@ -160,7 +160,7 @@ update_sinapi <- function(ano, mes) {
 #' df <- get_sinapi_data(sinapi)
 #' }
 get_sinapi_labels <- function() {
-  return(names(rsan::load_data("sinapi")))
+  return(names(load_data("sinapi")))
 }
 
 #' Transforma id SINAPI em nome legível
@@ -181,5 +181,5 @@ sinapi_id_to_name <- function(id) {
 #' @return o conjunto de dados do SINAPI
 #' @export
 load_sinapi <- function(id) {
-  rsan::load_data("sinapi")[[id]]
+  load_data("sinapi")[[id]]
 }

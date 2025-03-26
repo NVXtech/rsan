@@ -19,7 +19,7 @@ quantidade_compostagem_municipio <- function(tabela) {
     tabela,
     grepl("compostagem", .data[["UP003"]], fixed = TRUE)
   )
-  tabela <- rsan::codigo6_para_codigo_ibge(tabela, "Código")
+  tabela <- codigo6_para_codigo_ibge(tabela, "Código")
   tabela <- dplyr::group_by(tabela, codigo_municipio)
   tabela <- dplyr::summarise(
     tabela,
@@ -130,7 +130,7 @@ tbl_longa_investimento_residuos <- function(tabela) {
     "investimento_expansao_coleta_seletiva"
   )
   tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-  tabela <- rsan::somar_por_campo(tabela, "estado")
+  tabela <- somar_por_campo(tabela, "estado")
   tabela <- tidyr::pivot_longer(
     tabela,
     cols = colunas[3:length(colunas)],
@@ -173,7 +173,7 @@ tbl_longa_deficit_residuos <- function(tabela) {
     "deficit_coleta_indiferenciada"
   )
   tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-  tabela <- rsan::somar_por_campo(tabela, "estado")
+  tabela <- somar_por_campo(tabela, "estado")
   tabela <- tidyr::pivot_longer(
     tabela,
     cols = starts_with("deficit_"),
@@ -1398,10 +1398,10 @@ regionaliza_aterro <- function(tabela, cenario) {
 #' tabela <- preenche_por_regiao_faixa_populacional(tabela, densidade)
 #' }
 preenche_taxa_geracao_residuos <- function(tabela) {
-  regiao_faixa <- rsan::divide_residuo_litoraneo(tabela)
-  regiao_faixa <- rsan::taxa_geracao_residuos(regiao_faixa)
+  regiao_faixa <- divide_residuo_litoraneo(tabela)
+  regiao_faixa <- taxa_geracao_residuos(regiao_faixa)
   regiao_faixa <- dplyr:::filter(regiao_faixa, CO021 == "Sim")
-  regiao_faixa <- rsan::soma_por_estado_faixa(
+  regiao_faixa <- soma_por_estado_faixa(
     regiao_faixa,
     campo_estado = "regiao"
   )
