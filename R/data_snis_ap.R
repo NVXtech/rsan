@@ -5,14 +5,14 @@
 #' @return um `data.frame` contendo os dados do SNIS
 #' @export
 download_snis_ap <- function(year) {
-    if (year>=2020){
-      snis_base_url <- "https://www.gov.br/mdr/pt-br/assuntos/saneamento/snis/produtos-do-snis/diagnosticos/"
+    if (year==2022){
+      snis_base_url <- "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis/produtos-do-snis/diagnosticos/"
       download_url <- paste0(
         snis_base_url,
         sprintf("Planilhas_AP%s.zip", year)
       )
     } else {
-      snis_base_url <- "https://www.gov.br/mdr/pt-br/assuntos/saneamento/snis/diagnosticos-anteriores-do-snis/aguas-pluviais/"
+      snis_base_url <- "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis/produtos-do-snis/diagnosticos/Planilhas_AP2021.zip"
       download_url <- paste0(
         snis_base_url,
         sprintf("%s/Planilhas_AP%s.zip", year, year)
