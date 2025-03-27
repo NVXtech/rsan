@@ -349,3 +349,19 @@ investimento_cadastro <- function(tabela, valor) {
   )
   return(tabela)
 }
+
+#' Filtra municípios críticos
+#' @param tabela contendo a coluna código do município
+#'
+#' @return a tabela de entrada mantendo apenas os municípios críticos
+#' @export
+remove_nao_criticos <- function(tabela) {
+  data("drenagem_municipios_criticos", package = "rsan")
+  criticos <- get("drenagem_municipios_criticos")
+  names(criticos) <- c("codigo_municipio", "regiao", "municipio", "estado", "critico", "populacao_total", "populacao_urbana", "populacao_rural", "coleta_snis")
+  criticos <- dplyr::filter(criticos, critico == "Sim")
+  criticos <- dplyr::select(criticos, c("codigo_municipio"))
+  criticos <- dplyr::mutate(criticos, codigo_municipio = as.character(codigo_municipio))
+  tabela <- dplyr::left_join(criticos, tabela, by = "codigo_municipio")
+  return(tabela)
+}
