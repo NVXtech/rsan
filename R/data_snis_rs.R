@@ -21,6 +21,7 @@ read_planilha_unidades <- function(year, dir) {
         if (i == 1) {
             if (year==2022){
               names(tabela)[names(tabela) == '-...1'] <- 'Código'
+
               names(tabela)[names(tabela) == '-...3'] <- 'Nome'
               names(tabela)[names(tabela) == '-...4'] <- 'UF'
             }
@@ -37,6 +38,7 @@ read_planilha_unidades <- function(year, dir) {
             unidades <- dplyr::full_join(unidades, tabela)
         }
     }
+    unidades <- dplyr::mutate(unidades, Código = as.character(Código), Ano=as.character(Ano))
     return(unidades)
 }
 
