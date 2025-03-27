@@ -12,15 +12,28 @@ read_planilha_unidades <- function(year, dir) {
     )
     skips <- c(11, 11)
     for (i in 1:length(skips)) {
-        if (year >= 2021) {
+        if (year == 2021) {
             file_name <- file.path(dir, sprintf("Planilhas_RS%s", year), sprintf(filenames[i], year))
         } else {
             file_name <- file.path(dir, sprintf(filenames[i], year))
         }
         tabela <- readxl::read_xlsx(file_name, skip = skips[i])
         if (i == 1) {
+            if (year==2022){
+              names(tabela)[names(tabela) == '-...1'] <- 'Código'
+              names(tabela)[names(tabela) == '-...3'] <- 'Nome'
+              names(tabela)[names(tabela) == '-...4'] <- 'UF'
+            }
+            tabela <- dplyr::select(tabela, -c(2, 5, 6, 7))
             unidades <- tabela
         } else {
+            if (year==2022){
+              names(tabela)[names(tabela) == '-...1'] <- 'Código'
+              names(tabela)[names(tabela) == '-...3'] <- 'Nome'
+              names(tabela)[names(tabela) == '-...4'] <- 'UF'
+              names(tabela)[names(tabela) == '-...8'] <- 'Ano'
+            }
+            tabela <- dplyr::select(tabela, -c(2, 5, 6, 7))
             unidades <- dplyr::full_join(unidades, tabela)
         }
     }
@@ -34,11 +47,15 @@ read_planilha_unidades <- function(year, dir) {
 #' @return um `data.frame` contendo os dados do SNIS
 #' @export
 download_snis_rs <- function(year) {
-    snis_base_url <- "https://www.gov.br/mdr/pt-br/assuntos/saneamento/snis/produtos-do-snis/diagnosticos/"
-    snis_rs <- list()
-    download_url <- paste0(
+    if (year == 2022) {
+      download_url <- "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis/produtos-do-snis/diagnosticos/Planilha_RS_2022_atualizado_29112024.zip"
+    } else {
+      snis_base_url <- "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis/produtos-do-snis/diagnosticos/"
+      download_url <- paste0(
         snis_base_url, sprintf("Planilhas_RS%s.zip", year)
-    )
+      )
+    }
+    snis_rs <- list()
     destfile <- tempfile(fileext = ".zip")
     tmp_dir <- tempdir(check = TRUE)
     curl::curl_download(download_url, destfile)
