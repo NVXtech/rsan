@@ -88,6 +88,7 @@ investimento_drenagem <- function(state) {
   tabela <- investimento_cadastro(tabela, input$custo_cadastro)
   tabela <- investimento_total_drenagem(tabela)
   tabela <- adiciona_pais(tabela)
+  rlog::info("drenagem: removendo não críticos")
   tabela <- remove_nao_criticos(tabela)
   state$drenagem <- tabela
   state$necessidade <- dplyr::bind_rows(
