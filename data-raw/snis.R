@@ -58,20 +58,14 @@ snis2020 <- readr::read_csv2(file_path_out)
 snis2020 <- fix_snis_colnames(snis2020)
 usethis::use_data(snis2020, overwrite = TRUE)
 
-file_path <-
-  file.path("data-raw", "SNISConsolidadoMunicipio2021.csv")
-file_path_out <-
-  file.path("data-raw", "SNISConsolidadoMunicipio2021_corrigido.csv")
+file_path <-  file.path("data-raw", "SNISConsolidadoMunicipio2021.csv")
+file_path_out <- file.path("data-raw", "SNISConsolidadoMunicipio2021_corrigido.csv")
 fix_snis_csv(file_path, file_path_out)
 snis2021 <- readr::read_csv2(file_path_out)
 snis2021 <- fix_snis_colnames(snis2021)
 usethis::use_data(snis2021, overwrite = TRUE)
 
-file_path <-
-  file.path("data-raw", "SNISConsolidadoMunicipio2022.csv")
-file_path_out <-
-  file.path("data-raw", "SNISConsolidadoMunicipio2022_corrigido.csv")
-fix_snis_csv(file_path, file_path_out)
-snis2022 <- readr::read_csv2(file_path_out)
+file_path <- file.path("data-raw", "SNISConsolidadoMunicipio2022.xlsx")
+snis2022 <- readxl::read_excel(file_path)
 snis2022 <- fix_snis_colnames(snis2022)
 usethis::use_data(snis2022, overwrite = TRUE)
