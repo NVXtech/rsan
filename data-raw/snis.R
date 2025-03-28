@@ -74,4 +74,4 @@ file_path_out <-
 fix_snis_csv(file_path, file_path_out)
 snis2022 <- readr::read_csv2(file_path_out)
 snis2022 <- fix_snis_colnames(snis2022)
-usethis::use_data(snis2021, overwrite = TRUE)
+usethis::use_data(snis2022, overwrite = TRUE)
