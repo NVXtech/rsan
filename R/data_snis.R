@@ -15,7 +15,7 @@ create_snis <- function() {
   df_snis2022 <- snis2022
   save(df_snis2022, file = get_data_path("snis_2022"))
 
-  nome <- c("SNIS_2022", "SNIS 2021", "SNIS 2020")
+  nome <- c("SNIS 2022", "SNIS 2021", "SNIS 2020")
   ano <- c(2022, 2021, 2020)
   caminho <- c("snis_2022", "snis_2021", "snis_2020")
   snis <- data.frame(nome, ano, caminho)
