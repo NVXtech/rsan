@@ -16,7 +16,7 @@ campos_reposicao(capacidade, custo, reposicao, vida_util)
 \item{vida_util}{é um \code{numeric} com o valor da vida util da instalação}
 }
 \value{
-uma lista com todos parâmetros necessários parao o cálculo de reposição
+uma lista com todos parâmetros necessários para o cálculo de reposição
 }
 \description{
 Retorna uma lista com os parâmetros para o cálculo da reposição

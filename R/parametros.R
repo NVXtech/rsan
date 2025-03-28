@@ -126,7 +126,7 @@ residuos <- list(
 )
 
 drenagem <- list(
-  snis_ap = "ano2021",
+  snis_ap = "ano2022",
   modo = 2,
   deprec_drenagem = 2,
   investimento_per_capita = 10000,

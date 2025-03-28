@@ -102,22 +102,6 @@ investimento_constante <- function(tabela, valor) {
   return(tabela)
 }
 
-#' Aplica regressao simples drenagem
-#'
-#' @param tabela um `data.frame` contendo as colunas GE006
-#' @param modelo um objeto da classe `lm` contendo os parâmetros do modelo de regressão
-#'
-#' @return tabela com os valores de investimento
-#' @export
-aplica_regressao_drenagem <- function(tabela, modelo) {
-  tabela <- dplyr::mutate(
-    tabela,
-    modelo = stats::predict(modelo, tabela),
-    investimento_modelo = modelo * GE006,
-    investimento_expansao = investimento_modelo - capacidade_instalada # TODO arrumar para trocar pelo investimento do plano
-  )
-  return(tabela)
-}
 
 #' Aplica regressao multipla drenagem
 #'
@@ -143,27 +127,6 @@ aplica_regressao_multipla_drenagem <- function(tabela, parametros) {
   return(tabela)
 }
 
-
-#' Regressão Investimento em Drenagem
-#'
-#' Calcula a regressão linear entre densidade de investimento em drenagem e o índice PD
-#'
-#' @param plano é um `data.frame` contendo os valores do plano
-#'
-#' @return objeto da classe `lm` contendo os parâmetros da regressão
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' equacao <- regressao_drenagem(plano)
-#' }
-regressao_drenagem <- function(plano) {
-  plano <- dplyr::mutate(
-    plano,
-    densidade_investimento = investimento_corrigido / GE006
-  )
-  return(stats::lm(formula = densidade_investimento ~ pd, plano))
-}
 
 #' Regressão Múltipla Investimento em Drenagem
 #'
@@ -191,22 +154,6 @@ regressao_multipla_drenagem <- function(plano) {
   ))
 }
 
-#' Concatena dados para regressão
-#'
-#' @param plano um `data.frame` contendo as colunas `codigo_muncipio` e 'investimento_corrigido'
-#' @param tabela um `data.frame` contendo as colunas `codigo_muncipio`, `pd` e `GE006`
-#'
-#' @return um `data.frame` contendo os campos necessários para regressão linear
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' plano <- prepara_regressao(plano, tabela)
-#' }
-prepara_regressao <- function(plano, tabela) {
-  tabela <- dplyr::select(tabela, "codigo_municipio", "pd", "GE006")
-  plano <- dplyr::left_join(plano, tabela, by = "codigo_municipio")
-}
 
 #' Corrige preços do plano de drenagem
 #'
@@ -278,9 +225,35 @@ precipitacao <- function(tabela) {
   return(tabela)
 }
 
+#' Junta as estimativas de populacao urbana
+#'
+#' @param populacao é os dados da projeção populacional
+#' @param ano da estimativa de população
+#' @param tabela
+#'
+#' @return tabela com todos os dados consolidados
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' df <- adiciona_projecao_populacao(populacao, ano, tabela)
+#' }
+adiciona_populacao_urbana_corrente <- function(populacao, ano, tabela) {
+  pop_urbana <- get_populacao(populacao, ano, "urbana")
+  #rename populacao to popularcao_urbana_corrente
+  pop_urbana <- dplyr::rename(pop_urbana, populacao_urbana_corrente = populacao)
+  pop_urbana <- dplyr::select(pop_urbana, c("codigo_municipio", "populacao_urbana_corrente"))
+  tabela <- dplyr::full_join(
+    pop_urbana,
+    tabela,
+    by = "codigo_municipio"
+  )
+  return(tabela)
+}
+
 #' Densidade urbana
 #'
-#' @param tabela contendo as colunas do SNIS: `GE006` e `GE002`
+#' @param tabela contendo as colunas do SNIS
 #'
 #' @return uma tabela contendo a densidade urbana
 #' @export
@@ -292,7 +265,7 @@ precipitacao <- function(tabela) {
 densidade_urbana <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    densidade_urbana = GE006 / area_urbana
+    densidade_urbana = populacao_urbana_corrente / area_urbana
   )
   return(tabela)
 }

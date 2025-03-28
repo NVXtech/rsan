@@ -7,7 +7,7 @@
 #' @param reposicao é um `character` com o nome que será dado para coluna de reposição
 #' @param vida_util é um `numeric` com o valor da vida util da instalação
 #'
-#' @return uma lista com todos parâmetros necessários parao o cálculo de reposição
+#' @return uma lista com todos parâmetros necessários para o cálculo de reposição
 #' @export
 #'
 #' @examples

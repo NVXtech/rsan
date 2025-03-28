@@ -62,11 +62,12 @@ investimento_drenagem <- function(state) {
   depreciacao <- depreciacao_para_vida_util(input$deprec_drenagem)
   rlog::log_info(sprintf("Drenagem anoi=%s anof=%s", ano_inicial, ano_final))
   tabela <- load_snis_ap(input$snis_ap)
+  tabela <- adiciona_populacao_urbana_corrente(state$projecao, ano_corrente, tabela)
+  tabela <- adiciona_projecao_populacao(state$projecao, ano_final, tabela)
   tabela <- area_urbana(tabela)
   tabela <- densidade_urbana(tabela)
   tabela <- precipitacao(tabela)
   tabela <- adiciona_indices_drenagem(tabela)
-  tabela <- adiciona_projecao_populacao(state$projecao, ano_final, tabela)
   tabela <- capacidade_instalada_drenagem(tabela)
 
   if (input$modo == 1) { # Investimento per capita constante
@@ -74,7 +75,6 @@ investimento_drenagem <- function(state) {
   } else { # Investimento per capita por regressão
     tabela <- aplica_regressao_multipla_drenagem(tabela, input)
   }
-
   tabela <- calcula_reposicao_parcial(
     tabela,
     "capacidade_instalada",

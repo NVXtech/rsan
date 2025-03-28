@@ -7,7 +7,7 @@
 densidade_urbana(tabela)
 }
 \arguments{
-\item{tabela}{contendo as colunas do SNIS: \code{GE006} e \code{GE002}}
+\item{tabela}{contendo as colunas do SNIS}
 }
 \value{
 uma tabela contendo a densidade urbana

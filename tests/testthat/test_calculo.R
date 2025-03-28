@@ -63,8 +63,9 @@ test_that("calculos estão rodando", {
     )
     expected <- dplyr::tibble(componente, situacao, destino, total)
     relativo <- dplyr::left_join(
-        valores, expected,
-        by = c("componente", "situacao", "destino")
+        valores,
+        expected,
+        by = c("componente", "situacao", "destino"),
     )
     relativo <- dplyr::mutate(relativo, fator = abs(total.x - total.y) / total.x * 100)
     print(relativo, n = 13)
