@@ -99,7 +99,7 @@ investimento_drenagem <- function(state) {
 }
 
 residuos_snis_fields <- c(
-  "codigo_municipio", "POP_TOT", "POP_URB", "Estado",
+  "codigo_municipio", "POP_TOT", "Estado",
   "CO164", "CO050", "CO119", "CO021", "CS026", "CS009",
   "CO054", "CO055", "CO056", "CO057", "CO058", "CO059",
   "CO063", "CO064", "CO065", "CO066", "CO067", "CO068",
@@ -147,6 +147,7 @@ investimento_residuos <- function(state) {
   # Consolidação dos dados para classificação
   rlog::log_info("residuos: consolidando dados para classificação")
   tabela <- get_snis_data(input$snis, residuos_snis_fields)
+  tabela <- adiciona_populacao_urbana_corrente(state$projecao, ano_corrente, tabela)
   tabela <- adiciona_projecao_populacao(state$projecao, ano, tabela)
   tabela <- dplyr::left_join(tabela, compostagem, by = "codigo_municipio")
   tabela <- adiciona_pais(tabela)

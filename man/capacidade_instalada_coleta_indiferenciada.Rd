@@ -7,7 +7,7 @@
 capacidade_instalada_coleta_indiferenciada(tabela, valor)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas \code{POP_URB}, \code{atendimento_relativo_seletiva_urbano} e \code{densidade_caminhoes }}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{populacao_urbana_corrente}, \code{atendimento_relativo_seletiva_urbano} e \code{densidade_caminhoes }}
 
 \item{valor}{valor um \code{double} contendo o preço de um caminhão}
 }

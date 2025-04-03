@@ -7,7 +7,7 @@
 atendimento_relativo_coleta_seletiva(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} com as colunas \code{CS050} e \code{POP_URB}}
+\item{tabela}{um \code{data.frame} com as colunas \code{CS050} e \code{populacao_urbana_corrente}}
 }
 \value{
 um \code{data.frame} contendo a coluna atendimento_relativo_coleta_seletiva

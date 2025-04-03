@@ -212,6 +212,32 @@ get_populacao <- function(tabela, ano, tipo) {
   return(pop)
 }
 
+#' Junta as estimativas de populacao urbana
+#'
+#' @param populacao é os dados da projeção populacional
+#' @param ano da estimativa de população
+#' @param tabela
+#'
+#' @return tabela com todos os dados consolidados
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' df <- adiciona_projecao_populacao(populacao, ano, tabela)
+#' }
+adiciona_populacao_urbana_corrente <- function(populacao, ano, tabela) {
+  pop_urbana <- get_populacao(populacao, ano, "urbana")
+  #rename populacao to popularcao_urbana_corrente
+  pop_urbana <- dplyr::rename(pop_urbana, populacao_urbana_corrente = populacao)
+  pop_urbana <- dplyr::select(pop_urbana, c("codigo_municipio", "populacao_urbana_corrente"))
+  tabela <- dplyr::full_join(
+    pop_urbana,
+    tabela,
+    by = "codigo_municipio"
+  )
+  return(tabela)
+}
+
 test_projecao <- function(){
   app_state <- list(input = get_default_input())
   app_state$input$projecao$fonte1 <- "censo_2022"

@@ -101,8 +101,8 @@ valores_triagem <- c(
 )
 
 residuos <- list(
-  snis = "snis_2021",
-  snis_rs = "ano2021",
+  snis = "snis_2022",
+  snis_rs = "ano2022",
 
   # coleta comum
   valor_caminhao = 484709.23,

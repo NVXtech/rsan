@@ -87,25 +87,95 @@ workspace_dir <- function() {
   return(path)
 }
 
+
 raw_data_dir <- function() {
   return(file.path(workspace_dir(), "brutos"))
 }
 
-
-populacao_municipio <- function(tabela){
-  tabela <- dplyr::select(tabela, codigo_municipio, municipio, situacao, populacao)
+#' Agrega dados de população por município
+#'
+#' @param tabela é um `data.frame` com os dados agregados por setor censitário da população
+#'
+#' @return um `data.frame` com os dados agregados por município
+#'
+#' @examples
+#' populacao_agrega_municipio(tabela)
+populacao_agrega_municipio <- function(tabela){
+  tabela <- dplyr::select(tabela, codigo_municipio, municipio, situacao, populacao, area_km2, domicilios, atendimento_agua, atendimento_esgoto, atendimento_coleta_lixo)
   tabela <- dplyr::mutate(tabela, situacao = dplyr::if_else(is.na(situacao), "Rural", situacao))
   tabela <- dplyr::group_by(tabela, codigo_municipio, municipio, situacao)
-  tabela <- dplyr::summarise(tabela, populacao = sum(populacao, na.rm=TRUE))
+  tabela <- dplyr::summarise(tabela,
+            populacao = sum(populacao, na.rm=TRUE),
+            area_km2 = sum(area_km2, na.rm=TRUE),
+            domicilios = sum(domicilios, na.rm=TRUE),
+            atendimento_agua = round(sum(atendimento_agua, na.rm=TRUE)),
+            atendimento_esgoto = round(sum(atendimento_esgoto, na.rm=TRUE)),
+            atendimento_coleta_lixo = round(sum(atendimento_coleta_lixo, na.rm=TRUE))
+            )
   tabela <- dplyr::ungroup(tabela)
-  tabela <- tidyr::pivot_wider(tabela, names_from = situacao, values_from = populacao)
-  tabela <- dplyr::mutate(tabela, Rural = dplyr::if_else(is.na(Rural), 0, Rural))
-  tabela <- dplyr::mutate(tabela, Urbana = dplyr::if_else(is.na(Urbana), 0, Urbana))
-  tabela <- dplyr::mutate(tabela, populacao_total = Rural + Urbana, codigo_municipio = as.character(codigo_municipio))
-  names(tabela) <- c("codigo_municipio", "municipio", "populacao_rural", "populacao_urbana", "populacao_total")
+  tabela <- tidyr::pivot_wider(tabela, names_from = situacao, values_from = c(populacao, area_km2, domicilios, atendimento_agua, atendimento_esgoto, atendimento_coleta_lixo), values_fill=0)
+  #convert all col names to lowercase
+  names(tabela) <- tolower(names(tabela))
+  tabela <- dplyr::mutate(tabela,
+            populacao_rural = dplyr::if_else(is.na(populacao_rural), 0, populacao_rural),
+            populacao_urbana = dplyr::if_else(is.na(populacao_urbana), 0, populacao_urbana),
+            )
+  tabela <- dplyr::mutate(tabela,
+            populacao_total = populacao_rural+populacao_urbana,
+            domicilios_total = domicilios_rural+domicilios_urbana,
+            area_km2_total = area_km2_rural+area_km2_urbana,
+            atendimento_agua_total = atendimento_agua_rural+atendimento_agua_urbana,
+            atendimento_esgoto_total = atendimento_esgoto_rural+atendimento_esgoto_urbana,
+            atendimento_coleta_lixo_total = atendimento_coleta_lixo_rural+atendimento_coleta_lixo_urbana,
+            codigo_municipio = as.character(codigo_municipio),
+            )
   return(tabela)
 }
 
+#´ Cria conjunto de indicadores domícilos IBGE 2022
+#'
+#' @return um `data.frame` com o índice de atendimento de água, esgoto e resíduos sólidos
+censo_2022_atendimento <- function() {
+  url <- "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_caracteristicas_domicilio3_BR.zip"
+  dest <- file.path(raw_data_dir(), "ibge", "censo", "censo_2022_domicilios3.csv")
+  if (!file.exists(dest)) {
+    if (!dir.exists(dirname(dest))) {
+      dir.create(dirname(dest), recursive = TRUE)
+    }
+    tmp_file <- tempfile(fileext = ".zip")
+    curl::curl_download(url, tmp_file)
+    lista <- utils::unzip(tmp_file, list = TRUE)
+    utils::unzip(tmp_file, exdir = dirname(dest))
+    rlog::log_info(sprintf("Renaming %s", lista[1]))
+    file.rename(file.path(dirname(dest), lista[1]), dest)
+  }
+  tabela <- data.table::fread(dest, dec=',',integer64='double', na.strings = 'X')
+  tabela <- dplyr::select(tabela, CD_setor, V00508, V00509, V00510, V00511, V00513, V00540, V00580, V00581, V00582, V00612, V00613)
+  tabela <- dplyr::mutate_if(tabela, is.character, as.double)
+  tabela <- dplyr::mutate_all(tabela, \(x) dplyr::if_else(is.na(x), 0, x))
+  tabela <- dplyr::mutate(tabela,
+            atendimento_agua=V00508+V00509+V00510+V00511+V00513,
+            atendimento_encanada=V00540,
+            atendimento_esgoto=V00580+V00581+V00582,
+            atendimento_coleta_lixo=V00612+V00613)
+  tabela <- dplyr::mutate(tabela, atendimento_agua = pmin(atendimento_agua, atendimento_encanada, na.rm=TRUE))
+  tabela <- dplyr::select(tabela, c(CD_setor, atendimento_agua, atendimento_esgoto, atendimento_coleta_lixo))
+return(tabela)
+}
+
+adiciona_atendimento <- function(tabela) {
+  atendimento <- censo_2022_atendimento()
+  tabela <- dplyr::left_join(tabela, atendimento, by="CD_setor")
+  return(tabela)
+}
+
+#´ Cria conjunto de dados populacionais do censo IBGE 2022
+#'
+#' @return um `data.frame` com a estimativa populacional pelo Censo
+#' @export
+#'
+#' @examples
+#' censo_2022()
 censo_2022 <- function() {
   url <- "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_xlsx/Agregados_por_setores_basico_BR.zip"
   dest <- file.path(raw_data_dir(), "ibge", "censo", "censo_2022.xlsx")
@@ -121,14 +191,14 @@ censo_2022 <- function() {
     file.rename(file.path(dirname(dest), lista[1]), dest)
   }
   tabela <- readxl::read_xlsx(dest)
-
-  tabela <- dplyr::select(tabela, CD_MUN, NM_MUN, SITUACAO, v0001)
-  labels <- c("codigo_municipio", "municipio", "situacao", "populacao")
+  tabela <- dplyr::select(tabela, CD_SETOR, CD_MUN, NM_MUN, SITUACAO, v0001, AREA_KM2, v0007 )
+  labels <- c("CD_setor","codigo_municipio", "municipio", "situacao", "populacao", "area_km2", "domicilios")
   names(tabela) <- labels
-  tabela <- populacao_municipio(tabela)
+  tabela <- adiciona_atendimento(tabela)
+  print(names(tabela))
+  tabela <- populacao_agrega_municipio(tabela)
   return(tabela)
 }
-
 
 
 #' Cria conjunto de dados do censo IBGE

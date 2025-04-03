@@ -517,26 +517,26 @@ mascara_coleta_seletiva <- function(tabela) {
 #'    Os valores do atendimento é calculado pela populacao_urbana * média relativa de atendimento da regiao e faixa populacional do município.
 #' 4. Se a populacao atentida for maior que a populacao urbana define a populacao atendida igual a populacao urbana
 #'
-#' @param tabela um `data.frame` com as colunas "codigo_municipio", "regiao", "faixa", "POP_URB", "CS050", "CS001"
+#' @param tabela um `data.frame` com as colunas "codigo_municipio", "regiao", "faixa", "populacao_urbana_corrente", "CS050", "CS001"
 #'
 #' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_seletiva
 #' @export
 preenche_atendimento_coleta_seletiva <- function(tabela) {
-  vars <- c("codigo_municipio", "regiao", "faixa", "POP_URB", "CS050", "CS001")
+  vars <- c("codigo_municipio", "regiao", "faixa", "populacao_urbana_corrente", "CS050", "CS001")
   regiao_faixa <- dplyr::select(tabela, dplyr::all_of(vars))
   regiao_faixa <- dplyr::filter(regiao_faixa, CS001 == "Sim")
   regiao_faixa <- dplyr::mutate(regiao_faixa,
-    POP_URB = ifelse(POP_URB > 0, POP_URB, NA),
+    populacao_urbana_corrente = ifelse(populacao_urbana_corrente > 0, populacao_urbana_corrente, NA),
     CS050 = ifelse(CS050 > 0, CS050, NA)
   )
   regiao_faixa <- stats::na.omit(regiao_faixa)
   regiao_faixa <- dplyr::group_by(regiao_faixa, regiao, faixa)
-  regiao_faixa <- dplyr::summarise(regiao_faixa, POP_URB = sum(POP_URB), CS050 = sum(CS050))
+  regiao_faixa <- dplyr::summarise(regiao_faixa,populacao_urbana_corrente = sum(populacao_urbana_corrente), CS050 = sum(CS050))
   regiao_faixa <- dplyr::transmute(
     regiao_faixa,
     regiao = regiao,
     faixa = faixa,
-    relativo = CS050 / POP_URB
+    relativo = CS050 / populacao_urbana_corrente
   )
   tabela <- dplyr::left_join(
     tabela,
@@ -547,12 +547,12 @@ preenche_atendimento_coleta_seletiva <- function(tabela) {
     tabela,
     CS050 = ifelse(
       CS001 == "Sim" & is.na(CS050),
-      relativo * POP_URB,
+      relativo * populacao_urbana_corrente,
       CS050
     ),
     CS050 = ifelse(
-      CS050 > POP_URB,
-      POP_URB,
+      CS050 > populacao_urbana_corrente,
+      populacao_urbana_corrente,
       CS050
     )
   )
@@ -566,7 +566,7 @@ preenche_atendimento_coleta_seletiva <- function(tabela) {
 #' 2. Calcula a quantidade de caminhões bau por faixa
 #'
 #' @param tabela_por_municipio um `data.frame` com as colunas "codigo_municipio", "faixa", "CS001", "CS050", "CO064", "CO065", "CO066", "CO067", "CO068"
-#' @param estado_faixa um `data.frame` com as colunas "estado", "faixa", "POP_URB", "CS050", "CS001"
+#' @param estado_faixa um `data.frame` com as colunas "estado", "faixa", "populacao_urbana_corrente", "CS050", "CS001"
 #'
 #' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_seletiva
 #' @export
@@ -607,7 +607,7 @@ preenche_densidade_caminhao_bau <- function(tabela_por_municipio, estado_faixa) 
 
 #' Atendimento relativo para coleta seletiva
 #'
-#' @param tabela um `data.frame` com as colunas `CS050` e `POP_URB`
+#' @param tabela um `data.frame` com as colunas `CS050` e `populacao_urbana_corrente`
 #'
 #' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_seletiva
 #' @export
@@ -615,7 +615,7 @@ atendimento_relativo_coleta_seletiva <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
     atendimento_relativo_seletiva_urbano = ifelse(
-      POP_URB > 0, CS050 / POP_URB, NA
+      populacao_urbana_corrente > 0, CS050 / populacao_urbana_corrente, NA
     ),
   )
 }
@@ -653,7 +653,7 @@ investimento_expansao_coleta_seletiva <- function(tabela, valor) {
 
 #' Capacidade instalada coleta seletiva
 #'
-#' @param tabela um `data.frame` contendo as colunas `POP_URB`, `atendimento_relativo_seletiva_urbano` e `densidade_caminhoes_bau `
+#' @param tabela um `data.frame` contendo as colunas `populacao_urbana_corrente`, `atendimento_relativo_seletiva_urbano` e `densidade_caminhoes_bau `
 #' @param valor valor um `double` contendo o preço de um caminhão bau
 #'
 #' @return um `data.frame` contendo a coluna capacidade_instalada_coleta_seletiva
@@ -663,7 +663,7 @@ capacidade_instalada_coleta_seletiva <- function(tabela, valor) {
     tabela,
     capacidade_instalada_coleta_seletiva = ifelse(
       densidade_caminhoes_bau > 0,
-      POP_URB * (1.0 - atendimento_relativo_seletiva_urbano) /
+      populacao_urbana_corrente * (1.0 - atendimento_relativo_seletiva_urbano) /
         densidade_caminhoes_bau * valor,
       NA
     )
@@ -737,7 +737,7 @@ investimento_expansao_coleta_indiferenciada <- function(tabela, valor) {
 
 #' Capacidade instalada coleta indiferenciada
 #'
-#' @param tabela um `data.frame` contendo as colunas `POP_URB`, `atendimento_relativo_seletiva_urbano` e `densidade_caminhoes `
+#' @param tabela um `data.frame` contendo as colunas `populacao_urbana_corrente`, `atendimento_relativo_seletiva_urbano` e `densidade_caminhoes `
 #' @param valor valor um `double` contendo o preço de um caminhão
 #'
 #' @return um `data.frame` contendo a coluna capacidade_instalada_coleta_indiferenciada
@@ -761,7 +761,7 @@ capacidade_instalada_coleta_indiferenciada <- function(tabela, valor) {
 #'    Os valores do atendimento é calculado pela populacao_urbana * média relativa de atendimento da regiao e faixa populacional do município.
 #' 4. Se a populacao atentida for maior que a populacao urbana define a populacao atendida igual a populacao urbana
 #'
-#' @param tabela um `data.frame` com as colunas "codigo_municipio", "regiao", "faixa", "POP_URB", "CO164"
+#' @param tabela um `data.frame` com as colunas "codigo_municipio", "regiao", "faixa", "populacao_urbana_corrente", "CO164"
 #'
 #' @return um `data.frame` contendo a coluna atendimento_relativo_coleta_indiferenciada
 #' @export
@@ -893,7 +893,7 @@ disposicao_inadequada <- function(tabela) {
 #'
 #' Calcula o atendimento relativo total, urbano e rural.
 #'
-#' @param tabela um `data.frame` com as colunas `CO164`, `CO050`, `POP_TOT` e `POP_URB`.
+#' @param tabela um `data.frame` com as colunas `CO164`, `CO050`, `POP_TOT` e `populacao_urbana_corrente`.
 #'
 #' @return um `data.frame` contendo as coliunas `atendimento_relativo_total`, `atendimento_relativo_urbano` e `atendimento_relativo_rural`
 #' @export
@@ -901,10 +901,10 @@ atendimento_relativo_residuos <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
     atendimento_relativo_total = CO164 / POP_TOT,
-    atendimento_relativo_urbano = CO050 / POP_URB,
+    atendimento_relativo_urbano = CO050 / populacao_urbana_corrente,
     atendimento_relativo_rural = ifelse(
-      (POP_TOT - POP_URB) > 0,
-      (CO164 - CO050) / (POP_TOT - POP_URB),
+      (POP_TOT - populacao_urbana_corrente) > 0,
+      (CO164 - CO050) / (POP_TOT - populacao_urbana_corrente),
       NA
     )
   )
