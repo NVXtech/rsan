@@ -100,7 +100,7 @@ investimento_drenagem <- function(state) {
 
 residuos_snis_fields <- c(
   "codigo_municipio", "POP_TOT", "Estado",
-  "CO164", "CO050", "CO119", "CO021", "CS026", "CS009",
+  "CO164", "CO050", "CO119", "CO021", "CS026",
   "CO054", "CO055", "CO056", "CO057", "CO058", "CO059",
   "CO063", "CO064", "CO065", "CO066", "CO067", "CO068",
   "CS001", "CS009", "CS050"
@@ -332,4 +332,3 @@ rodar_modelo <- function(state) {
   rlog::log_info("rodada terminada")
   return(state)
 }
-
