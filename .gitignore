@@ -5,6 +5,8 @@
 *.xls
 *.xlsx
 *.txt
+*.pdf
+*.rar
 R/data
 .Rhistory
 .RData
