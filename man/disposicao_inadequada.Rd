@@ -7,7 +7,7 @@
 disposicao_inadequada(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} com a coluna \code{CO119}}
+\item{tabela}{um \code{data.frame} com a coluna \code{residuo_coletado_ton_ano}}
 }
 \value{
 um \code{data.frame} com a colunas adicional \code{residuos_disposicao_inadequada}

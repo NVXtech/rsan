@@ -9,12 +9,12 @@ reaproveitamento_relativo(tabela_faixa, tabela_por_municipio)
 \arguments{
 \item{tabela_faixa}{um \code{data.frame} com as colunas "estado", "faixa" para adicionar}
 
-\item{tabela_por_municipio}{um \code{data.frame} contendo as colunas "estado", "faixa", "CS001", "CS009", "CO119"}
+\item{tabela_por_municipio}{um \code{data.frame} contendo as colunas "estado", "faixa", "tem_coleta_seletiva", "residuo_recuperado_ton_ano", "residuo_coletado_ton_ano"}
 }
 \value{
 um \code{data.frame} contendo a coluna reaproveitamento_relativo
 }
 \description{
-Calcula o reaproveitamento de resíduos recuperados pela divisão da quantidade total recuperada (CS009)
+Calcula o reaproveitamento de resíduos recuperados pela divisão da quantidade total recuperada (residuo_recuperado_ton_ano)
 divida pela quandidade total coletada.
 }

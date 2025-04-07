@@ -7,7 +7,7 @@
 investimento_expansao_coleta_indiferenciada(tabela, valor)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas \code{deficit_coleta_indiferenciada} e \code{densidade_caminhoes}}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{deficit_coleta_indiferenciada} e \code{densidade_caminhoes_compactadores}}
 
 \item{valor}{um \code{double} contendo o preço de um caminhão}
 }

@@ -20,8 +20,8 @@ Custo relativo é o valor monetário necessário para tratar 1m3 de esgoto por a
 \examples{
 estado <- c("AC", "AC", "AC", "AC", "AL", "AL", "AL", "AL")
 unidade <- c(
-    "LAGOA125", "REATORANA180", "EE85", "LODOBAT400",
-    "LAGOA125", "REATORANA180", "EE85", "LODOBAT400"
+  "LAGOA125", "REATORANA180", "EE85", "LODOBAT400",
+  "LAGOA125", "REATORANA180", "EE85", "LODOBAT400"
 )
 preco <- c(2.476, 0.762, 0.209, 2.31, 2.051, 0.4282, 0.2008, 2.2114)
 preco_unidade <- dplyr::tibble(estado, unidade, preco)

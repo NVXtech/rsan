@@ -4,7 +4,7 @@
 \alias{media_por_estado_faixa}
 \title{Média de todas as variáveis numéricas agrupando por estado e faixa populacional}
 \usage{
-media_por_estado_faixa(tabela, campo_estado = "Estado", campo_faixa = "faixa")
+media_por_estado_faixa(tabela, campo_estado = "estado", campo_faixa = "faixa")
 }
 \arguments{
 \item{tabela}{tabela contendo as colunas de população, estado}

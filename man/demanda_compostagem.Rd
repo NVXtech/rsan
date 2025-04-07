@@ -7,7 +7,7 @@
 demanda_compostagem(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas \code{meta_compostagem}, \code{total_residuos_projecao} e \code{quantidade_compostagem}.}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{meta_compostagem}, \code{total_residuos_projecao} e \code{residuo_compostagem_ton_ano}.}
 }
 \value{
 um \code{data.frame} com a coluna \code{demanda_compostagem}

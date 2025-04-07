@@ -2,7 +2,7 @@
 % Please edit documentation in R/residuos.R
 \name{meta_plansab_residuo}
 \alias{meta_plansab_residuo}
-\title{Adiciona metas de atendimento por região}
+\title{Adiciona metas de atendimento por regio}
 \usage{
 meta_plansab_residuo(tabela)
 }
@@ -13,5 +13,5 @@ meta_plansab_residuo(tabela)
 um \code{data.frame} com as colunas adicionais \code{meta_coleta}, \code{meta_compostagem}e \code{meta_reaproveitamento}
 }
 \description{
-Adiciona metas de atendimento por região
+Adiciona metas de atendimento por regio
 }

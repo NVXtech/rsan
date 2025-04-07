@@ -7,7 +7,7 @@
 atendimento_relativo_residuos(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} com as colunas \code{CO164}, \code{CO050}, \code{POP_TOT} e \code{populacao_urbana_corrente}.}
+\item{tabela}{um \code{data.frame} com as colunas \code{atendimento_coleta_indiferenciada_hab}, \code{CO050}, \code{populacao_total_corrente} e \code{populacao_urbana_corrente}.}
 }
 \value{
 um \code{data.frame} contendo as coliunas \code{atendimento_relativo_total}, \code{atendimento_relativo_urbano} e \code{atendimento_relativo_rural}

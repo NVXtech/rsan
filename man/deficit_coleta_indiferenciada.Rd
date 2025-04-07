@@ -7,13 +7,13 @@
 deficit_coleta_indiferenciada(tabela)
 }
 \arguments{
-\item{tabela}{é um \code{data.frame} contendo as colunas \code{meta_coleta}, \code{populacao_total} e \code{CO164}}
+\item{tabela}{é um \code{data.frame} contendo as colunas \code{meta_coleta}, \code{populacao_total} e \code{atendimento_coleta_indiferenciada_hab}}
 }
 \value{
 um \code{data.frame} contendo a coluna \code{coleta_indiferenciada}
 }
 \description{
-O déficit é a meta em \% multiplicada pela populacao total estimada menos o atendimento atual.
+O déficit é a meta em \% multiplicada pela populacao total estimada menos o atendimento atu
 }
 \examples{
 \dontrun{

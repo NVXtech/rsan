@@ -2,16 +2,16 @@
 % Please edit documentation in R/residuos.R
 \name{densidade_caminhoes_bau}
 \alias{densidade_caminhoes_bau}
-\title{Densidade de caminhões bau}
+\title{Densidade de caminhões basculante}
 \usage{
 densidade_caminhoes_bau(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas \code{numero_caminhoes_bau} e \code{CS050} (SNIS)}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{quantidade_caminhoes_basculantes} e \code{atendimento_coleta_seletiva_hab} (SNIS)}
 }
 \value{
 tabela com o campo adicional densidade de caminhoes baú (\code{densidade_caminhoes_bau})
 }
 \description{
-Densidade de caminhões bau
+Densidade de caminhões basculante
 }

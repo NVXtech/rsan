@@ -9,7 +9,7 @@ investimento_expansao_coleta_seletiva(tabela, valor)
 \arguments{
 \item{tabela}{um \code{data.frame} contendo as colunas \code{deficit_coleta_seletiva} e \code{densidade_caminhoes_bau}}
 
-\item{valor}{um \code{double} contendo o preço de um caminhão bau}
+\item{valor}{um \code{double} contendo o preço de um caminhão basculante}
 }
 \value{
 um \code{data.frame} contendo a coluna \code{investimento_expansao_coleta_seletiva}

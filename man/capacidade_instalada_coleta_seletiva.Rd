@@ -9,7 +9,7 @@ capacidade_instalada_coleta_seletiva(tabela, valor)
 \arguments{
 \item{tabela}{um \code{data.frame} contendo as colunas \code{populacao_urbana_corrente}, \code{atendimento_relativo_seletiva_urbano} e \code{densidade_caminhoes_bau }}
 
-\item{valor}{valor um \code{double} contendo o preço de um caminhão bau}
+\item{valor}{valor um \code{double} contendo o preço de um caminhão basculante}
 }
 \value{
 um \code{data.frame} contendo a coluna capacidade_instalada_coleta_seletiva

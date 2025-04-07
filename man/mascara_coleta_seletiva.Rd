@@ -7,16 +7,16 @@
 mascara_coleta_seletiva(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo a coluna CS001.}
+\item{tabela}{um \code{data.frame} contendo a coluna tem_coleta_seletiva.}
 }
 \value{
 vetor de boleanos para cada municipio que não contém coleta seletiva
 }
 \description{
 Retorna um vetor de \code{boolean} sobre a existência (\code{TRUE}) ou não (\code{FALSE}) de coleta seletiva.
-A análise é baseada no campo CS001 do SNIS.
+A análise é baseada no campo tem_coleta_seletiva do SNIS.
 }
 \examples{
-tabela <- dplyr::tibble(CS001 = c("Sim", "Não"))
+tabela <- dplyr::tibble(tem_coleta_seletiva = c("Sim", "Não"))
 mask <- mascara_coleta_seletiva(tabela)
 }

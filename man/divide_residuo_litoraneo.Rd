@@ -7,7 +7,7 @@
 divide_residuo_litoraneo(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas CO119, CO164 e litoral}
+\item{tabela}{um \code{data.frame} contendo as colunas residuo_coletado_ton_ano, atendimento_coleta_indiferenciada_hab e litoral}
 }
 \value{
 um \code{data.frame} onde os municipios litoraneos não tem dados de quantidade de residuos

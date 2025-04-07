@@ -6,7 +6,7 @@
 \usage{
 conta_municipios_por_estado_faixa(
   tabela,
-  campo_estado = "Estado",
+  campo_estado = "estado",
   campo_faixa = "faixa"
 )
 }

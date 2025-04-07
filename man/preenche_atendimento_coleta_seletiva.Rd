@@ -7,7 +7,7 @@
 preenche_atendimento_coleta_seletiva(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} com as colunas "codigo_municipio", "regiao", "faixa", "populacao_urbana_corrente", "CS050", "CS001"}
+\item{tabela}{um \code{data.frame} com as colunas "codigo_municipio", "regiao", "faixa", "populacao_urbana_corrente", "atendimento_coleta_seletiva_hab", "tem_coleta_seletiva"}
 }
 \value{
 um \code{data.frame} contendo a coluna atendimento_relativo_coleta_seletiva

@@ -7,7 +7,7 @@
 classifica_faixa_populacional(
   tabela,
   limites,
-  campo_populacao = "POP_TOT",
+  campo_populacao = "populacao_total_corrente",
   campo_faixa = "faixa"
 )
 }

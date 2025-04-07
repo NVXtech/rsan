@@ -11,7 +11,7 @@ calculate_demografico_esgoto(df, meta_esgoto, proporcao)
 
 \item{meta_esgoto}{meta em \% de atendimento para tratamento de esgoto}
 
-\item{proporcao}{proporção da densidade de água que equivale a densiade de esgoto}
+\item{proporcao}{proporção da densidade de água que equivale a densidade de esgoto}
 }
 \value{
 um \code{data.frame} contendo os dados de deficits e demandas

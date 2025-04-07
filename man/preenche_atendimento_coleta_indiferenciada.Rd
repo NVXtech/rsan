@@ -7,7 +7,7 @@
 preenche_atendimento_coleta_indiferenciada(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} com as colunas "codigo_municipio", "regiao", "faixa", "populacao_urbana_corrente", "CO164"}
+\item{tabela}{um \code{data.frame} com as colunas "codigo_municipio", "regiao", "faixa", "populacao_urbana_corrente", "atendimento_coleta_indiferenciada_hab"}
 }
 \value{
 um \code{data.frame} contendo a coluna atendimento_relativo_coleta_indiferenciada

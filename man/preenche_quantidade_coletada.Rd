@@ -10,8 +10,8 @@ preenche_quantidade_coletada(tabela)
 \item{tabela}{um \code{data.frame} com as colunas a serem preenchidas}
 }
 \value{
-o mesmo \code{data.frame} com a coluna preenchida (CO119)
+o mesmo \code{data.frame} com a coluna preenchida (residuo_coletado_ton_ano)
 }
 \description{
-O campo de quantidade coletada de residuos (CO119) é prenchido pela taxa média por regiao e estado.
+O campo de quantidade coletada de residuos (residuo_coletado_ton_ano) é prenchido pela taxa média por regiao e estado.
 }

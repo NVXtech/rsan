@@ -7,7 +7,7 @@
 capacidade_instalada_esgoto(snis, custo)
 }
 \arguments{
-\item{snis}{um \code{data.frame} contendo as colunas \code{codigo_municipio}, \code{ES004} e \code{ES006}}
+\item{snis}{um \code{data.frame} contendo as colunas \code{codigo_municipio}, \code{extensao_rede_esgoto_km} e \code{volume_esgoto_tratado_dam3_ano}}
 
 \item{custo}{um \code{data.frame} contendo as colunas \code{codigo_municipio}, \code{custo_relativo_tratamento}, \code{preco_coleta_esgoto}}
 }

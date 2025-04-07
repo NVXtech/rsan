@@ -4,7 +4,7 @@
 \alias{soma_por_estado_faixa}
 \title{Soma todas as variáveis numéricas agrupando por estado e faixa populacional}
 \usage{
-soma_por_estado_faixa(tabela, campo_estado = "Estado", campo_faixa = "faixa")
+soma_por_estado_faixa(tabela, campo_estado = "estado", campo_faixa = "faixa")
 }
 \arguments{
 \item{tabela}{tabela contendo as colunas de população, estado}

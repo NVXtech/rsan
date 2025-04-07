@@ -7,7 +7,7 @@
 taxa_geracao_residuos(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas CO119, CO164, CO119_litoral e CO164_litoral}
+\item{tabela}{um \code{data.frame} contendo as colunas residuo_coletado_ton_ano, atendimento_coleta_indiferenciada_hab, residuo_coletado_ton_ano_litoral e atendimento_coleta_indiferenciada_hab_litoral}
 }
 \value{
 um \code{data.frame} contendo as colunas taxa_geracao_residuos, taxa_geracao_residuos_litoral

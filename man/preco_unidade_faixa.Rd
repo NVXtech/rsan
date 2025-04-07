@@ -2,7 +2,8 @@
 % Please edit documentation in R/residuos.R
 \name{preco_unidade_faixa}
 \alias{preco_unidade_faixa}
-\title{Une tabelas por faixa populacional}
+\title{Necessidade de Investimento - Componente Resíduos - Situação Urbana
+Une tabelas por faixa populacional}
 \usage{
 preco_unidade_faixa(tabela1, tabela2)
 }

@@ -7,7 +7,7 @@
 geracao_residuos(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas POP_TOT, CO119, CO164, CS009 e populacao_total}
+\item{tabela}{um \code{data.frame} contendo as colunas populacao_total_corrente, residuo_coletado_ton_ano, atendimento_coleta_indiferenciada_hab, residuo_recuperado_ton_ano e populacao_total}
 }
 \value{
 um \code{data.frame} contendo as colunas taxa_geracao_residuos, total_residuos, total_residuos_projecaoe

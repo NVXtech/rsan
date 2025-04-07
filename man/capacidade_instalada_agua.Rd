@@ -7,7 +7,7 @@
 capacidade_instalada_agua(snis, custo)
 }
 \arguments{
-\item{snis}{um \code{data.frame} contendo as colunas \code{codigo_municipio}, \code{AG005} e \code{AG006}}
+\item{snis}{um \code{data.frame} contendo as colunas \code{codigo_municipio}, \code{extensao_rede_agua_km} e \code{volume_agua_produzido_dam3_ano}}
 
 \item{custo}{um \code{data.frame} contendo as colunas \code{codigo_municipio}, \code{custo_relativo_producao}, \code{preco_distribuicao_agua}}
 }

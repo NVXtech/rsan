@@ -11,7 +11,7 @@ residuos_cobertura_preprocess(year)
 \item{year}{Year of the data to process (e.g., 2022)}
 }
 \value{
-A data frame containing the processed waste coverage data
+A data frame containing the processed waste coverage date
 }
 \description{
 Residuos Pre-processing Cobertura
