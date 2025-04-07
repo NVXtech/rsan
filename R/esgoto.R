@@ -4,15 +4,15 @@ snis_fields <- c(
   "codigo_municipio",
   "POP_TOT",
   "Estado",
-  "AG001",
-  "AG005",
-  "AG006",
-  "AG010",
-  "AG026",
-  "ES001",
-  "ES004",
-  "ES006",
-  "ES026"
+  "atendimento_tot_agua_hab",
+  "extensao_rede_agua_km",
+  "volume_agua_produzido_dam3_ano",
+  "volume_agua_consumido_dam3_ano",
+  "atendimento_urb_agua_hab",
+  "atendimento_tot_esgoto_hab",
+  "extensao_rede_esgoto_km",
+  "volume_esgoto_tratado_dam3_ano",
+  "volume_esgoto_tratado_dam3_ano"
 )
 #' Calcula deficits e demandas para esgoto
 #'
@@ -28,12 +28,12 @@ snis_fields <- c(
 #' df <- calculate_demografico_esgoto(df, 99, 90, 80)
 #' }
 calculate_demografico_esgoto <- function(df, meta_esgoto, proporcao) {
-  df$ES001[is.na(df$ES001)] <- 0
-  df$ES026[is.na(df$ES026)] <- 0
+  df$atendimento_tot_esgoto_hab[is.na(df$atendimento_tot_esgoto_hab)] <- 0
+  df$volume_esgoto_tratado_dam3_ano[is.na(df$volume_esgoto_tratado_dam3_ano)] <- 0
   df <- dplyr::mutate(
     df,
-    deficit_total = pmax(populacao_total - ES001, 0.0),
-    deficit_urbana = pmax(populacao_urbana - ES026, 0.0),
+    deficit_total = pmax(populacao_total - atendimento_tot_esgoto_hab, 0.0),
+    deficit_urbana = pmax(populacao_urbana - volume_esgoto_tratado_dam3_ano, 0.0),
     deficit_rural = pmax(deficit_total - deficit_urbana, 0.0),
     densidade_tratamento_esgoto = proporcao / 100.0 * densidade_producao_agua,
     demanda_coleta_esgoto = meta_esgoto / 100.0 * deficit_urbana * densidade_coleta_esgoto,
@@ -42,6 +42,7 @@ calculate_demografico_esgoto <- function(df, meta_esgoto, proporcao) {
   df <- dplyr::select(
     df,
     codigo_municipio,
+    estado,
     deficit_total,
     deficit_urbana,
     deficit_rural,
@@ -307,21 +308,21 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
 
 #' Capacidade instalada sistema de abastecimento de água
 #'
-#' @param snis um `data.frame` contendo as colunas `codigo_municipio`, `ES004` e `ES006`
+#' @param snis um `data.frame` contendo as colunas `codigo_municipio`, `extensao_rede_esgoto_km` e `volume_esgoto_tratado_dam3_ano`
 #' @param custo um `data.frame` contendo as colunas `codigo_municipio`, `custo_relativo_tratamento`, `preco_coleta_esgoto`
 #'
 #' @return um `data.frame` contendo as colunas `capacidade_instalada_coleta` e `capacidade_instalada_tratamento`
 #' @export
 capacidade_instalada_esgoto <- function(snis, custo) {
   # Quando não informada assume extensões igual a 0
-  snis$ES004[is.na(snis$ES004)] <- 0
-  snis$ES006[is.na(snis$ES006)] <- 0
+  snis$extensao_rede_esgoto_km[is.na(snis$extensao_rede_esgoto_km)] <- 0
+  snis$volume_esgoto_tratado_dam3_ano[is.na(snis$volume_esgoto_tratado_dam3_ano)] <- 0
 
   tabela <- dplyr::left_join(snis, custo, by = "codigo_municipio")
   tabela <- dplyr::mutate(
     tabela,
-    capacidade_instalada_coleta = ES004 * 1e3 * preco_coleta_esgoto,
-    capacidade_instalada_tratamento = ES006 * 1e3 * custo_relativo_tratamento
+    capacidade_instalada_coleta = extensao_rede_esgoto_km * 1e3 * preco_coleta_esgoto,
+    capacidade_instalada_tratamento = volume_esgoto_tratado_dam3_ano * 1e3 * custo_relativo_tratamento
   )
   return(tabela)
 }
@@ -337,7 +338,8 @@ capacidade_instalada_esgoto <- function(snis, custo) {
 #'
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
-  snis_data <- get_snis_data(input$esgoto$snis, snis_fields)
+  ano_sinisa <- input$esgoto$sinisa
+  snis_data <- carrega_dados_sinisa("esgoto", ano_sinisa)
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_esgoto(snis_data, custo)
   ano_final <- input$geral$ano

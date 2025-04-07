@@ -61,7 +61,10 @@ investimento_drenagem <- function(state) {
   ano_corrente <- state$input$geral$ano_corrente
   depreciacao <- depreciacao_para_vida_util(input$deprec_drenagem)
   rlog::log_info(sprintf("drenagem anoi=%s anof=%s", ano_inicial, ano_final))
-  tabela <- load_snis_ap(input$snis_ap)
+  tabela <- carrega_dados_sinisa("aguas_pluviais", input$sinisa)
+  tabela <- adiciona_pais(tabela)
+  tabela <- adiciona_estado(tabela)
+  tabela <- adiciona_regiao(tabela)
   tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
   tabela <- adiciona_projecao_populacao(state$projecao, ano_final, tabela)
   tabela <- area_urbana(tabela)
@@ -98,14 +101,6 @@ investimento_drenagem <- function(state) {
   return(state)
 }
 
-residuos_snis_fields <- c(
-  "codigo_municipio", "POP_TOT", "Estado",
-  "CO164", "CO050", "CO119", "CO021", "CS026",
-  "CO054", "CO055", "CO056", "CO057", "CO058", "CO059",
-  "CO063", "CO064", "CO065", "CO066", "CO067", "CO068",
-  "CS001", "residuo_recuperado_ton_ano", "CS050"
-)
-
 
 #' Investimento em residuos
 #'
@@ -133,7 +128,7 @@ investimento_residuos <- function(state) {
   preco_unidade_triagem <- tabela_preco_unidade_residuos(input, "triagem")
   vida_util_triagem <- input$vida_util_triagem
 
-  ano_inicial <- nome_para_ano(input$snis_rs)
+  ano_inicial <- input$sinisa
   ano_final <- ano
   rlog::log_info(sprintf("residuos anoi=%s anof=%s", ano_inicial, ano_final))
   ano_corrente <- state$input$geral$ano_corrente
@@ -142,8 +137,6 @@ investimento_residuos <- function(state) {
   # Consolidação dos dados para classificação
   rlog::log_info("residuos: consolidando dados para classificação")
   tabela <- carrega_dados_sinisa("residuos", ano_inicial)
-
-  # tabela <- get_snis_data(input$snis, residuos_snis_fields)
   tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
   tabela <- adiciona_projecao_populacao(state$projecao, ano, tabela)
   tabela <- adiciona_pais(tabela)
@@ -327,6 +320,7 @@ rodar_modelo <- function(state) {
 
   rlog::log_info("residuos: iniciando módulo")
   state <- investimento_residuos(state)
+
   state$necessidade <- adiciona_pais(state$necessidade)
   state$deficit <- adiciona_pais(state$deficit)
 

@@ -35,8 +35,9 @@ projecao <- list(
 )
 
 agua <- list(
-  snis = "snis_2021",
+  snis = "snis_2023",
   sinapi = "dt202112",
+  sinisa = 2023,
   meta_agua = 99,
   perda_agua = 25,
   fator_servicos = 26,
@@ -51,6 +52,7 @@ agua <- list(
 esgoto <- list(
   snis = "snis_2021",
   sinapi = "dt202112",
+  sinisa = 2023,
   meta_esgoto = 90,
   proporcao = 80,
   fator_servicos = 26,
@@ -103,6 +105,7 @@ valores_triagem <- c(
 residuos <- list(
   snis = "snis_2022",
   snis_rs = "ano2023",
+  sinisa = 2023,
 
   # coleta comum
   valor_caminhao = 484709.23,
@@ -127,6 +130,7 @@ residuos <- list(
 
 drenagem <- list(
   snis_ap = "ano2022",
+  sinisa = 2023,
   modo = 2,
   deprec_drenagem = 2,
   investimento_per_capita = 10000,

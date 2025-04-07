@@ -144,7 +144,7 @@ aplica_regressao_multipla_drenagem <- function(tabela, parametros) {
 regressao_multipla_drenagem <- function(plano) {
   plano <- dplyr::mutate(
     plano,
-    densidade_investimento = investimento_corrigido / GE006
+    densidade_investimento = investimento_corrigido / populacao_urbana_corrente
   )
   return(stats::lm(
     formula =
@@ -292,7 +292,7 @@ adiciona_indices_drenagem <- function(tabela) {
 investimento_cadastro <- function(tabela, valor) {
   tabela <- dplyr::mutate(
     tabela,
-    cadastro_tecnico = ifelse(IE012 == "Sim", 0.0, 1.0),
+    cadastro_tecnico = ifelse(tem_cadastro_tecnico == "Sim", 0.0, 1.0),
     investimento_cadastro = cadastro_tecnico * valor * area_urbana
   )
   return(tabela)
