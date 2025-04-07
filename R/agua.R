@@ -15,7 +15,7 @@ agua_required_fields <- c(
 #'
 #' Calcula as necessidades para distribuição de água ($m/hab$) e para produção de água ($m^3/hab$).
 #'
-#' @param data um `data.frame` contendo os dados do SNIS
+#' @param data um `data.frame` contendo os dados do SINISA
 #'
 #' @return um `data.frame` contendo as densidades
 #' @export
@@ -669,7 +669,7 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
   agua <- carrega_dados_sinisa("agua", ano_sinisa)
   esgoto <- carrega_dados_sinisa("esgoto", ano_sinisa)
   tabela <- dplyr::full_join(agua, esgoto, by = "codigo_municipio")
-  rlog::log_info(sprintf("%s: carregado snis (%s, %s)", tema, nrow(tabela), ncol(tabela)))
+  rlog::log_info(sprintf("%s: carregado sinisa (%s, %s)", tema, nrow(tabela), ncol(tabela)))
   tabela <- necessidade_agua_esgoto(tabela)
   tabela <- adiciona_populacao_corrente(projecao, ano_sinisa, tabela)
   rlog::log_info(sprintf("%s: adicionando estado", tema))
