@@ -2,17 +2,15 @@
 
 snis_fields <- c(
   "codigo_municipio",
-  "POP_TOT",
-  "Estado",
-  "AG001",
-  "AG005",
-  "AG006",
-  "AG010",
-  "AG026",
-  "ES001",
-  "ES004",
-  "ES006",
-  "ES026"
+  "atendimento_tot_agua_hab",
+  "extensao_rede_agua_km",
+  "volume_agua_produzido_dam3_ano",
+  "volume_agua_consumido_dam3_ano",
+  "atendimento_urb_agua_hab",
+  "atendimento_tot_esgoto_hab",
+  "extensao_rede_esgoto_km",
+  "volume_esgoto_tratado_dam3_ano",
+  "volume_esgoto_tratado_dam3_ano"
 )
 #' Calcula as necessidades produção e distribuição
 #'
@@ -30,9 +28,9 @@ snis_fields <- c(
 necessidade_agua_esgoto <- function(df) {
   df <- dplyr::mutate(
     df,
-    densidade_distribuicao_agua = AG005 * 1000 / AG001,
-    densidade_producao_agua = AG010 * 1000 / AG001,
-    densidade_coleta_esgoto = ES004 * 1000 / ES001
+    densidade_distribuicao_agua = extensao_rede_agua_km * 1000 / atendimento_tot_agua_hab,
+    densidade_producao_agua = volume_agua_consumido_dam3_ano * 1000 / atendimento_tot_agua_hab,
+    densidade_coleta_esgoto = extensao_rede_esgoto_km * 1000 / atendimento_tot_esgoto_hab
   )
   return(df)
 }
@@ -61,7 +59,7 @@ fill_missing_density <- function(density, fields) {
     IQR <- stats::IQR(unlist(density[, i]), na.rm = TRUE)
     density[, i][density[, i] >= Q3 + 1.5 * IQR] <- NA
     fit <-
-      stats::lm(log(get(i)) ~ 0 + I(POP_TOT / 1000000) + Estado, data = density)
+      stats::lm(log(get(i)) ~ 0 + I(populacao_total_corrente / 1000000) + estado, data = density)
 
     density <- dplyr::mutate(
       density,
@@ -139,12 +137,12 @@ adiciona_projecao_populacao <- function(populacao, ano, tabela) {
 #' df <- calculate_demografico_agua(df, 99, 90, 80)
 #' }
 calculate_demografico_agua <- function(df, meta_agua) {
-  df$AG001[is.na(df$AG001)] <- 0
-  df$AG026[is.na(df$AG026)] <- 0
+  df$atendimento_tot_agua_hab[is.na(df$atendimento_tot_agua_hab)] <- 0
+  df$atendimento_urb_agua_hab[is.na(df$atendimento_urb_agua_hab)] <- 0
   df <- dplyr::mutate(
     df,
-    deficit_total = pmax(populacao_total - AG001, 0.0),
-    deficit_urbana = pmax(populacao_urbana - AG026, 0.0),
+    deficit_total = pmax(populacao_total - atendimento_tot_agua_hab, 0.0),
+    deficit_urbana = pmax(populacao_urbana - atendimento_urb_agua_hab, 0.0),
     deficit_rural = pmax(deficit_total - deficit_urbana, 0.0),
     demanda_distribuicao_agua = meta_agua / 100.0 * deficit_urbana * densidade_distribuicao_agua,
     demanda_producao_agua = meta_agua / 100.0 * deficit_urbana * densidade_producao_agua
@@ -152,6 +150,7 @@ calculate_demografico_agua <- function(df, meta_agua) {
   df <- dplyr::select(
     df,
     codigo_municipio,
+    estado,
     deficit_total,
     deficit_urbana,
     deficit_rural,
@@ -667,9 +666,15 @@ tbl_longa_deficit_agua <- function(tabela) {
 #' }
 rodar_modulo_demografico <- function(input, projecao, tema) {
   ano <- input$geral$ano
-  tabela <- get_snis_data(input$agua$snis, snis_fields)
+  ano_sinisa <- 2023
+  agua <- carrega_dados_sinisa("agua", ano_sinisa)
+  esgoto <- carrega_dados_sinisa("esgoto", ano_sinisa)
+  tabela <- dplyr::full_join(agua, esgoto, by = "codigo_municipio")
   rlog::log_info(sprintf("%s: carregado snis (%s, %s)", tema, nrow(tabela), ncol(tabela)))
   tabela <- necessidade_agua_esgoto(tabela)
+  tabela <- adiciona_populacao_corrente(projecao, ano_sinisa, tabela)
+  rlog::log_info(sprintf("%s: adicionando estado", tema))
+  tabela <- adiciona_estado(tabela)
   rlog::log_info(sprintf("%s: preenchendo dados de densidade", tema))
   tabela <- fill_missing_density(tabela, c(
     "densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"
@@ -683,8 +688,6 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
   if (tema == "esgoto") {
     tabela <- calculate_demografico_esgoto(tabela, input$esgoto$meta_esgoto, input$esgoto$proporcao)
   }
-  rlog::log_info(sprintf("%s: adicionando estado", tema))
-  tabela <- adiciona_estado(tabela)
   rlog::log_info(sprintf("%s: classificando municipios", tema))
   tabela <- classifica_municipio(tabela)
   return(tabela)
@@ -741,21 +744,21 @@ rodar_modulo_orcamentario_agua <- function(input, demografico) {
 
 #' Capacidade instalada sistema de abastecimento de água
 #'
-#' @param snis um `data.frame` contendo as colunas `codigo_municipio`, `AG005` e `AG006`
+#' @param snis um `data.frame` contendo as colunas `codigo_municipio`, `extensao_rede_agua_km` e `volume_agua_produzido_dam3_ano`
 #' @param custo um `data.frame` contendo as colunas `codigo_municipio`, `custo_relativo_producao`, `preco_distribuicao_agua`
 #'
 #' @return um `data.frame` contendo as colunas `capacidade_instalada_distribuicao` e `capacidade_instalada_producao`
 #' @export
 capacidade_instalada_agua <- function(snis, custo) {
   # Quando não informada assume extensões igual a 0
-  snis$AG005[is.na(snis$AG005)] <- 0
-  snis$AG006[is.na(snis$AG006)] <- 0
+  snis$extensao_rede_agua_km[is.na(snis$extensao_rede_agua_km)] <- 0
+  snis$volume_agua_produzido_dam3_ano[is.na(snis$volume_agua_produzido_dam3_ano)] <- 0
 
   tabela <- dplyr::left_join(snis, custo, by = "codigo_municipio")
   tabela <- dplyr::mutate(
     tabela,
-    capacidade_instalada_distribuicao = AG005 * 1e3 * preco_distribuicao_agua,
-    capacidade_instalada_producao = AG006 * 1e3 * custo_relativo_producao
+    capacidade_instalada_distribuicao = extensao_rede_agua_km * 1e3 * preco_distribuicao_agua,
+    capacidade_instalada_producao = volume_agua_produzido_dam3_ano * 1e3 * custo_relativo_producao
   )
   return(tabela)
 }
@@ -772,7 +775,8 @@ capacidade_instalada_agua <- function(snis, custo) {
 #'
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_agua <- function(input, orcamentario) {
-  snis_data <- get_snis_data(input$agua$snis, snis_fields)
+  ano_sinisa <- input$agua$sinisa
+  snis_data <- carrega_dados_sinisa("agua", ano_sinisa)
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_agua(snis_data, custo)
   ano_final <- input$geral$ano
