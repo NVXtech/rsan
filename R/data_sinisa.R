@@ -327,7 +327,7 @@ preprocess_sinisa_data <- function(year) {
 #' Carrega os dados pré-processados do SINISA
 #'
 #' @param componente Componente a ser carregado: "agua", "esgoto" ou "residuos"
-#' @ano Ano dos dados a serem carregados (e.g., 2022)
+#' @param ano Ano dos dados a serem carregados (e.g., 2022)
 #'
 #' @return Data frame com os dados do SINISA
 #' @export

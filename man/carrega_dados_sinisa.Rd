@@ -8,6 +8,8 @@ carrega_dados_sinisa(componente, ano)
 }
 \arguments{
 \item{componente}{Componente a ser carregado: "agua", "esgoto" ou "residuos"}
+
+\item{ano}{Ano dos dados a serem carregados (e.g., 2022)}
 }
 \value{
 Data frame com os dados do SINISA

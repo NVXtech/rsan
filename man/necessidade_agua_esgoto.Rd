@@ -7,7 +7,7 @@
 necessidade_agua_esgoto(df)
 }
 \arguments{
-\item{data}{um \code{data.frame} contendo os dados do SNIS}
+\item{data}{um \code{data.frame} contendo os dados do SINISA}
 }
 \value{
 um \code{data.frame} contendo as densidades
