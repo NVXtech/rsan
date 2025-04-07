@@ -219,7 +219,6 @@ residuos_unidades_preprocess <- function(year) {
   path <- file.path(base_path, year)
   folder <- sprintf("SINISA_RESIDUOS_Planilhas_%s", year) # Folder where user unrar the rar file
   fname <- sprintf("SINISA_RESIDUOS_Informacoes_Formulario_Infraestrutura_Unidades_de_Processamento_e_Tratamento_%s.xlsx", year)
-  print(fname)
   df <- readxl::read_excel(file.path(path, folder, fname), sheet = "Proces_Trat_entradas_residuos", skip = 12)
   df <- dplyr::select(df, c("GTR3120*", "GTR3101*", "Cod_IBGE"))
   df <- dplyr::rename(
@@ -263,6 +262,32 @@ residuos_preprocess <- function(year) {
   return(df)
 }
 
+#' Aguas Pluviais Pre-processing
+#' Read the SINISA rainwater data and process it into a data frame.
+#'
+#' @param year Year of the data to process (e.g., 2022)
+#'
+#' @return A data frame containing the processed rainwater data
+#' @export
+aguas_pluviais_preprocess <- function(year) {
+  path <- file.path(base_path, year)
+  file_name <- sprintf("SINISA_AGUASPLUVIAIS_Informacoes_Formularios_Tecnicos_%s.xlsx", year)
+  file_path <- file.path(path, file_name)
+  df <- readxl::read_excel(file_path, sheet = "Dados Operacionais", skip = 10)
+  df <- dplyr::select(df, c("Cod_IBGE", "GAP0102*"))
+  df <- dplyr::rename(
+    df,
+    codigo_municipio = "Cod_IBGE",
+    tem_cadastro_tecnico = "GAP0102*"
+  )
+  print(df)
+  df <- dplyr::mutate(df,
+    codigo_municipio = as.character(codigo_municipio),
+    tem_cadastro_tecnico = ifelse(tem_cadastro_tecnico == "Integral", "Sim", "Não")
+  )
+  return(df)
+}
+
 #' SINISA Pre-processing
 #' Reads the downloaded SINISA files and preprocess them into csv files
 #'
@@ -274,11 +299,28 @@ preprocess_sinisa_data <- function(year) {
     dir.create(base_path_processed, recursive = TRUE)
   }
   agua <- agua_preprocess(year)
-  readr::write_csv(agua, file.path(base_path_processed, sprintf("agua_sinisa_%s.csv", year)), quote = "needed", append = FALSE, )
+  readr::write_csv(agua,
+    file.path(base_path_processed, sprintf("agua_sinisa_%s.csv", year)),
+    quote = "needed", append = FALSE
+  )
   esgoto <- esgoto_preprocess(year)
-  readr::write_csv(esgoto, file.path(base_path_processed, sprintf("esgoto_sinisa_%s.csv", year)), quote = "needed", append = FALSE, )
+  readr::write_csv(esgoto,
+    file.path(base_path_processed, sprintf("esgoto_sinisa_%s.csv", year)),
+    quote = "needed", append = FALSE
+  )
   residuos <- residuos_preprocess(year)
-  readr::write_csv(residuos, file.path(base_path_processed, sprintf("residuos_sinisa_%s.csv", year)), quote = "needed", append = FALSE, )
+  readr::write_csv(residuos,
+    file.path(base_path_processed, sprintf("residuos_sinisa_%s.csv", year)),
+    quote = "needed", append = FALSE
+  )
+  aguas_pluviais <- aguas_pluviais_preprocess(year)
+  readr::write_csv(aguas_pluviais,
+    file.path(
+      base_path_processed,
+      sprintf("aguas_pluviais_sinisa_%s.csv", year)
+    ),
+    quote = "needed", append = FALSE
+  )
   return(NULL)
 }
 
@@ -290,10 +332,11 @@ preprocess_sinisa_data <- function(year) {
 #' @return Data frame com os dados do SINISA
 #' @export
 carrega_dados_sinisa <- function(componente, ano) {
-  if (!componente %in% c("agua", "esgoto", "residuos")) {
-    stop("Componente deve ser 'agua', 'esgoto' ou 'residuos'")
+  if (!componente %in% c("agua", "esgoto", "residuos", "aguas_pluviais")) {
+    stop("Componente deve ser 'agua', 'esgoto', 'residuos' ou 'aguas_pluviais'")
   }
   file_path <- file.path(base_path_processed, sprintf("%s_sinisa_%s.csv", componente, ano))
+  print(file_path)
   if (!file.exists(file_path)) {
     rlog::log_warn(file_path)
     download_sinisa(ano)
