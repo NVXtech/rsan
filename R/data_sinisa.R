@@ -62,6 +62,7 @@ agua_preprocess <- function(year) {
     volume_agua_consumido_dam3_ano = "GTA1211"
   )
   df <- dplyr::mutate(df,
+    codigo_municipio = as.character(codigo_municipio),
     atendimento_tot_agua_hab = atendimento_urb_agua_hab + atendimento_rural_agua_hab,
   )
   return(df)
@@ -93,6 +94,7 @@ esgoto_preprocess <- function(year) {
     volume_esgoto_tratado_dam3_ano = "GTE1014",
   )
   df <- dplyr::mutate(df,
+    codigo_municipio = as.character(codigo_municipio),
     atendimento_tot_esgoto_hab = atendimento_urb_esgoto_hab + atendimento_rural_esgoto_hab,
   )
   return(df)
@@ -103,7 +105,7 @@ esgoto_preprocess <- function(year) {
 #'
 #' @param year Year of the data to process (e.g., 2022)
 #'
-#' @return A data frame containing the processed waste coverage data
+#' @return A data frame containing the processed waste coverage date
 residuos_cobertura_preprocess <- function(year) {
   path <- file.path(base_path, year)
   folder <- sprintf("SINISA_RESIDUOS_Planilhas_%s", year) # Folder where user unrar the rar file
@@ -139,6 +141,10 @@ residuos_destinacao_preprocess <- function(year) {
   )
   # remove all non-numeric characters from GTR3226
   df <- dplyr::mutate(df, GTR3226 = gsub("[^0-9]", "", GTR3226))
+  # group by codigo_municipio and concatenate GTR3226
+  df <- dplyr::group_by(df, codigo_municipio)
+  df <- dplyr::summarise(df, GTR3226 = paste(GTR3226, collapse = " "))
+  df <- dplyr::ungroup(df)
   df <- dplyr::mutate(df, tem_pesagem = ifelse(grepl("[2-7]", GTR3226), "Sim", "Não"))
   df <- dplyr::select(df, c("codigo_municipio", "tem_pesagem"))
   return(df)
@@ -195,7 +201,7 @@ residuos_manejo_preprocess <- function(year) {
   df_veiculos <- dplyr::rename(
     df_veiculos, c(
       quantidade_caminhoes_basculantes = "Caminhão basculante, baú ou carroceria",
-      quantidade_caminhoes_compactores = "Caminhão compactador"
+      quantidade_caminhoes_compactadores = "Caminhão compactador"
     )
   )
   df <- dplyr::full_join(df_manejo, df_seletiva, by = "codigo_municipio")
@@ -242,6 +248,18 @@ residuos_preprocess <- function(year) {
   df <- dplyr::full_join(residuos_cobertura_preprocess(year), residuos_destinacao_preprocess(year), by = "codigo_municipio")
   df <- dplyr::full_join(df, residuos_manejo_preprocess(year), by = "codigo_municipio")
   df <- dplyr::full_join(df, residuos_unidades_preprocess(year), by = "codigo_municipio")
+  df <- dplyr::mutate(df,
+    codigo_municipio = as.character(codigo_municipio),
+    atendimento_coleta_indiferenciada_hab = as.numeric(atendimento_coleta_indiferenciada_hab),
+    atendimento_coleta_seletiva_hab = as.numeric(atendimento_coleta_seletiva_hab),
+    tem_pesagem = as.character(tem_pesagem),
+    tem_coleta_seletiva = as.character(tem_coleta_seletiva),
+    residuo_coletado_ton_ano = as.numeric(residuo_coletado_ton_ano),
+    residuo_recuperado_ton_ano = as.numeric(residuo_recuperado_ton_ano),
+    quantidade_caminhoes_basculantes = as.numeric(quantidade_caminhoes_basculantes),
+    quantidade_caminhoes_compactadores = as.numeric(quantidade_caminhoes_compactadores),
+    residuo_compostagem_ton_ano = as.numeric(residuo_compostagem_ton_ano)
+  )
   return(df)
 }
 
@@ -256,11 +274,11 @@ preprocess_sinisa_data <- function(year) {
     dir.create(base_path_processed, recursive = TRUE)
   }
   agua <- agua_preprocess(year)
-  write.csv(agua, file.path(base_path_processed, sprintf("agua_sinisa_%s.csv", year)), row.names = FALSE)
+  readr::write_csv(agua, file.path(base_path_processed, sprintf("agua_sinisa_%s.csv", year)), quote = "needed", append = FALSE, )
   esgoto <- esgoto_preprocess(year)
-  write.csv(esgoto, file.path(base_path_processed, sprintf("esgoto_sinisa_%s.csv", year)), row.names = FALSE)
+  readr::write_csv(esgoto, file.path(base_path_processed, sprintf("esgoto_sinisa_%s.csv", year)), quote = "needed", append = FALSE, )
   residuos <- residuos_preprocess(year)
-  write.csv(residuos, file.path(base_path_processed, sprintf("residuos_sinisa_%s.csv", year)), row.names = FALSE)
+  readr::write_csv(residuos, file.path(base_path_processed, sprintf("residuos_sinisa_%s.csv", year)), quote = "needed", append = FALSE, )
   return(NULL)
 }
 
@@ -277,9 +295,10 @@ carrega_dados_sinisa <- function(componente, ano) {
   }
   file_path <- file.path(base_path_processed, sprintf("%s_sinisa_%s.csv", componente, ano))
   if (!file.exists(file_path)) {
-    stop(sprintf("Arquivo %s não encontrado", file_path))
+    rlog::log_warn(file_path)
+    download_sinisa(ano)
+    preprocess_sinisa_data(ano)
   }
-  # use fread to read the csv file
-  df <- data.table::fread(file_path)
+  df <- readr::read_csv(file_path, col_types = "c")
   return(df)
 }
