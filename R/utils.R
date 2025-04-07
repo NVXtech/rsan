@@ -13,19 +13,19 @@
 #' input <- dplyr::tibble(faixa, valor)
 #' output <- soma_por_faixa(input)
 soma_por_faixa <- function(tabela, campo_faixa = "faixa") {
-    tabela <- dplyr::group_by(tabela, .data[[campo_faixa]])
-    tabela <-
-        dplyr::summarise(tabela,
-            dplyr::across(where(is.numeric), \(x) sum(x, na.rm = TRUE)),
-            dplyr::across(
-                where(is.character),
-                \(x) ifelse(length(unique(x)) == 1 &
-                    length(x) >= 1, dplyr::first(x), NA)
-            ),
-            .groups = "drop"
-        )
-    tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
-    return(tabela)
+  tabela <- dplyr::group_by(tabela, .data[[campo_faixa]])
+  tabela <-
+    dplyr::summarise(tabela,
+      dplyr::across(where(is.numeric), \(x) sum(x, na.rm = TRUE)),
+      dplyr::across(
+        where(is.character),
+        \(x) ifelse(length(unique(x)) == 1 &
+          length(x) >= 1, dplyr::first(x), NA)
+      ),
+      .groups = "drop"
+    )
+  tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
+  return(tabela)
 }
 
 
@@ -44,20 +44,20 @@ soma_por_faixa <- function(tabela, campo_faixa = "faixa") {
 #' input <- dplyr::tibble(faixa, valor)
 #' output <- media_por_faixa(input)
 media_por_faixa <- function(tabela, campo_faixa = "faixa") {
-    tabela <-
-        dplyr::group_by(tabela, .data[[campo_faixa]])
-    tabela <-
-        dplyr::summarise(tabela,
-            dplyr::across(where(is.numeric), \(x) mean(x, na.rm = TRUE)),
-            dplyr::across(
-                where(is.character),
-                \(x) ifelse(length(unique(x)) == 1 &
-                    length(x) >= 1, dplyr::first(x), NA)
-            ),
-            .groups = "drop"
-        )
-    tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
-    return(tabela)
+  tabela <-
+    dplyr::group_by(tabela, .data[[campo_faixa]])
+  tabela <-
+    dplyr::summarise(tabela,
+      dplyr::across(where(is.numeric), \(x) mean(x, na.rm = TRUE)),
+      dplyr::across(
+        where(is.character),
+        \(x) ifelse(length(unique(x)) == 1 &
+          length(x) >= 1, dplyr::first(x), NA)
+      ),
+      .groups = "drop"
+    )
+  tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
+  return(tabela)
 }
 
 #' Soma dados agrupados pelo valor de um determinado campo
@@ -70,19 +70,19 @@ media_por_faixa <- function(tabela, campo_faixa = "faixa") {
 #' @return a mesma tabela de entrada mais agrupada pelo campo
 #' @export
 somar_por_campo <- function(tabela, campo) {
-    tabela <- dplyr::group_by(tabela, .data[[campo]])
-    tabela <- dplyr::summarise(
-        tabela,
-        dplyr::across(where(is.numeric), \(x) sum(x, na.rm = TRUE)),
-        dplyr::across(
-            where(is.character),
-            \(x) ifelse(length(unique(x)) == 1 &
-                length(x) >= 1, dplyr::first(x), NA)
-        ),
-        .groups = "drop"
-    )
-    tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
-    return(tabela)
+  tabela <- dplyr::group_by(tabela, .data[[campo]])
+  tabela <- dplyr::summarise(
+    tabela,
+    dplyr::across(where(is.numeric), \(x) sum(x, na.rm = TRUE)),
+    dplyr::across(
+      where(is.character),
+      \(x) ifelse(length(unique(x)) == 1 &
+        length(x) >= 1, dplyr::first(x), NA)
+    ),
+    .groups = "drop"
+  )
+  tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
+  return(tabela)
 }
 
 
@@ -96,19 +96,19 @@ somar_por_campo <- function(tabela, campo) {
 #' @return tabela contendo a média de todas variáveis por faixa populacional
 #' @export
 cria_faixas_vazias <- function(tabela, nome_grupo = "estado") {
-    tabela <- dplyr::group_by(tabela, .data[[nome_grupo]])
-    cria_faixas <- function(group, group_name) {
-        faixas_faltantes <- 1:7
-        faixas_faltantes <- faixas_faltantes[!faixas_faltantes %in% group$faixa]
-        for (faixa in faixas_faltantes) {
-            group <- dplyr::add_row(group, faixa = faixa)
-        }
-        group <- tidyr::fill(group, where(is.character), .direction = "downup")
-        return(group)
+  tabela <- dplyr::group_by(tabela, .data[[nome_grupo]])
+  cria_faixas <- function(group, group_name) {
+    faixas_faltantes <- 1:7
+    faixas_faltantes <- faixas_faltantes[!faixas_faltantes %in% group$faixa]
+    for (faixa in faixas_faltantes) {
+      group <- dplyr::add_row(group, faixa = faixa)
     }
-    tabela <- dplyr::group_modify(tabela, cria_faixas)
-    tabela <- dplyr::ungroup(tabela)
-    return(tabela)
+    group <- tidyr::fill(group, where(is.character), .direction = "downup")
+    return(group)
+  }
+  tabela <- dplyr::group_modify(tabela, cria_faixas)
+  tabela <- dplyr::ungroup(tabela)
+  return(tabela)
 }
 
 
@@ -136,22 +136,22 @@ cria_faixas_vazias <- function(tabela, nome_grupo = "estado") {
 #' input <- dplyr::tibble(POP_TOT)
 #' output <- classifica_faixa_populacional(input, limites)
 classifica_faixa_populacional <-
-    function(tabela,
-             limites,
-             campo_populacao = "POP_TOT",
-             campo_faixa = "faixa") {
-        tabela <-
-            dplyr::mutate(tabela,
-                faixa = findInterval(
-                    tabela[[campo_populacao]],
-                    limites,
-                    rightmost.closed = TRUE,
-                    left.open = TRUE
-                )
-            )
-        colnames(tabela)[colnames(tabela) == "faixa"] <- campo_faixa
-        return(tabela)
-    }
+  function(tabela,
+           limites,
+           campo_populacao = "populacao_total_corrente",
+           campo_faixa = "faixa") {
+    tabela <-
+      dplyr::mutate(tabela,
+        faixa = findInterval(
+          tabela[[campo_populacao]],
+          limites,
+          rightmost.closed = TRUE,
+          left.open = TRUE
+        )
+      )
+    colnames(tabela)[colnames(tabela) == "faixa"] <- campo_faixa
+    return(tabela)
+  }
 
 
 #' Soma todas as variáveis numéricas agrupando por estado e faixa populacional
@@ -170,20 +170,20 @@ classifica_faixa_populacional <-
 #' input <- dplyr::tibble(Estado, faixa, valor)
 #' output <- soma_por_estado_faixa(input)
 soma_por_estado_faixa <- function(tabela,
-                                  campo_estado = "Estado",
+                                  campo_estado = "estado",
                                   campo_faixa = "faixa") {
-    tabela <- dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
-    tabela <- dplyr::summarise(tabela,
-        dplyr::across(where(is.numeric), \(x) sum(x, na.rm = TRUE)),
-        dplyr::across(
-            where(is.character),
-            \(x) ifelse(length(unique(x)) == 1 &
-                length(x) >= 1, dplyr::first(x), NA)
-        ),
-        .groups = "drop"
-    )
-    tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
-    return(tabela)
+  tabela <- dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
+  tabela <- dplyr::summarise(tabela,
+    dplyr::across(where(is.numeric), \(x) sum(x, na.rm = TRUE)),
+    dplyr::across(
+      where(is.character),
+      \(x) ifelse(length(unique(x)) == 1 &
+        length(x) >= 1, dplyr::first(x), NA)
+    ),
+    .groups = "drop"
+  )
+  tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
+  return(tabela)
 }
 
 
@@ -203,16 +203,16 @@ soma_por_estado_faixa <- function(tabela,
 #' input <- dplyr::tibble(Estado, faixa, valor)
 #' output <- conta_municipios_por_estado_faixa(input)
 conta_municipios_por_estado_faixa <- function(tabela,
-                                              campo_estado = "Estado",
+                                              campo_estado = "estado",
                                               campo_faixa = "faixa") {
-    tabela <-
-        dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
-    tabela <-
-        dplyr::summarise(tabela,
-            numero_municipios = dplyr::n(),
-            .groups = "drop"
-        )
-    return(tabela)
+  tabela <-
+    dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
+  tabela <-
+    dplyr::summarise(tabela,
+      numero_municipios = dplyr::n(),
+      .groups = "drop"
+    )
+  return(tabela)
 }
 
 
@@ -235,22 +235,22 @@ conta_municipios_por_estado_faixa <- function(tabela,
 #' input <- dplyr::tibble(Estado, faixa, valor)
 #' output <- media_por_estado_faixa(input)
 media_por_estado_faixa <- function(tabela,
-                                   campo_estado = "Estado",
+                                   campo_estado = "estado",
                                    campo_faixa = "faixa") {
-    tabela <-
-        dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
-    tabela <-
-        dplyr::summarise(tabela,
-            dplyr::across(where(is.numeric), \(x) mean(x, na.rm = TRUE)),
-            dplyr::across(
-                where(is.character),
-                \(x) ifelse(length(unique(x)) == 1 &
-                    length(x) >= 1, dplyr::first(x), NA)
-            ),
-            .groups = "drop"
-        )
-    tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
-    return(tabela)
+  tabela <-
+    dplyr::group_by(tabela, .data[[campo_estado]], .data[[campo_faixa]])
+  tabela <-
+    dplyr::summarise(tabela,
+      dplyr::across(where(is.numeric), \(x) mean(x, na.rm = TRUE)),
+      dplyr::across(
+        where(is.character),
+        \(x) ifelse(length(unique(x)) == 1 &
+          length(x) >= 1, dplyr::first(x), NA)
+      ),
+      .groups = "drop"
+    )
+  tabela <- tabela[, colSums(is.na(tabela)) < nrow(tabela)]
+  return(tabela)
 }
 
 #' Remove items com classes shiny
@@ -266,11 +266,11 @@ media_por_estado_faixa <- function(tabela,
 #' a <- list()
 #' remove_shiny_classes(a)
 remove_shiny_classes <- function(lista) {
-    for (name in names(lista)) {
-        is_shiny_class <- any(grepl("shiny", class(lista[[name]])))
-        if (is_shiny_class) {
-            lista[[name]] <- NULL
-        }
+  for (name in names(lista)) {
+    is_shiny_class <- any(grepl("shiny", class(lista[[name]])))
+    if (is_shiny_class) {
+      lista[[name]] <- NULL
     }
-    return(lista)
+  }
+  return(lista)
 }
