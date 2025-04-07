@@ -1,6 +1,5 @@
 #' Necessidade de Investimento - Componente Água - Situação Urbana
-
-snis_fields <- c(
+agua_required_fields <- c(
   "codigo_municipio",
   "atendimento_tot_agua_hab",
   "extensao_rede_agua_km",
