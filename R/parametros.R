@@ -26,7 +26,7 @@ salva_parametros <- function(state, input, name) {
 
 geral <- list(
   ano = 2033,
-  ano_corrente = 2022
+  ano_corrente = 2023
 )
 
 projecao <- list(
@@ -102,7 +102,7 @@ valores_triagem <- c(
 
 residuos <- list(
   snis = "snis_2022",
-  snis_rs = "ano2022",
+  snis_rs = "ano2023",
 
   # coleta comum
   valor_caminhao = 484709.23,
