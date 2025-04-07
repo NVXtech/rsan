@@ -60,9 +60,9 @@ investimento_drenagem <- function(state) {
   ano_final <- state$input$geral$ano
   ano_corrente <- state$input$geral$ano_corrente
   depreciacao <- depreciacao_para_vida_util(input$deprec_drenagem)
-  rlog::log_info(sprintf("Drenagem anoi=%s anof=%s", ano_inicial, ano_final))
+  rlog::log_info(sprintf("drenagem anoi=%s anof=%s", ano_inicial, ano_final))
   tabela <- load_snis_ap(input$snis_ap)
-  tabela <- adiciona_populacao_urbana_corrente(state$projecao, ano_corrente, tabela)
+  tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
   tabela <- adiciona_projecao_populacao(state$projecao, ano_final, tabela)
   tabela <- area_urbana(tabela)
   tabela <- densidade_urbana(tabela)
@@ -103,7 +103,7 @@ residuos_snis_fields <- c(
   "CO164", "CO050", "CO119", "CO021", "CS026",
   "CO054", "CO055", "CO056", "CO057", "CO058", "CO059",
   "CO063", "CO064", "CO065", "CO066", "CO067", "CO068",
-  "CS001", "CS009", "CS050"
+  "CS001", "residuo_recuperado_ton_ano", "CS050"
 )
 
 
@@ -133,30 +133,28 @@ investimento_residuos <- function(state) {
   preco_unidade_triagem <- tabela_preco_unidade_residuos(input, "triagem")
   vida_util_triagem <- input$vida_util_triagem
 
-  ano_inicial <- nome_para_ano(input$snis_rs) + 1
+  ano_inicial <- nome_para_ano(input$snis_rs)
   ano_final <- ano
-  rlog::log_info(sprintf("Residuos anoi=%s anof=%s", ano_inicial, ano_final))
+  rlog::log_info(sprintf("residuos anoi=%s anof=%s", ano_inicial, ano_final))
   ano_corrente <- state$input$geral$ano_corrente
   cenario_regionalizacao <- "A"
 
-  # Consolida os dados de Unidades de Processamento (SNIS-prestadores)
-  rlog::log_info("residuos: carregando snis-rs data")
-  snis_rs <- load_snis_rs(input$snis_rs)
-  compostagem <- quantidade_compostagem_municipio(snis_rs)
-
   # Consolidação dos dados para classificação
   rlog::log_info("residuos: consolidando dados para classificação")
-  tabela <- get_snis_data(input$snis, residuos_snis_fields)
-  tabela <- adiciona_populacao_urbana_corrente(state$projecao, ano_corrente, tabela)
+  tabela <- carrega_dados_sinisa("residuos", ano_inicial)
+
+  # tabela <- get_snis_data(input$snis, residuos_snis_fields)
+  tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
   tabela <- adiciona_projecao_populacao(state$projecao, ano, tabela)
-  tabela <- dplyr::left_join(tabela, compostagem, by = "codigo_municipio")
   tabela <- adiciona_pais(tabela)
   tabela <- adiciona_estado(tabela)
   tabela <- adiciona_regiao(tabela)
   tabela <- adiciona_tipo_disposicao(tabela)
   tabela <- adiciona_classificacao_litoranea(tabela)
-  tabela <- numero_caminhoes(tabela)
-  tabela <- densidade_caminhoes(tabela)
+
+  # Densidade Veicular (per capita)
+  tabela <- densidade_caminhoes_compactadores(tabela)
+  # densidade_caminhoes_bau(tabela)
 
   # Classificação por faixas populacionais
   rlog::log_info("residuos: classificando por faixa populacional")
@@ -164,9 +162,12 @@ investimento_residuos <- function(state) {
   tabela <- classifica_faixa_populacional(tabela, limites)
 
   # Preenchimentos
+  rlog::log_info("residuos: preenchendo dados - coleta seletiva")
   tabela <- mascara_coleta_seletiva(tabela)
   tabela <- preenche_atendimento_coleta_seletiva(tabela)
+  rlog::log_info("residuos: preenchendo dados - coleta indiferenciada")
   tabela <- preenche_atendimento_coleta_indiferenciada(tabela)
+  rlog::log_info("residuos: preenchendo dados - geracao de residuos")
   tabela <- preenche_taxa_geracao_residuos(tabela)
   tabela <- preenche_quantidade_coletada(tabela)
   tabela <- geracao_residuos(tabela)
