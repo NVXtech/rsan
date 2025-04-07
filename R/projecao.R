@@ -225,20 +225,36 @@ get_populacao <- function(tabela, ano, tipo) {
 #' \dontrun{
 #' df <- adiciona_projecao_populacao(populacao, ano, tabela)
 #' }
-adiciona_populacao_urbana_corrente <- function(populacao, ano, tabela) {
-  pop_urbana <- get_populacao(populacao, ano, "urbana")
-  #rename populacao to popularcao_urbana_corrente
-  pop_urbana <- dplyr::rename(pop_urbana, populacao_urbana_corrente = populacao)
-  pop_urbana <- dplyr::select(pop_urbana, c("codigo_municipio", "populacao_urbana_corrente"))
+adiciona_populacao_corrente <- function(populacao, ano, tabela) {
+  pop <- get_populacao(populacao, ano, "urbana")
+  # rename populacao to popularcao_urbana_corrente
+  pop <- dplyr::rename(pop, populacao_urbana_corrente = populacao)
+  pop <- dplyr::select(pop, c("codigo_municipio", "populacao_urbana_corrente"))
   tabela <- dplyr::full_join(
-    pop_urbana,
+    pop,
+    tabela,
+    by = "codigo_municipio"
+  )
+  pop <- get_populacao(populacao, ano, "total")
+  pop <- dplyr::rename(pop, populacao_total_corrente = populacao)
+  pop <- dplyr::select(pop, c("codigo_municipio", "populacao_total_corrente"))
+  tabela <- dplyr::full_join(
+    pop,
+    tabela,
+    by = "codigo_municipio"
+  )
+  pop <- get_populacao(populacao, ano, "rural")
+  pop <- dplyr::rename(pop, populacao_rural_corrente = populacao)
+  pop <- dplyr::select(pop, c("codigo_municipio", "populacao_rural_corrente"))
+  tabela <- dplyr::full_join(
+    pop,
     tabela,
     by = "codigo_municipio"
   )
   return(tabela)
 }
 
-test_projecao <- function(){
+test_projecao <- function() {
   app_state <- list(input = get_default_input())
   app_state$input$projecao$fonte1 <- "censo_2022"
   app_state$input$projecao$fonte2 <- "estimativa_2024"
@@ -246,7 +262,7 @@ test_projecao <- function(){
   projecao <- app_state$projecao
   projecao <- dplyr::select(projecao, -codigo_municipio)
   projecao <- dplyr::group_by(projecao, ano, tipo_populacao)
-  projecao <- dplyr::summarise(projecao, populacao = sum(populacao, na.rm=TRUE))
+  projecao <- dplyr::summarise(projecao, populacao = sum(populacao, na.rm = TRUE))
   projecao <- dplyr::ungroup(projecao)
   projecao <- tidyr::pivot_wider(projecao, names_from = tipo_populacao, values_from = populacao)
   writexl::write_xlsx(projecao, "projecao_2024.xlsx")
