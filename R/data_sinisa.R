@@ -336,7 +336,6 @@ carrega_dados_sinisa <- function(componente, ano) {
     stop("Componente deve ser 'agua', 'esgoto', 'residuos' ou 'aguas_pluviais'")
   }
   file_path <- file.path(base_path_processed, sprintf("%s_sinisa_%s.csv", componente, ano))
-  print(file_path)
   if (!file.exists(file_path)) {
     rlog::log_warn(file_path)
     download_sinisa(ano)

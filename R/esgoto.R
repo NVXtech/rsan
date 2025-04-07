@@ -1,9 +1,7 @@
 #' Necessidade de Investimento - Componente Esgoto - Situação Urbana
 
-snis_fields <- c(
+esgoto_required_fields <- c(
   "codigo_municipio",
-  "POP_TOT",
-  "Estado",
   "atendimento_tot_agua_hab",
   "extensao_rede_agua_km",
   "volume_agua_produzido_dam3_ano",
@@ -18,7 +16,7 @@ snis_fields <- c(
 #'
 #' @param df um `data.frame` contendo os dados do SNIS e de população
 #' @param meta_esgoto meta em % de atendimento para tratamento de esgoto
-#' @param proporcao proporção da densidade de água que equivale a densiade de esgoto
+#' @param proporcao proporção da densidade de água que equivale a densidade de esgoto
 #'
 #' @return um `data.frame` contendo os dados de deficits e demandas
 #' @export
