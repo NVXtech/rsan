@@ -46,20 +46,21 @@ test_that("calculos estão rodando", {
     "cadastro",
     rep(padrao, 4)
   )
+  # valores rsan 2023
   total <- c(
-    25815.86e6, # agua rural exp
-    2., # agua rural rep
-    65658e6, # agua urbana exp
-    188482e6, # agua urbana rep
-    297359651.08, # drenagem cadastro
-    422170066769.50, # drenagem exp
-    61399.51e6, # drenagem rep
-    34178.37e6, # esgoto rural exp
-    9., # esgoto rural rep
-    153012e6, # esgoto urbano exp
-    5151e6, # esgoto urbano rep
-    28662826813.61, # residuos exp
-    47056263670.93 # residuos rep
+    29859415051., # agua rural exp
+    35103461658., # agua rural rep
+    59395545723., # agua urbana exp
+    117668258473., # agua urbana rep
+    180399640., # drenagem cadastro
+    444239646456., # drenagem exp
+    52509217245., # drenagem rep
+    65755082810., # esgoto rural exp
+    14632907004., # esgoto rural rep
+    145858541196., # esgoto urbano exp
+    107492713114., # esgoto urbano rep
+    27239923848., # residuos exp
+    60402903253. # residuos rep
   )
   expected <- dplyr::tibble(componente, situacao, destino, total)
   relativo <- dplyr::left_join(
