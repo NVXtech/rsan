@@ -665,7 +665,7 @@ tbl_longa_deficit_agua <- function(tabela) {
 #' }
 rodar_modulo_demografico <- function(input, projecao, tema) {
   ano <- input$geral$ano
-  ano_sinisa <- 2023
+  ano_corrente <- input$geral$ano_corrente
   tabela <- base_municipios()
   tabela <- dplyr::left_join(
     tabela,
@@ -679,7 +679,7 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
   )
   rlog::log_info(sprintf("%s: carregado sinisa (%s, %s)", tema, nrow(tabela), ncol(tabela)))
   tabela <- necessidade_agua_esgoto(tabela)
-  tabela <- adiciona_populacao_corrente(projecao, ano_sinisa, tabela)
+  tabela <- adiciona_populacao_corrente(projecao, ano_corrente, tabela)
   rlog::log_info(sprintf("%s: preenchendo dados de densidade", tema))
   tabela <- fill_missing_density(tabela, c(
     "densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"
@@ -780,7 +780,6 @@ capacidade_instalada_agua <- function(snis, custo) {
 #'
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_agua <- function(input, orcamentario) {
-  ano_sinisa <- input$agua$sinisa
   snis_data <- carrega_base_calculo("agua", input$agua$fonte_nome, input$agua$fonte_ano)
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_agua(snis_data, custo)
