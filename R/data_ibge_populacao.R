@@ -73,14 +73,14 @@ get_censo_years <- function() {
 #' @examples
 #' wd <- workspace_dir()
 workspace_dir <- function() {
-  path <- file.path(getwd(),"dados")
-  if (!dir.exists(path)){
+  path <- file.path(getwd(), "dados")
+  if (!dir.exists(path)) {
     dir.create(path)
   }
   subdirs <- c("brutos", "processados", "resultados")
-  for (subdir in subdirs){
+  for (subdir in subdirs) {
     subpath <- file.path(path, subdir)
-    if (!dir.exists(subpath)){
+    if (!dir.exists(subpath)) {
       dir.create(subpath)
     }
   }
@@ -100,39 +100,39 @@ raw_data_dir <- function() {
 #'
 #' @examples
 #' populacao_agrega_municipio(tabela)
-populacao_agrega_municipio <- function(tabela){
+populacao_agrega_municipio <- function(tabela) {
   tabela <- dplyr::select(tabela, codigo_municipio, municipio, situacao, populacao, area_km2, domicilios, atendimento_agua, atendimento_esgoto, atendimento_coleta_lixo)
-  tabela <- dplyr::mutate(tabela, situacao = dplyr::if_else(is.na(situacao), "Rural", situacao))
+  tabela <- dplyr::filter(tabela, !is.na(situacao) & situacao != "")
   tabela <- dplyr::group_by(tabela, codigo_municipio, municipio, situacao)
   tabela <- dplyr::summarise(tabela,
-            populacao = sum(populacao, na.rm=TRUE),
-            area_km2 = sum(area_km2, na.rm=TRUE),
-            domicilios = sum(domicilios, na.rm=TRUE),
-            atendimento_agua = round(sum(atendimento_agua, na.rm=TRUE)),
-            atendimento_esgoto = round(sum(atendimento_esgoto, na.rm=TRUE)),
-            atendimento_coleta_lixo = round(sum(atendimento_coleta_lixo, na.rm=TRUE))
-            )
+    populacao = sum(populacao, na.rm = TRUE),
+    area_km2 = sum(area_km2, na.rm = TRUE),
+    domicilios = sum(domicilios, na.rm = TRUE),
+    atendimento_agua = round(sum(atendimento_agua, na.rm = TRUE)),
+    atendimento_esgoto = round(sum(atendimento_esgoto, na.rm = TRUE)),
+    atendimento_coleta_lixo = round(sum(atendimento_coleta_lixo, na.rm = TRUE))
+  )
   tabela <- dplyr::ungroup(tabela)
-  tabela <- tidyr::pivot_wider(tabela, names_from = situacao, values_from = c(populacao, area_km2, domicilios, atendimento_agua, atendimento_esgoto, atendimento_coleta_lixo), values_fill=0)
-  #convert all col names to lowercase
+  tabela <- tidyr::pivot_wider(tabela, names_from = situacao, values_from = c(populacao, area_km2, domicilios, atendimento_agua, atendimento_esgoto, atendimento_coleta_lixo), values_fill = 0)
+  # convert all col names to lowercase
   names(tabela) <- tolower(names(tabela))
   tabela <- dplyr::mutate(tabela,
-            populacao_rural = dplyr::if_else(is.na(populacao_rural), 0, populacao_rural),
-            populacao_urbana = dplyr::if_else(is.na(populacao_urbana), 0, populacao_urbana),
-            )
+    populacao_rural = dplyr::if_else(is.na(populacao_rural), 0, populacao_rural),
+    populacao_urbana = dplyr::if_else(is.na(populacao_urbana), 0, populacao_urbana),
+  )
   tabela <- dplyr::mutate(tabela,
-            populacao_total = populacao_rural+populacao_urbana,
-            domicilios_total = domicilios_rural+domicilios_urbana,
-            area_km2_total = area_km2_rural+area_km2_urbana,
-            atendimento_agua_total = atendimento_agua_rural+atendimento_agua_urbana,
-            atendimento_esgoto_total = atendimento_esgoto_rural+atendimento_esgoto_urbana,
-            atendimento_coleta_lixo_total = atendimento_coleta_lixo_rural+atendimento_coleta_lixo_urbana,
-            codigo_municipio = as.character(codigo_municipio),
-            )
+    codigo_municipio = as.character(codigo_municipio),
+    populacao_total = populacao_rural + populacao_urbana,
+    domicilios_total = domicilios_rural + domicilios_urbana,
+    area_km2_total = area_km2_rural + area_km2_urbana,
+    atendimento_tot_agua_hab = atendimento_agua_rural + atendimento_agua_urbana,
+    atendimento_tot_esgoto_hab = atendimento_esgoto_rural + atendimento_esgoto_urbana,
+    atendimento_coleta_indiferenciada_hab = atendimento_coleta_lixo_rural + atendimento_coleta_lixo_urbana,
+  )
   return(tabela)
 }
 
-#´ Cria conjunto de indicadores domícilos IBGE 2022
+# ´ Cria conjunto de indicadores domícilos IBGE 2022
 #'
 #' @return um `data.frame` com o índice de atendimento de água, esgoto e resíduos sólidos
 censo_2022_atendimento <- function() {
@@ -149,27 +149,28 @@ censo_2022_atendimento <- function() {
     rlog::log_info(sprintf("Renaming %s", lista[1]))
     file.rename(file.path(dirname(dest), lista[1]), dest)
   }
-  tabela <- data.table::fread(dest, dec=',',integer64='double', na.strings = 'X')
+  tabela <- data.table::fread(dest, dec = ",", integer64 = "double", na.strings = "X")
   tabela <- dplyr::select(tabela, CD_setor, V00508, V00509, V00510, V00511, V00513, V00540, V00580, V00581, V00582, V00612, V00613)
   tabela <- dplyr::mutate_if(tabela, is.character, as.double)
   tabela <- dplyr::mutate_all(tabela, \(x) dplyr::if_else(is.na(x), 0, x))
   tabela <- dplyr::mutate(tabela,
-            atendimento_agua=V00508+V00509+V00510+V00511+V00513,
-            atendimento_encanada=V00540,
-            atendimento_esgoto=V00580+V00581+V00582,
-            atendimento_coleta_lixo=V00612+V00613)
-  tabela <- dplyr::mutate(tabela, atendimento_agua = pmin(atendimento_agua, atendimento_encanada, na.rm=TRUE))
+    atendimento_agua = V00508 + V00509 + V00510 + V00511 + V00513,
+    atendimento_encanada = V00540,
+    atendimento_esgoto = V00580 + V00581 + V00582,
+    atendimento_coleta_lixo = V00612 + V00613
+  )
+  tabela <- dplyr::mutate(tabela, atendimento_agua = pmin(atendimento_agua, atendimento_encanada, na.rm = TRUE))
   tabela <- dplyr::select(tabela, c(CD_setor, atendimento_agua, atendimento_esgoto, atendimento_coleta_lixo))
-return(tabela)
+  return(tabela)
 }
 
 adiciona_atendimento <- function(tabela) {
   atendimento <- censo_2022_atendimento()
-  tabela <- dplyr::left_join(tabela, atendimento, by="CD_setor")
+  tabela <- dplyr::left_join(tabela, atendimento, by = "CD_setor")
   return(tabela)
 }
 
-#´ Cria conjunto de dados populacionais do censo IBGE 2022
+# ´ Cria conjunto de dados populacionais do censo IBGE 2022
 #'
 #' @return um `data.frame` com a estimativa populacional pelo Censo
 #' @export
@@ -177,8 +178,8 @@ adiciona_atendimento <- function(tabela) {
 #' @examples
 #' censo_2022()
 censo_2022 <- function() {
-  url <- "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_xlsx/Agregados_por_setores_basico_BR.zip"
-  dest <- file.path(raw_data_dir(), "ibge", "censo", "censo_2022.xlsx")
+  url <- "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR.zip"
+  dest <- file.path(raw_data_dir(), "ibge", "censo", "censo_2022_basico.csv")
   if (!file.exists(dest)) {
     if (!dir.exists(dirname(dest))) {
       dir.create(dirname(dest), recursive = TRUE)
@@ -190,12 +191,18 @@ censo_2022 <- function() {
     rlog::log_info(sprintf("Renaming %s", lista[1]))
     file.rename(file.path(dirname(dest), lista[1]), dest)
   }
-  tabela <- readxl::read_xlsx(dest)
-  tabela <- dplyr::select(tabela, CD_SETOR, CD_MUN, NM_MUN, SITUACAO, v0001, AREA_KM2, v0007 )
-  labels <- c("CD_setor","codigo_municipio", "municipio", "situacao", "populacao", "area_km2", "domicilios")
-  names(tabela) <- labels
+  tabela <- data.table::fread(dest, dec = ",", integer64 = "double", na.strings = "X")
+  tabela <- dplyr::select(tabela, CD_SETOR, CD_MUN, NM_MUN, SITUACAO, v0001, AREA_KM2, v0007)
+  tabela <- dplyr::rename(tabela,
+    CD_setor = CD_SETOR,
+    codigo_municipio = CD_MUN,
+    municipio = NM_MUN,
+    situacao = SITUACAO,
+    populacao = v0001,
+    area_km2 = AREA_KM2,
+    domicilios = v0007
+  )
   tabela <- adiciona_atendimento(tabela)
-  print(names(tabela))
   tabela <- populacao_agrega_municipio(tabela)
   return(tabela)
 }
