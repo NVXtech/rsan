@@ -61,10 +61,12 @@ investimento_drenagem <- function(state) {
   ano_corrente <- state$input$geral$ano_corrente
   depreciacao <- depreciacao_para_vida_util(input$deprec_drenagem)
   rlog::log_info(sprintf("drenagem anoi=%s anof=%s", ano_inicial, ano_final))
-  tabela <- carrega_dados_sinisa("aguas_pluviais", input$sinisa)
-  tabela <- adiciona_pais(tabela)
-  tabela <- adiciona_estado(tabela)
-  tabela <- adiciona_regiao(tabela)
+  tabela <- base_municipios()
+  tabela <- dplyr::left_join(
+    tabela,
+    carrega_base_calculo("aguas_pluviais", input$fonte_nome, input$fonte_ano),
+    by = "codigo_municipio"
+  )
   tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
   tabela <- adiciona_projecao_populacao(state$projecao, ano_final, tabela)
   tabela <- area_urbana(tabela)
@@ -90,7 +92,6 @@ investimento_drenagem <- function(state) {
   )
   tabela <- investimento_cadastro(tabela, input$custo_cadastro)
   tabela <- investimento_total_drenagem(tabela)
-  tabela <- adiciona_pais(tabela)
   rlog::log_info("drenagem: removendo não críticos")
   tabela <- remove_nao_criticos(tabela)
   state$drenagem <- tabela
@@ -128,7 +129,7 @@ investimento_residuos <- function(state) {
   preco_unidade_triagem <- tabela_preco_unidade_residuos(input, "triagem")
   vida_util_triagem <- input$vida_util_triagem
 
-  ano_inicial <- input$sinisa
+  ano_inicial <- input$fonte_ano + 1
   ano_final <- ano
   rlog::log_info(sprintf("residuos anoi=%s anof=%s", ano_inicial, ano_final))
   ano_corrente <- state$input$geral$ano_corrente
@@ -136,12 +137,14 @@ investimento_residuos <- function(state) {
 
   # Consolidação dos dados para classificação
   rlog::log_info("residuos: consolidando dados para classificação")
-  tabela <- carrega_dados_sinisa("residuos", ano_inicial)
+  tabela <- base_municipios()
+  tabela <- dplyr::left_join(
+    tabela,
+    carrega_base_calculo("residuos", input$fonte_nome, input$fonte_ano),
+    by = "codigo_municipio"
+  )
   tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
   tabela <- adiciona_projecao_populacao(state$projecao, ano, tabela)
-  tabela <- adiciona_pais(tabela)
-  tabela <- adiciona_estado(tabela)
-  tabela <- adiciona_regiao(tabela)
   tabela <- adiciona_tipo_disposicao(tabela)
   tabela <- adiciona_classificacao_litoranea(tabela)
 

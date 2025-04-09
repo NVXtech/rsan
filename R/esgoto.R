@@ -3,11 +3,10 @@
 esgoto_required_fields <- c(
   "codigo_municipio",
   "atendimento_tot_agua_hab",
+  "atendimento_urb_agua_hab",
   "extensao_rede_agua_km",
   "volume_agua_produzido_dam3_ano",
   "volume_agua_consumido_dam3_ano",
-  "atendimento_urb_agua_hab",
-  "atendimento_tot_esgoto_hab",
   "extensao_rede_esgoto_km",
   "volume_esgoto_tratado_dam3_ano",
   "volume_esgoto_tratado_dam3_ano"
@@ -27,11 +26,11 @@ esgoto_required_fields <- c(
 #' }
 calculate_demografico_esgoto <- function(df, meta_esgoto, proporcao) {
   df$atendimento_tot_esgoto_hab[is.na(df$atendimento_tot_esgoto_hab)] <- 0
-  df$volume_esgoto_tratado_dam3_ano[is.na(df$volume_esgoto_tratado_dam3_ano)] <- 0
+  df$atendimento_urb_esgoto_hab[is.na(df$atendimento_urb_esgoto_hab)] <- 0
   df <- dplyr::mutate(
     df,
     deficit_total = pmax(populacao_total - atendimento_tot_esgoto_hab, 0.0),
-    deficit_urbana = pmax(populacao_urbana - volume_esgoto_tratado_dam3_ano, 0.0),
+    deficit_urbana = pmax(populacao_urbana - atendimento_urb_esgoto_hab, 0.0),
     deficit_rural = pmax(deficit_total - deficit_urbana, 0.0),
     densidade_tratamento_esgoto = proporcao / 100.0 * densidade_producao_agua,
     demanda_coleta_esgoto = meta_esgoto / 100.0 * deficit_urbana * densidade_coleta_esgoto,
@@ -337,7 +336,7 @@ capacidade_instalada_esgoto <- function(snis, custo) {
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
   ano_sinisa <- input$esgoto$sinisa
-  snis_data <- carrega_dados_sinisa("esgoto", ano_sinisa)
+  snis_data <- carrega_base_calculo("esgoto", input$esgoto$fonte_nome, input$esgoto$fonte_ano)
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_esgoto(snis_data, custo)
   ano_final <- input$geral$ano

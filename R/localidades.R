@@ -123,3 +123,18 @@ codigo6_para_codigo_ibge <- function(tabela, nome_campo) {
   municipio <- dplyr::select(municipio, "codigo6", "codigo_municipio")
   tabela <- dplyr::left_join(tabela, municipio, by = c("Código" = "codigo6"))
 }
+
+
+#' Cria tabela de localidades
+#'
+#' Carrega a tabela de localidades do pacote rsan e retorna uma tabela com os campos
+#' `codigo_municipio`, `codigo_localidade`, `localidade`, `estado` e `pais`.
+#'
+#' @return tabela com as localidades
+#' @export
+base_municipios <- function() {
+  data(municipio, package = "rsan")
+  municipio <- dplyr::rename(municipio, estado_nome = estado, estado = estado_sigla)
+  municipio <- adiciona_pais(municipio)
+  return(municipio)
+}

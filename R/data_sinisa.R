@@ -280,7 +280,6 @@ aguas_pluviais_preprocess <- function(year) {
     codigo_municipio = "Cod_IBGE",
     tem_cadastro_tecnico = "GAP0102*"
   )
-  print(df)
   df <- dplyr::mutate(df,
     codigo_municipio = as.character(codigo_municipio),
     tem_cadastro_tecnico = ifelse(tem_cadastro_tecnico == "Integral", "Sim", "Não")
@@ -295,52 +294,21 @@ aguas_pluviais_preprocess <- function(year) {
 #'
 #' @export
 preprocess_sinisa_data <- function(year) {
-  if (!dir.exists(base_path_processed)) {
-    dir.create(base_path_processed, recursive = TRUE)
-  }
-  agua <- agua_preprocess(year)
-  readr::write_csv(agua,
-    file.path(base_path_processed, sprintf("agua_sinisa_%s.csv", year)),
-    quote = "needed", append = FALSE
+  salva_base_calculo(
+    agua_preprocess(year),
+    "agua", "sinisa", year
   )
-  esgoto <- esgoto_preprocess(year)
-  readr::write_csv(esgoto,
-    file.path(base_path_processed, sprintf("esgoto_sinisa_%s.csv", year)),
-    quote = "needed", append = FALSE
+  salva_base_calculo(
+    esgoto_preprocess(year),
+    "esgoto", "sinisa", year
   )
-  residuos <- residuos_preprocess(year)
-  readr::write_csv(residuos,
-    file.path(base_path_processed, sprintf("residuos_sinisa_%s.csv", year)),
-    quote = "needed", append = FALSE
+  salva_base_calculo(
+    residuos_preprocess(year),
+    "residuos", "sinisa", year
   )
-  aguas_pluviais <- aguas_pluviais_preprocess(year)
-  readr::write_csv(aguas_pluviais,
-    file.path(
-      base_path_processed,
-      sprintf("aguas_pluviais_sinisa_%s.csv", year)
-    ),
-    quote = "needed", append = FALSE
+  salva_base_calculo(
+    aguas_pluviais_preprocess(year),
+    "aguas_pluviais", "sinisa", year
   )
   return(NULL)
-}
-
-#' Carrega os dados pré-processados do SINISA
-#'
-#' @param componente Componente a ser carregado: "agua", "esgoto" ou "residuos"
-#' @param ano Ano dos dados a serem carregados (e.g., 2022)
-#'
-#' @return Data frame com os dados do SINISA
-#' @export
-carrega_dados_sinisa <- function(componente, ano) {
-  if (!componente %in% c("agua", "esgoto", "residuos", "aguas_pluviais")) {
-    stop("Componente deve ser 'agua', 'esgoto', 'residuos' ou 'aguas_pluviais'")
-  }
-  file_path <- file.path(base_path_processed, sprintf("%s_sinisa_%s.csv", componente, ano))
-  if (!file.exists(file_path)) {
-    rlog::log_warn(file_path)
-    download_sinisa(ano)
-    preprocess_sinisa_data(ano)
-  }
-  df <- readr::read_csv(file_path, col_types = "c")
-  return(df)
 }

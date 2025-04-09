@@ -90,21 +90,21 @@ adiciona_projecao_populacao <- function(populacao, ano, tabela) {
   populacao_urbana <- get_populacao(populacao, ano, "urbana")
   populacao_rural <- get_populacao(populacao, ano, "rural")
 
-  pop <- dplyr::full_join(
+  pop <- dplyr::left_join(
     populacao_total,
     populacao_urbana,
     by = "codigo_municipio",
     suffix = c("_total", "_urbana")
   )
 
-  pop <- dplyr::full_join(pop,
+  pop <- dplyr::left_join(pop,
     populacao_rural,
     by = "codigo_municipio",
   )
   pop <- dplyr::rename(pop, populacao_rural = populacao)
-  tabela <- dplyr::full_join(
-    pop,
+  tabela <- dplyr::left_join(
     tabela,
+    pop,
     by = "codigo_municipio"
   )
   fields_to_remove <- c(
@@ -666,14 +666,20 @@ tbl_longa_deficit_agua <- function(tabela) {
 rodar_modulo_demografico <- function(input, projecao, tema) {
   ano <- input$geral$ano
   ano_sinisa <- 2023
-  agua <- carrega_dados_sinisa("agua", ano_sinisa)
-  esgoto <- carrega_dados_sinisa("esgoto", ano_sinisa)
-  tabela <- dplyr::full_join(agua, esgoto, by = "codigo_municipio")
+  tabela <- base_municipios()
+  tabela <- dplyr::left_join(
+    tabela,
+    carrega_base_calculo("agua", input$agua$fonte_nome, input$agua$fonte_ano),
+    by = "codigo_municipio"
+  )
+  tabela <- dplyr::left_join(
+    tabela,
+    carrega_base_calculo("esgoto", input$agua$fonte_nome, input$agua$fonte_ano),
+    by = "codigo_municipio"
+  )
   rlog::log_info(sprintf("%s: carregado sinisa (%s, %s)", tema, nrow(tabela), ncol(tabela)))
   tabela <- necessidade_agua_esgoto(tabela)
   tabela <- adiciona_populacao_corrente(projecao, ano_sinisa, tabela)
-  rlog::log_info(sprintf("%s: adicionando estado", tema))
-  tabela <- adiciona_estado(tabela)
   rlog::log_info(sprintf("%s: preenchendo dados de densidade", tema))
   tabela <- fill_missing_density(tabela, c(
     "densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"
@@ -775,7 +781,7 @@ capacidade_instalada_agua <- function(snis, custo) {
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_agua <- function(input, orcamentario) {
   ano_sinisa <- input$agua$sinisa
-  snis_data <- carrega_dados_sinisa("agua", ano_sinisa)
+  snis_data <- carrega_base_calculo("agua", input$agua$fonte_nome, input$agua$fonte_ano)
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_agua(snis_data, custo)
   ano_final <- input$geral$ano

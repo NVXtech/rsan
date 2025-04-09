@@ -5,54 +5,53 @@
 #' @return um `data.frame` contendo os dados do SNIS
 #' @export
 download_snis_ap <- function(year) {
-    if (year==2022){
-      snis_base_url <- "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis/produtos-do-snis/diagnosticos/"
-      download_url <- paste0(
-        snis_base_url,
-        sprintf("Planilhas_AP%s.zip", year)
+  if (year == 2022) {
+    snis_base_url <- "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis/produtos-do-snis/diagnosticos/"
+    download_url <- paste0(
+      snis_base_url,
+      sprintf("Planilhas_AP%s.zip", year)
+    )
+  } else {
+    snis_base_url <- "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis/produtos-do-snis/diagnosticos/Planilhas_AP2021.zip"
+    download_url <- paste0(
+      snis_base_url,
+      sprintf("%s/Planilhas_AP%s.zip", year, year)
+    )
+  }
+  temp_zipfile <- tempfile(fileext = ".zip")
+  tmp_dir <- tempdir(check = TRUE)
+  curl::curl_download(download_url, temp_zipfile)
+  if (file.exists(temp_zipfile)) {
+    try(
+      files_zip <- utils::unzip(
+        temp_zipfile,
+        exdir = tmp_dir, unzip = "unzip"
       )
-    } else {
-      snis_base_url <- "https://www.gov.br/cidades/pt-br/acesso-a-informacao/acoes-e-programas/saneamento/snis/produtos-do-snis/diagnosticos/Planilhas_AP2021.zip"
-      download_url <- paste0(
-        snis_base_url,
-        sprintf("%s/Planilhas_AP%s.zip", year, year)
-      )
+    )
+    xls_fname <- dir(path = tmp_dir, pattern = ".*nforma.*")
+    if (length(xls_fname) == 0) {
+      rlog::log_warn(sprintf("Could not extract snis ap for %s!", year))
+      return(NULL)
     }
-    temp_zipfile <- tempfile(fileext = ".zip")
-    tmp_dir <- tempdir(check = TRUE)
-    curl::curl_download(download_url, temp_zipfile)
-    if (file.exists(temp_zipfile)) {
-        try(
-            files_zip <- utils::unzip(
-                temp_zipfile,
-                exdir = tmp_dir, unzip = "unzip"
-            )
-        )
-        print(tmp_dir)
-        xls_fname <- dir(path = tmp_dir, pattern = ".*nforma.*")
-        if (length(xls_fname) == 0) {
-            rlog::log_warn(sprintf("Could not extract snis ap for %s!", year))
-            return(NULL)
-        }
-        file.rename(
-            file.path(tmp_dir, xls_fname), file.path(tmp_dir, "planilha")
-        )
-        snis_ap <- readxl::read_excel(
-            file.path(tmp_dir, "planilha"),
-            skip = 11
-        )
-        colnames(snis_ap)[1:5] <- c(
-            "codigo_municipio", "municipio", "estado", "regiao", "capital"
-        )
-        snis_ap$codigo_municipio <- as.character(
-            snis_ap$codigo_municipio
-        )
-        unlink(tmp_dir)
-    } else {
-        rlog::log_warn(sprintf("Error downloading SNIS for %s", year))
-    }
-    unlink(temp_zipfile)
-    return(snis_ap)
+    file.rename(
+      file.path(tmp_dir, xls_fname), file.path(tmp_dir, "planilha")
+    )
+    snis_ap <- readxl::read_excel(
+      file.path(tmp_dir, "planilha"),
+      skip = 11
+    )
+    colnames(snis_ap)[1:5] <- c(
+      "codigo_municipio", "municipio", "estado", "regiao", "capital"
+    )
+    snis_ap$codigo_municipio <- as.character(
+      snis_ap$codigo_municipio
+    )
+    unlink(tmp_dir)
+  } else {
+    rlog::log_warn(sprintf("Error downloading SNIS for %s", year))
+  }
+  unlink(temp_zipfile)
+  return(snis_ap)
 }
 
 #' Atualiza dados do SNIS-AP
@@ -62,13 +61,13 @@ download_snis_ap <- function(year) {
 #' @return um `logical` dizendo se a atualização ocorreu com sucesso
 #' @export
 update_snis_ap <- function(ano) {
-    id <- paste0("ano", ano)
-    snis_ap <- load_data("snis_ap")
-    try({
-        snis_ap[[id]] <- download_snis_ap(ano)
-        save(snis_ap, file = get_data_path("snis_ap"))
-    })
-    return(!is.null(snis_ap[[id]]))
+  id <- paste0("ano", ano)
+  snis_ap <- load_data("snis_ap")
+  try({
+    snis_ap[[id]] <- download_snis_ap(ano)
+    save(snis_ap, file = get_data_path("snis_ap"))
+  })
+  return(!is.null(snis_ap[[id]]))
 }
 
 
@@ -77,14 +76,14 @@ update_snis_ap <- function(ano) {
 #' @return um `list` contendo os anos para tentar baixar
 #' @export
 get_snis_ap_list <- function() {
-    ids <- names(load_data("snis_ap"))
-    output <- list()
-    for (id in ids) {
-        year <- substr(id, 4, 7)
-        name <- paste0("SNIS-AP ", year)
-        output[[name]] <- id
-    }
-    return(output)
+  ids <- names(load_data("snis_ap"))
+  output <- list()
+  for (id in ids) {
+    year <- substr(id, 4, 7)
+    name <- paste0("SNIS-AP ", year)
+    output[[name]] <- id
+  }
+  return(output)
 }
 
 #' Carrega conjunto de dados do SNIS-AP
@@ -94,7 +93,7 @@ get_snis_ap_list <- function() {
 #' @return o conjunto de dados do SNIS
 #' @export
 load_snis_ap <- function(id) {
-    load_data("snis_ap")[[id]]
+  load_data("snis_ap")[[id]]
 }
 
 #' Cria armazenamento local dos dados do SNIS-AP
@@ -102,9 +101,9 @@ load_snis_ap <- function(id) {
 #' @return NULL
 #' @export
 create_snis_ap <- function() {
-    data("snis_ap", package = "rsan")
-    snis_ap <- get("snis_ap")
-    save(snis_ap, file = get_data_path("snis_ap"))
+  data("snis_ap", package = "rsan")
+  snis_ap <- get("snis_ap")
+  save(snis_ap, file = get_data_path("snis_ap"))
 }
 
 #' Verifica a integridade dos dados do SNIS-AP
@@ -112,5 +111,5 @@ create_snis_ap <- function() {
 #' @return um `logical` sendo `TRUE` integridade OK.
 #' @export
 integrity_snis_ap <- function() {
-    check_data_exists("snis_ap")
+  check_data_exists("snis_ap")
 }
