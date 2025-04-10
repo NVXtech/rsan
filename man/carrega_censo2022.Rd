@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_ibge_populacao.R
 \name{carrega_censo2022}
 \alias{carrega_censo2022}
-\title{Carrega dados do censo IBGE 2022}
+\title{Carrega dados do censo IBGE 2022 agregado por municipio}
 \usage{
 carrega_censo2022()
 }
@@ -10,5 +10,5 @@ carrega_censo2022()
 um \code{data.frame} com a estimativa populacional pelo Censo
 }
 \description{
-Carrega dados do censo IBGE 2022
+Carrega dados do censo IBGE 2022 agregado por municipio
 }

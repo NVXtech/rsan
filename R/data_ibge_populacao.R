@@ -198,7 +198,7 @@ censo_2022 <- function() {
     file.rename(file.path(dirname(dest), lista[1]), dest)
   }
   tabela <- data.table::fread(dest, dec = ",", integer64 = "double", na.strings = "X")
-  tabela <- dplyr::select(tabela, CD_SETOR, CD_MUN, NM_MUN, SITUACAO, v0001, AREA_KM2, v0007)
+  tabela <- dplyr::select(tabela, CD_SETOR, CD_MUN, NM_MUN, SITUACAO, v0001, AREA_KM2, v0007, v0005)
   tabela <- dplyr::rename(tabela,
     CD_setor = CD_SETOR,
     codigo_municipio = CD_MUN,
@@ -206,18 +206,30 @@ censo_2022 <- function() {
     situacao = SITUACAO,
     populacao = v0001,
     area_km2 = AREA_KM2,
-    domicilios = v0007
+    domicilios = v0007,
+  )
+  tabela <- dplyr::mutate(tabela,
+    densidade = populacao / area_km2,
+    morador_per_domicilio = populacao / domicilios,
   )
   tabela <- adiciona_atendimento(tabela)
-  tabela <- populacao_agrega_municipio(tabela)
   return(tabela)
 }
+
 
 #' Cria conjunto de dados do censo IBGE 2022
 #'
 #' Exporta dados do censo 2022 para CSV e ser utilizado como base de calculo
 #' @export
 preprocess_censo2022_data <- function() {
+  tabela <- censo_2022()
+  readr::write_csv(
+    tabela,
+    file.path(dir_base_calculo, "censo_2022_setor.csv"),
+    quote = "needed",
+    append = FALSE
+  )
+  tabela <- populacao_agrega_municipio(tabela)
   readr::write_csv(
     censo_2022(),
     file.path(dir_base_calculo, "censo_2022.csv"),
@@ -227,12 +239,21 @@ preprocess_censo2022_data <- function() {
   return(NULL)
 }
 
-#' Carrega dados do censo IBGE 2022
+#' Carrega dados do censo IBGE 2022 agregado por municipio
 #'
 #' @return um `data.frame` com a estimativa populacional pelo Censo
 #' @export
 carrega_censo2022 <- function() {
   path <- file.path(dir_base_calculo, "censo_2022.csv")
+  readr::read_csv(path, col_types = "c")
+}
+
+#' Carrega dados censo IBGE 2022 agregado por setor
+#'
+#' @return um `data.frame` com a estimativa populacional pelo Censo por setor censitário
+#' @export
+carrega_censo2022_setor <- function() {
+  path <- file.path(dir_base_calculo, "censo_2022_setor.csv")
   readr::read_csv(path, col_types = "c")
 }
 
