@@ -11,16 +11,21 @@ valida_base_calculo <- function(df, componente) {
   if (componente == "agua") {
     cols <- c(
       "codigo_municipio",
-      "atendimento_urb_agua_hab", "atendimento_rural_agua_hab",
-      "volume_agua_produzido_dam3_ano", "extensao_rede_agua_km",
-      "volume_agua_consumido_dam3_ano", "atendimento_tot_agua_hab"
+      "atendimento_tot_agua_hab",
+      "atendimento_urb_agua_hab",
+      "atendimento_rural_agua_hab",
+      "volume_agua_produzido_dam3_ano",
+      "volume_agua_consumido_dam3_ano",
+      "extensao_rede_agua_km"
     )
   } else if (componente == "esgoto") {
     cols <- c(
       "codigo_municipio",
-      "atendimento_urb_esgoto_hab", "atendimento_rural_esgoto_hab",
+      "atendimento_urb_esgoto_hab",
+      "atendimento_rural_esgoto_hab",
       "atendimento_tot_esgoto_hab",
-      "extensao_rede_esgoto_km", "volume_esgoto_tratado_dam3_ano"
+      "extensao_rede_esgoto_km",
+      "volume_esgoto_tratado_dam3_ano"
     )
   } else if (componente == "residuos") {
     cols <- c(
@@ -30,9 +35,10 @@ valida_base_calculo <- function(df, componente) {
       "tem_pesagem",
       "residuo_coletado_ton_ano",
       "residuo_recuperado_ton_ano",
+      "residuo_compostagem_ton_ano",
       "tem_coleta_seletiva",
       "quantidade_caminhoes_compactadores",
-      "quantidade_caminhoes_basculantes", "residuo_compostagem_ton_ano"
+      "quantidade_caminhoes_basculantes"
     )
   } else if (componente == "aguas_pluviais") {
     cols <- c("codigo_municipio", "tem_cadastro_tecnico")

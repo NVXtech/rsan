@@ -26,17 +26,18 @@ salva_parametros <- function(state, input, name) {
 
 geral <- list(
   ano = 2033,
-  ano_corrente = 2022
+  ano_corrente = 2023
 )
 
 projecao <- list(
   fonte1 = "censo_2010",
-  fonte2 = "estimativa_2021"
+  fonte2 = "censo_2022"
 )
 
 agua <- list(
-  fonte_nome = "snis",
-  fonte_ano = 2021,
+  fonte_nome = "sinisa",
+  fonte_ano = 2023,
+  atendimento = "censo",
   snis = "snis_2021",
   sinapi = "dt202112",
   meta_agua = 99,
@@ -51,8 +52,10 @@ agua <- list(
 )
 
 esgoto <- list(
-  fonte_nome = "snis",
-  fonte_ano = 2021,
+  fonte_nome = "sinisa",
+  fonte_ano = 2023,
+  atendimento = "censo",
+
   snis = "snis_2021",
   sinapi = "dt202112",
   meta_esgoto = 90,
@@ -105,8 +108,9 @@ valores_triagem <- c(
 )
 
 residuos <- list(
-  fonte_nome = "snis",
-  fonte_ano = 2021,
+  fonte_nome = "sinisa",
+  fonte_ano = 2023,
+  atendimento = "censo",
   snis = "snis_2021",
   snis_rs = "ano2021",
 
@@ -132,8 +136,8 @@ residuos <- list(
 )
 
 drenagem <- list(
-  fonte_nome = "snis",
-  fonte_ano = 2021,
+  fonte_nome = "sinisa",
+  fonte_ano = 2023,
   snis_ap = "ano2021",
   modo = 2,
   deprec_drenagem = 2,

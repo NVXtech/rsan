@@ -129,6 +129,12 @@ populacao_agrega_municipio <- function(tabela) {
     atendimento_tot_esgoto_hab = atendimento_esgoto_rural + atendimento_esgoto_urbana,
     atendimento_coleta_indiferenciada_hab = atendimento_coleta_lixo_rural + atendimento_coleta_lixo_urbana,
   )
+  tabela <- dplyr::rename(tabela,
+    atendimento_urb_agua_hab = atendimento_agua_urbana,
+    atendimento_rur_agua_hab = atendimento_agua_rural,
+    atendimento_urb_esgoto_hab = atendimento_esgoto_urbana,
+    atendimento_rur_esgoto_hab = atendimento_esgoto_rural,
+  )
   return(tabela)
 }
 
@@ -207,6 +213,52 @@ censo_2022 <- function() {
   return(tabela)
 }
 
+#' Cria conjunto de dados do censo IBGE 2022
+#'
+#' Exporta dados do censo 2022 para CSV e ser utilizado como base de calculo
+#' @export
+preprocess_censo2022_data <- function() {
+  readr::write_csv(
+    censo_2022(),
+    file.path(dir_base_calculo, "censo_2022.csv"),
+    quote = "needed",
+    append = FALSE
+  )
+  return(NULL)
+}
+
+#' Carrega dados do censo IBGE 2022
+#'
+#' @return um `data.frame` com a estimativa populacional pelo Censo
+#' @export
+carrega_censo2022 <- function() {
+  path <- file.path(dir_base_calculo, "censo_2022.csv")
+  readr::read_csv(path, col_types = "c")
+}
+
+#' Adiciona dados de atendimento do censo IBGE 2022
+#'
+#' @param tabela é um `data.frame` com no minimo a coluna codigo_municipio
+#' @param componente é um `character` com o componente desejado (agua, esgoto ou residuos)
+#'
+#' @export
+adiciona_atendimento_censo_2022 <- function(tabela, componente) {
+  df <- carrega_censo2022()
+  if (componente == "agua") {
+    cols <- c("codigo_municipio", "atendimento_tot_agua_hab", "atendimento_urb_agua_hab", "atendimento_rur_agua_hab")
+  } else if (componente == "esgoto") {
+    cols <- c("codigo_municipio", "atendimento_tot_esgoto_hab", "atendimento_urb_esgoto_hab", "atendimento_rur_esgoto_hab")
+  } else if (componente == "residuos") {
+    cols <- c("codigo_municipio", "atendimento_coleta_indiferenciada_hab")
+  } else {
+    stop(sprintf("Componente %s não reconhecido", componente))
+  }
+  cols_to_remove <- names(tabela)[names(tabela) %in% cols[-1]]
+  tabela <- dplyr::select(tabela, -dplyr::all_of(cols_to_remove))
+  atendimento <- dplyr::select(df, dplyr::all_of(cols))
+  tabela <- dplyr::left_join(tabela, atendimento, by = "codigo_municipio")
+  return(tabela)
+}
 
 #' Cria conjunto de dados do censo IBGE
 #'

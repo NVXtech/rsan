@@ -11,6 +11,7 @@ agua_required_fields <- c(
   "volume_esgoto_tratado_dam3_ano",
   "volume_esgoto_tratado_dam3_ano"
 )
+
 #' Calcula as necessidades produção e distribuição
 #'
 #' Calcula as necessidades para distribuição de água ($m/hab$) e para produção de água ($m^3/hab$).
@@ -677,6 +678,12 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
     carrega_base_calculo("esgoto", input$agua$fonte_nome, input$agua$fonte_ano),
     by = "codigo_municipio"
   )
+  if (input$agua$atendimento == "censo"){
+    tabela <- adiciona_atendimento_censo_2022(tabela, "agua")
+  }
+  if (input$esgoto$atendimento == "censo"){
+    tabela <- adiciona_atendimento_censo_2022(tabela, "esgoto")
+  }
   rlog::log_info(sprintf("%s: carregado sinisa (%s, %s)", tema, nrow(tabela), ncol(tabela)))
   tabela <- necessidade_agua_esgoto(tabela)
   tabela <- adiciona_populacao_corrente(projecao, ano_corrente, tabela)
@@ -781,6 +788,9 @@ capacidade_instalada_agua <- function(snis, custo) {
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_agua <- function(input, orcamentario) {
   snis_data <- carrega_base_calculo("agua", input$agua$fonte_nome, input$agua$fonte_ano)
+  if (input$agua$atendimento == "censo"){
+    snis_data <- adiciona_atendimento_censo_2022(snis_data, "agua")
+  }
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_agua(snis_data, custo)
   ano_final <- input$geral$ano
