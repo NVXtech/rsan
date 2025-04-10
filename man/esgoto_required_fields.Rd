@@ -5,7 +5,7 @@
 \alias{esgoto_required_fields}
 \title{Necessidade de Investimento - Componente Esgoto - Situação Urbana}
 \format{
-An object of class \code{character} of length 10.
+An object of class \code{character} of length 9.
 }
 \usage{
 esgoto_required_fields
