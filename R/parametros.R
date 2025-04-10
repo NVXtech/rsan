@@ -55,7 +55,6 @@ esgoto <- list(
   fonte_nome = "sinisa",
   fonte_ano = 2023,
   atendimento = "censo",
-
   snis = "snis_2021",
   sinapi = "dt202112",
   meta_esgoto = 90,
