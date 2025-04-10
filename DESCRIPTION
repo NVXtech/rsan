@@ -1,7 +1,7 @@
 Package: rsan
 Title: Necessidade de Investimento em Saneamento no Brasil
 Version: 0.3.4
-Authors@R: 
+Authors@R:
     person("Julio", "Werner", , "juliowerner@gmail.com",
         role = c("aut", "cre"),
         comment = c(ORCID = "0000-0002-1877-1052"))
@@ -17,6 +17,7 @@ Imports:
     tidyr,
     stringr,
     readxl,
+    readr,
     writexl,
     jsonlite,
     stats,
@@ -26,9 +27,9 @@ Imports:
     rlog,
     utils,
     tibble
-Depends: 
+Depends:
     R (>= 3.5.0)
 LazyData: true
-Suggests: 
+Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
