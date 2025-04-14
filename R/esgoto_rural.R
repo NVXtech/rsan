@@ -330,7 +330,6 @@ tbl_longa_deficit_esgoto_rural <- function(tabela) {
 #' @return um `data.frame` contendo a coluna adicional `deficit_esgoto_relativo_rural`.
 #' @export
 calcula_deficit_esgoto_relativo_censo <- function(tabela) {
-  print(names(tabela))
   tabela <- dplyr::mutate(
     tabela,
     deficit_esgoto_relativo_rural = pmax(populacao - atendimento_esgoto, 0) / populacao
