@@ -7,11 +7,11 @@
 classifica_deficit_setor(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo a coluna \code{densidade_setor}.}
+\item{tabela}{um \code{data.frame} contendo a coluna \code{populacao}.}
 }
 \value{
 um \code{data.frame} contendo a coluna adicional \code{classe_densidade}.
 }
 \description{
-Classifica setor de censitário baseando-se na densidade populacional para tratamento do déficit.
+Classifica setor de censitário baseando-se no numero de moradores
 }

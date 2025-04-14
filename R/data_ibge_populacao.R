@@ -198,12 +198,13 @@ censo_2022 <- function() {
     file.rename(file.path(dirname(dest), lista[1]), dest)
   }
   tabela <- data.table::fread(dest, dec = ",", integer64 = "double", na.strings = "X")
-  tabela <- dplyr::select(tabela, CD_SETOR, CD_MUN, NM_MUN, SITUACAO, v0001, AREA_KM2, v0007, v0005)
+  tabela <- dplyr::select(tabela, CD_SETOR, CD_SIT, CD_MUN, NM_MUN, SITUACAO, v0001, AREA_KM2, v0007)
   tabela <- dplyr::rename(tabela,
     CD_setor = CD_SETOR,
     codigo_municipio = CD_MUN,
     municipio = NM_MUN,
     situacao = SITUACAO,
+    codigo_situacao = CD_SIT,
     populacao = v0001,
     area_km2 = AREA_KM2,
     domicilios = v0007,
@@ -231,7 +232,7 @@ preprocess_censo2022_data <- function() {
   )
   tabela <- populacao_agrega_municipio(tabela)
   readr::write_csv(
-    censo_2022(),
+    tabela,
     file.path(dir_base_calculo, "censo_2022.csv"),
     quote = "needed",
     append = FALSE
@@ -245,7 +246,9 @@ preprocess_censo2022_data <- function() {
 #' @export
 carrega_censo2022 <- function() {
   path <- file.path(dir_base_calculo, "censo_2022.csv")
-  readr::read_csv(path, col_types = "c")
+  col_types <- "cicccididddiii"
+  tabela <- readr::read_csv(path, col_types = col_types)
+  return(tabela)
 }
 
 #' Carrega dados censo IBGE 2022 agregado por setor
@@ -254,7 +257,9 @@ carrega_censo2022 <- function() {
 #' @export
 carrega_censo2022_setor <- function() {
   path <- file.path(dir_base_calculo, "censo_2022_setor.csv")
-  readr::read_csv(path, col_types = "c")
+  col_types <- "cicccididddiii"
+  tabela <- readr::read_csv(path, col_types = col_types)
+  return(tabela)
 }
 
 #' Adiciona dados de atendimento do censo IBGE 2022

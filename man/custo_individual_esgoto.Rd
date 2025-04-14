@@ -8,7 +8,7 @@ Custo individual para sistemas de estações de esgoto}
 custo_individual_esgoto(tabela, params)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas \code{seguranca_hidrica} e \code{V003}.}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{seguranca_hidrica} e \code{morador_per_domicilio}.}
 
 \item{params}{uma \code{list} contendo os preços para cada faixa}
 }

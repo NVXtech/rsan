@@ -7,7 +7,7 @@
 classifica_densidade_setor(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo a coluna \code{densidade_setor}.}
+\item{tabela}{um \code{data.frame} contendo a coluna \code{densidade}.}
 }
 \value{
 um \code{data.frame} contendo a coluna adicional \code{classe_densidade}.

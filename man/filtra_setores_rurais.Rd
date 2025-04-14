@@ -4,7 +4,7 @@
 \alias{filtra_setores_rurais}
 \title{Filtra setores censitarios}
 \usage{
-filtra_setores_rurais(tabela, setores)
+filtra_setores_rurais(tabela)
 }
 \arguments{
 \item{tabela}{um \code{data.frame} contendo a coluna \code{codigo_municipio}}

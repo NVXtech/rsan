@@ -24,6 +24,7 @@ Imports:
     utils,
     ipeadatar,
     lubridate,
+    data.table,
     rlog,
     utils,
     tibble

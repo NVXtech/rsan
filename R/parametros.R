@@ -46,7 +46,7 @@ agua <- list(
   fator_materiais = 18,
   fator_composicao = 26,
   fator_insumo = 18,
-  vida_util = 30,
+  vida_util = 50,
   custo_rural_individual = 10682.16 * 1.6169335,
   custo_rural_individual_sem = 14682.16 * 1.6169335
 )
@@ -63,7 +63,7 @@ esgoto <- list(
   fator_materiais = 18,
   fator_composicao = 26,
   fator_insumo = 18,
-  vida_util = 30,
+  vida_util = 50,
   custo_individual_esgoto_faixa1 = 3318.83 * 1.6169335,
   custo_individual_esgoto_faixa2 = 3487.6 * 1.6169335,
   custo_individual_esgoto_faixa3 = 3656.36 * 1.6169335,

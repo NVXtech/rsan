@@ -4,21 +4,14 @@
 \alias{fazer_projecao_domicilio}
 \title{Faz projeção de domicílios}
 \usage{
-fazer_projecao_domicilio(
-  tabela,
-  ano_inicial,
-  ano_final,
-  atualizar_moradores_por_domicilio = FALSE
-)
+fazer_projecao_domicilio(tabela, ano_inicial, ano_final)
 }
 \arguments{
 \item{tabela}{um \code{data.frame} contendo a coluna \code{codigo_municipio}}
 
-\item{ano_inicial}{um \code{number} contendo o ano do conjunto de dados de população (V002)}
+\item{ano_inicial}{um \code{number} contendo o ano do conjunto de dados de população (populacao)}
 
 \item{ano_final}{um \code{number} contendo o ano da projeção}
-
-\item{atualizar_moradores_por_domicilio}{um \code{boolean} dizendo se existe uma atualização da relação domicílio/habitantes (V003). O padrão é \code{FALSE}.}
 }
 \value{
 um \code{data.frame} contendo a coluna adicional \code{taxa_crescimento}.

@@ -7,7 +7,7 @@
 fracao_coletivo_individual_esgoto(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas \code{situacao_setor}, \code{deficit_esgoto_relativo_rural} e \code{regiao}.}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{situacao_setor}, \code{deficit_agua_relativo_rural} e \code{regiao}.}
 }
 \value{
 um \code{data.frame} contendo as colunas adicionais \verb{fracao_investimento_coletivo_esgoto e }fracao_investimento_individual_esgoto`.
