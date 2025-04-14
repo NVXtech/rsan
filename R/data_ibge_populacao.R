@@ -246,8 +246,36 @@ preprocess_censo2022_data <- function() {
 #' @export
 carrega_censo2022 <- function() {
   path <- file.path(dir_base_calculo, "censo_2022.csv")
-  col_types <- "cicccididddiii"
+  col_types <- "cccccccccccccccccccc"
   tabela <- readr::read_csv(path, col_types = col_types)
+  integer_cols <- c(
+    "populacao_rural",
+    "populacao_urbana",
+    "domicilios_rural",
+    "domicilios_urbana",
+    "atendimento_rur_agua_hab",
+    "atendimento_urb_agua_hab",
+    "atendimento_rur_esgoto_hab",
+    "atendimento_urb_esgoto_hab",
+    "atendimento_coleta_lixo_rural",
+    "atendimento_coleta_lixo_urbana",
+    "populacao_total",
+    "domicilios_total",
+    "atendimento_tot_agua_hab",
+    "atendimento_tot_esgoto_hab",
+    "atendimento_coleta_indiferenciada_hab"
+  )
+  double_cols <- c(
+    "area_km2_rural",
+    "area_km2_urbana",
+    "area_km2_total"
+  )
+  for (col in double_cols) {
+    tabela[[col]] <- as.double(tabela[[col]])
+  }
+  for (col in integer_cols) {
+    tabela[[col]] <- as.integer(tabela[[col]])
+  }
   return(tabela)
 }
 
@@ -257,8 +285,27 @@ carrega_censo2022 <- function() {
 #' @export
 carrega_censo2022_setor <- function() {
   path <- file.path(dir_base_calculo, "censo_2022_setor.csv")
-  col_types <- "cicccididddiii"
+  col_types <- "cccccccccccccccccccc"
   tabela <- readr::read_csv(path, col_types = col_types)
+  integer_cols <- c(
+    "codigo_situacao",
+    "populacao",
+    "domicilios",
+    "atendimento_agua",
+    "atendimento_esgoto",
+    "atendimento_coleta_lixo"
+  )
+  double_cols <- c(
+    "area_km2",
+    "densidade",
+    "morador_per_domicilio"
+  )
+  for (col in double_cols) {
+    tabela[[col]] <- as.double(tabela[[col]])
+  }
+  for (col in integer_cols) {
+    tabela[[col]] <- as.integer(tabela[[col]])
+  }
   return(tabela)
 }
 
