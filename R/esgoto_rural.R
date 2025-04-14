@@ -224,6 +224,7 @@ adiciona_deficit_rural_esgoto_pnad <- function(tabela, deficit) {
 #'
 #' @export
 consolida_investimentos_rural_esgoto <- function(tabela) {
+  tabela <- somar_por_campo(tabela, "codigo_municipio")
   tabela <- dplyr::mutate(
     tabela,
     # investimento_esgoto_rural_coletivo = investimento_expansao_tratamento_esgoto + investimento_expansao_coleta_esgoto,

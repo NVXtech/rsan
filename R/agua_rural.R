@@ -263,6 +263,7 @@ capacidade_instalada_rural_agua <- function(tabela) {
 #' tabela <- consolida_investimentos_agua(tabela)
 #' }
 consolida_investimentos_rural_agua <- function(tabela) {
+  tabela <- somar_por_campo(tabela, "codigo_municipio")
   tabela <- dplyr::mutate(
     tabela,
     investimento_expansao = investimento_expansao_distribuicao_agua +
@@ -547,8 +548,8 @@ rodar_modulo_rural_agua <- function(state) {
     input$agua$vida_util
   )
   rlog::log_info("água:rural: consolidando necessidade")
-  tabela <- consolida_investimentos_rural_agua(tabela)
 
+  tabela <- consolida_investimentos_rural_agua(tabela)
 
   state$agua_rural <- adiciona_pais(tabela)
 
