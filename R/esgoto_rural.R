@@ -72,14 +72,14 @@ fracao_coletivo_individual_esgoto <- function(tabela) {
 #'
 #' Calcula o número de domicílios com déficit de sistemas de estação de esgoto.
 #'
-#' @param tabela um `data.frame` contendo as colunas `V001_projecao` e `deficit_esgoto_relativo_rural`.
+#' @param tabela um `data.frame` contendo as colunas `domicilios_projecao` e `deficit_esgoto_relativo_rural`.
 #' @export
 #'
 #' @return um `data.frame` contendo a coluna adicional `domicilios_deficit_esgoto`.
 domicilios_com_deficit_esgoto <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    domicilios_deficit_esgoto = V001_projecao * deficit_esgoto_relativo_rural,
+    domicilios_deficit_esgoto = domicilios_projecao * deficit_esgoto_relativo_rural,
   )
 }
 
@@ -87,7 +87,7 @@ domicilios_com_deficit_esgoto <- function(tabela) {
 #'
 #' Calcula o número de habitantes com déficit de sistemas de estação de esgoto.
 #'
-#' @param tabela um `data.frame` contendo as colunas `V001_projecao` e `deficit_esgoto_relativo_rural`.
+#' @param tabela um `data.frame` contendo as colunas `domicilios_projecao` e `deficit_esgoto_relativo_rural`.
 #' @export
 #'
 #' @return um `data.frame` contendo a coluna adicional `domicilios_deficit_esgoto`.
@@ -102,14 +102,14 @@ habitantes_com_deficit_esgoto <- function(tabela) {
 #'
 #' Calcula o número de domicílios com déficit de sistemas de estação de esgoto.
 #'
-#' @param tabela um `data.frame` contendo as colunas `V001_projecao` e `deficit_esgoto_relativo_rural`.
+#' @param tabela um `data.frame` contendo as colunas `domicilios_projecao` e `deficit_esgoto_relativo_rural`.
 #' @export
 #'
 #' @return um `data.frame` contendo a coluna adicional `domicilios_deficit_esgoto`.
 domicilios_adequados_com_esgoto <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    domicilios_adequados_esgoto = V001_projecao * (1.0 - deficit_esgoto_relativo_rural),
+    domicilios_adequados_esgoto = domicilios_projecao * (1.0 - deficit_esgoto_relativo_rural),
   )
 }
 
@@ -334,22 +334,21 @@ calcula_deficit_esgoto_relativo_censo <- function(tabela) {
     tabela,
     deficit_esgoto_relativo_rural = pmax(populacao - atendimento_esgoto, 0) / populacao
   )
-  # calculate deficit by state
-  agg <- dplyr::group_by(tabela, estado)
-  agg <- dplyr::summarise(
-    agg,
-    populacao = sum(populacao, na.rm = TRUE),
-    atendimento_esgoto = sum(atendimento_esgoto, na.rm = TRUE),
-  )
-  agg <- dplyr::mutate(
-    agg,
-    deficit_esgoto_relativo_rural = pmax(populacao - atendimento_esgoto, 0) / populacao
-  )
-  readr::write_csv(
-    agg,
-    file = "deficit_esgoto_relativo_rural.csv",
-    col_names = TRUE,
-    append = FALSE
+  return(tabela)
+}
+
+#' Calcula deficit relativo para agua situação rural usando dados do pnadc
+#'
+#' @param tabela um `data.frame` contendo as colunas `populacao` e `atendimento_esgoto_relativo_rural`.
+#' @param ano um `integer` com o ano de referência para os dados do PNADC.
+#'
+#' @return um `data.frame` contendo a coluna adicional `deficit_esgoto_relativo_rural`.
+#' @export
+calcula_deficit_esgoto_relativo_pnadc <- function(tabela, ano) {
+  tabela <- adiciona_atendimento_relativo_pnadc(tabela, "esgoto", ano)
+  tabela <- dplyr::mutate(
+    tabela,
+    deficit_esgoto_relativo_rural = pmax(1 - atendimento_esgoto_relativo_rural, 0)
   )
   return(tabela)
 }
@@ -369,7 +368,9 @@ rodar_modulo_rural_esgoto <- function(state) {
   taxas_projecao <- state$taxas_projecao
   ano <- input$geral$ano
   ano_inicial <- 2022
-  ano_censo <- 2022
+
+  ano_corrente <- input$geral$ano_corrente
+  ano_censo <- nome_para_ano(input$projecao$fonte2)
 
   data("agua_esgoto_rural", package = "rsan")
   agua_esgoto_rural <- get("agua_esgoto_rural")
@@ -389,8 +390,14 @@ rodar_modulo_rural_esgoto <- function(state) {
   # Usado para classificação coletivo_individual
   # tabela <- adiciona_deficit_rural_agua_pnad(tabela, agua_esgoto_rural$deficit_pnad)
   # tabela <- adiciona_deficit_rural_esgoto_pnad(tabela, agua_esgoto_rural$deficit_pnad)
-  tabela <- calcula_deficit_agua_relativo_censo(tabela)
-  tabela <- calcula_deficit_esgoto_relativo_censo(tabela)
+  if (input$agua$atendimento == "censo") {
+    tabela <- calcula_deficit_agua_relativo_censo(tabela)
+    tabela <- calcula_deficit_esgoto_relativo_censo(tabela)
+  }
+  if (input$esgoto$atendimento == "pnadc") {
+    tabela <- calcula_deficit_agua_relativo_pnadc(tabela, input$agua$atendimento_ano)
+    tabela <- calcula_deficit_esgoto_relativo_pnadc(tabela, input$esgoto$atendimento_ano)
+  }
 
   tabela <- adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
   tabela <- fracao_coletivo_individual_esgoto(tabela)
@@ -410,7 +417,7 @@ rodar_modulo_rural_esgoto <- function(state) {
     "capacidade_instalada_coleta_esgoto",
     "investimento_expansao_coleta_esgoto",
     "investimento_reposicao_coleta_esgoto",
-    ano_inicial,
+    ano_corrente,
     ano,
     input$geral$ano_corrente,
     input$esgoto$vida_util
@@ -420,7 +427,7 @@ rodar_modulo_rural_esgoto <- function(state) {
     "capacidade_instalada_tratamento_esgoto",
     "investimento_expansao_tratamento_esgoto",
     "investimento_reposicao_tratamento_esgoto",
-    ano_inicial,
+    ano_corrente,
     ano,
     input$geral$ano_corrente,
     input$esgoto$vida_util

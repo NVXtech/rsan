@@ -143,8 +143,11 @@ investimento_residuos <- function(state) {
     carrega_base_calculo("residuos", input$fonte_nome, input$fonte_ano),
     by = "codigo_municipio"
   )
-  if (input$atendimento == "censo"){
+  if (input$atendimento == "censo") {
     tabela <- adiciona_atendimento_censo_2022(tabela, "residuos")
+  }
+  if (input$atendimento == "pnadc") {
+    tabela <- adiciona_atendimento_pnadc(tabela, "residuos", input$atendimento_ano)
   }
   tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
   tabela <- adiciona_projecao_populacao(state$projecao, ano, tabela)

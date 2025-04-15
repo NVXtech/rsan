@@ -336,9 +336,6 @@ capacidade_instalada_esgoto <- function(snis, custo) {
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_esgoto <- function(input, orcamentario) {
   snis_data <- carrega_base_calculo("esgoto", input$esgoto$fonte_nome, input$esgoto$fonte_ano)
-  if (input$esgoto$atendimento == "censo"){
-    snis_data <- adiciona_atendimento_censo_2022(snis_data, "esgoto")
-  }
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_esgoto(snis_data, custo)
   ano_final <- input$geral$ano

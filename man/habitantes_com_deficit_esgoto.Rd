@@ -7,7 +7,7 @@
 habitantes_com_deficit_esgoto(tabela)
 }
 \arguments{
-\item{tabela}{um \code{data.frame} contendo as colunas \code{V001_projecao} e \code{deficit_esgoto_relativo_rural}.}
+\item{tabela}{um \code{data.frame} contendo as colunas \code{domicilios_projecao} e \code{deficit_esgoto_relativo_rural}.}
 }
 \value{
 um \code{data.frame} contendo a coluna adicional \code{domicilios_deficit_esgoto}.

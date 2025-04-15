@@ -1,20 +1,5 @@
 #' Necessidade de Investimento - Componente Água - Situação Rural
 
-#' Código setor para codigo do município
-#'
-#' Transforma os códigos do setor censitário do IBGE para o código de município (IBGE).
-#'
-#' @param tabela um `data.frame` contendo a coluna `codigo_setor`
-#'
-#' @return um `data.frame` contendo a coluna adicional `codigo_municipio`
-#' @export
-codigo_setor_para_municipio <- function(tabela) {
-  tabela <- dplyr::mutate(
-    tabela,
-    codigo_municipio = substr(codigo_setor, start = 1, stop = 7)
-  )
-}
-
 #' Fração de investimentos em água coletivos e individuais
 #'
 #' Define a fração coletiva e individual para necessidade de investimento em água.
@@ -150,14 +135,14 @@ custo_distribuicao_agua <- function(tabela, custo_distribuicao) {
 #'
 #' Calcula o número de domicílios com déficit de sistemas de abastecimento de água.
 #'
-#' @param tabela um `data.frame` contendo as colunas `V001`, `V001_projecao` e `deficit_agua_relativo_rural`.
+#' @param tabela um `data.frame` contendo as colunas  `domicilios_projecao` e `deficit_agua_relativo_rural`.
 #' @export
 #'
 #' @return um `data.frame` contendo a coluna adicional `domicilios_deficit_agua`.
 domicilios_com_deficit_agua <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    domicilios_deficit_agua = (V001_projecao) * deficit_agua_relativo_rural,
+    domicilios_deficit_agua = domicilios_projecao * deficit_agua_relativo_rural,
   )
 }
 
@@ -165,7 +150,7 @@ domicilios_com_deficit_agua <- function(tabela) {
 #'
 #' Calcula o número de habitantes com déficit de sistemas de abastecimento de água.
 #'
-#' @param tabela um `data.frame` contendo as colunas `V001`, `V001_projecao` e `deficit_agua_relativo_rural`.
+#' @param tabela um `data.frame` contendo as colunas  `domicilios_projecao` e `deficit_agua_relativo_rural`.
 #' @export
 #'
 #' @return um `data.frame` contendo a coluna adicional `domicilios_deficit_agua`.
@@ -180,14 +165,14 @@ habitantes_com_deficit_agua <- function(tabela) {
 #'
 #' Calcula o número de domicílios com sistemas de abastecimento de água adequados.
 #'
-#' @param tabela um `data.frame` contendo as colunas `V001` e `deficit_agua_relativo_rural`.
+#' @param tabela um `data.frame` contendo as colunas `domicilios_projecao` e `deficit_agua_relativo_rural`.
 #' @export
 #'
 #' @return um `data.frame` contendo a coluna adicional `domicilios_adequados_agua`.
 domicilios_adequados_com_agua <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
-    domicilios_adequados_agua = (V001_projecao) * (1.0 - deficit_agua_relativo_rural)
+    domicilios_adequados_agua = (domicilios_projecao) * (1.0 - deficit_agua_relativo_rural)
   )
 }
 
@@ -263,7 +248,6 @@ capacidade_instalada_rural_agua <- function(tabela) {
 #' tabela <- consolida_investimentos_agua(tabela)
 #' }
 consolida_investimentos_rural_agua <- function(tabela) {
-  tabela <- somar_por_campo(tabela, "codigo_municipio")
   tabela <- dplyr::mutate(
     tabela,
     investimento_expansao = investimento_expansao_distribuicao_agua +
@@ -348,8 +332,8 @@ filtra_setores_rurais <- function(tabela) {
 fazer_projecao_domicilio <- function(tabela, ano_inicial, ano_final) {
   tabela <- dplyr::mutate(
     tabela,
-    V002_projecao = populacao * ((1 + taxa_de_crescimento)^(ano_final - ano_inicial)),
-    V001_projecao = ifelse(morador_per_domicilio == 0, 0, V002_projecao / morador_per_domicilio)
+    populacao_projecao = populacao * ((1 + taxa_de_crescimento)^(ano_final - ano_inicial)),
+    domicilios_projecao = ifelse(morador_per_domicilio == 0, 0, populacao_projecao / morador_per_domicilio)
   )
 }
 
@@ -449,18 +433,22 @@ calcula_deficit_agua_relativo_censo <- function(tabela) {
     tabela,
     deficit_agua_relativo_rural = pmax(populacao - atendimento_agua, 0) / populacao
   )
-  # calculate deficit by state
-  agg <- dplyr::group_by(tabela, estado)
-  agg <- dplyr::summarise(
-    agg,
-    populacao = sum(populacao, na.rm = TRUE),
-    atendimento_agua = sum(atendimento_agua, na.rm = TRUE),
+  return(tabela)
+}
+
+#' Calcula deficit relativo para agua situação rural usando dados da pnadc
+#'
+#' @param tabela um `data.frame` contendo as colunas `populacao` e `atendimento_rur_agua`.
+#' @param ano um `number` contendo o ano do PNADC.
+#'
+#' @return um `data.frame` contendo a coluna adicional `deficit_agua_relativo_rural`.
+#' @export
+calcula_deficit_agua_relativo_pnadc <- function(tabela, ano) {
+  tabela <- adiciona_atendimento_relativo_pnadc(tabela, "agua", ano)
+  tabela <- dplyr::mutate(
+    tabela,
+    deficit_agua_relativo_rural = 1 - atendimento_agua_relativo_rural
   )
-  agg <- dplyr::mutate(
-    agg,
-    deficit_agua_relativo_rural = pmax(populacao - atendimento_agua, 0) / populacao
-  )
-  readr::write_csv(agg, "deficit_agua_relativo_rural.csv")
   return(tabela)
 }
 #' Módulo de cálculo para demanda rural de água
@@ -476,10 +464,11 @@ calcula_deficit_agua_relativo_censo <- function(tabela) {
 rodar_modulo_rural_agua <- function(state) {
   input <- state$input
   taxas_projecao <- state$taxas_projecao
-  ano <- input$geral$ano
+  ano_final <- input$geral$ano
   param <- input$agua # parametros
-  ano_censo <- 2022
-  ano_inicial <- 2022
+  ano_censo <- nome_para_ano(input$agua$atendimento_ano)
+  ano_inicial <- input$agua$atendimento_ano
+
   rlog::log_info("água:rural: carregando dados")
   data("agua_esgoto_rural", package = "rsan")
   agua_esgoto_rural <- get("agua_esgoto_rural")
@@ -487,24 +476,33 @@ rodar_modulo_rural_agua <- function(state) {
   custo_producao <- agua_esgoto_rural$custo_producao
   custo_distribuicao <- agua_esgoto_rural$custo_distribuicao
 
-  rlog::log_info("água:rural: calculando setores")
-
-  tabela <- carrega_censo2022_setor()
+  rlog::log_info("água:rural: carregando setores censitários")
+  tabela <- base_municipios()
+  tabela <- dplyr::left_join(
+    tabela,
+    carrega_censo2022_setor(),
+    by = "codigo_municipio"
+  )
   tabela <- filtra_setores_rurais(tabela)
 
-  tabela <- adiciona_taxa_crescimento(tabela, taxas_projecao)
   rlog::log_info("água:rural: projecao de domicilios")
-  tabela <- fazer_projecao_domicilio(tabela, ano_censo, ano)
+  tabela <- adiciona_taxa_crescimento(tabela, taxas_projecao)
+  tabela <- fazer_projecao_domicilio(tabela, ano_censo, ano_final)
+
+  if (input$agua$atendimento == "censo") {
+    rlog::log_info("água:rural: adicionando atendimento do CENSO")
+    tabela <- calcula_deficit_agua_relativo_censo(tabela)
+  }
+  if (input$agua$atendimento == "pnadc") {
+    rlog::log_info("água:rural: adicionando atendimento do PNADC")
+    tabela <- calcula_deficit_agua_relativo_pnadc(
+      tabela,
+      input$agua$atendimento_ano
+    )
+  }
   rlog::log_info("água:rural: classificando setores")
   tabela <- classifica_densidade_setor(tabela)
   tabela <- classifica_deficit_setor(tabela)
-  rlog::log_info("água:rural: adicionando novos campos")
-  tabela <- adiciona_estado(tabela)
-  tabela <- adiciona_regiao(tabela)
-
-
-  # tabela <- adiciona_deficit_rural_agua_pnad(tabela, agua_esgoto_rural$deficit_pnad)
-  tabela <- calcula_deficit_agua_relativo_censo(tabela)
   tabela <- adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
   tabela <- fracao_coletivo_individual_agua(tabela)
   rlog::log_info("água:rural: calculando custos")
@@ -519,6 +517,7 @@ rodar_modulo_rural_agua <- function(state) {
   tabela <- domicilios_com_deficit_agua(tabela)
   tabela <- habitantes_com_deficit_agua(tabela)
   tabela <- domicilios_adequados_com_agua(tabela)
+
   rlog::log_info("água:rural: calculando necessidade")
   tabela <- investimento_rural_agua(tabela)
   tabela <- capacidade_instalada_rural_agua(tabela)
@@ -529,7 +528,7 @@ rodar_modulo_rural_agua <- function(state) {
     "investimento_expansao_distribuicao_agua",
     "investimento_reposicao_distribuicao_agua",
     ano_inicial,
-    ano,
+    ano_final,
     input$geral$ano_corrente,
     input$agua$vida_util
   )
@@ -543,7 +542,7 @@ rodar_modulo_rural_agua <- function(state) {
     "investimento_expansao_producao_agua",
     "investimento_reposicao_producao_agua",
     ano_inicial,
-    ano,
+    ano_final,
     input$geral$ano_corrente,
     input$agua$vida_util
   )

@@ -56,7 +56,7 @@ adiciona_regiao <- function(tabela) {
   data(municipio, package = "rsan")
   original_colnames <- colnames(tabela)
   output_cols <- c(original_colnames, "regiao")
-  municipio <- dplyr::select(municipio, c("codigo_municipio", "regiao"))
+  municipio <- dplyr::select(municipio, c("codigo_municipio", "regiao", "regiao_sigla"))
   tabela <-
     dplyr::left_join(tabela, municipio, by = "codigo_municipio")
   return(tabela)

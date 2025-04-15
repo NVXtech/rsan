@@ -649,6 +649,8 @@ tbl_longa_deficit_agua <- function(tabela) {
   )
 }
 
+
+
 #' Módulo demográfico
 #'
 #' Calcula as necessidades
@@ -678,15 +680,26 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
     carrega_base_calculo("esgoto", input$agua$fonte_nome, input$agua$fonte_ano),
     by = "codigo_municipio"
   )
-  if (input$agua$atendimento == "censo"){
+  tabela <- adiciona_populacao_corrente(projecao, ano_corrente, tabela)
+  if (input$agua$atendimento == "censo") {
+    rlog::log_info("Adicionando atendimento Água CENSO 2022")
     tabela <- adiciona_atendimento_censo_2022(tabela, "agua")
   }
-  if (input$esgoto$atendimento == "censo"){
+  if (input$esgoto$atendimento == "censo") {
+    rlog::log_info("Adicionando atendimento Esgoto CENSO 2022")
     tabela <- adiciona_atendimento_censo_2022(tabela, "esgoto")
   }
+  if (input$agua$atendimento == "pnadc") {
+    rlog::log_info("Adicionando atendimento Água PNADc")
+    tabela <- adiciona_atendimento_pnadc(tabela, "agua", input$agua$atendimento_ano)
+  }
+  if (input$esgoto$atendimento == "pnadc") {
+    rlog::log_info("Adicionando atendimento Esgoto PNADc")
+    tabela <- adiciona_atendimento_pnadc(tabela, "esgoto", input$esgoto$atendimento_ano)
+  }
+
   rlog::log_info(sprintf("%s: carregado sinisa (%s, %s)", tema, nrow(tabela), ncol(tabela)))
   tabela <- necessidade_agua_esgoto(tabela)
-  tabela <- adiciona_populacao_corrente(projecao, ano_corrente, tabela)
   rlog::log_info(sprintf("%s: preenchendo dados de densidade", tema))
   tabela <- fill_missing_density(tabela, c(
     "densidade_distribuicao_agua", "densidade_producao_agua", "densidade_coleta_esgoto"
@@ -788,7 +801,7 @@ capacidade_instalada_agua <- function(snis, custo) {
 #' @return um `data.frame` contendo as necessidade de investimentos e todos campos utilizados
 rodar_modulo_financeiro_agua <- function(input, orcamentario) {
   snis_data <- carrega_base_calculo("agua", input$agua$fonte_nome, input$agua$fonte_ano)
-  if (input$agua$atendimento == "censo"){
+  if (input$agua$atendimento == "censo") {
     snis_data <- adiciona_atendimento_censo_2022(snis_data, "agua")
   }
   custo <- orcamentario$custo

@@ -165,12 +165,11 @@ regressao_multipla_drenagem <- function(plano) {
 #' @export
 corrige_plano_drenagem <- function(data) {
   data(plano_drenagem, package = "rsan")
-  igp <- get_igp()
   plano_drenagem <- dplyr::mutate(
     plano_drenagem,
     data_inicial = as.Date(paste0(as.character(ano_plano), "-06-30")),
     data_final = as.Date(data),
-    taxa_igp = get_taxa_igp(igp, data_inicial, data_final), # fix get_taxa_igp
+    taxa_igp = get_taxa_igp(data_inicial, data_final), # fix get_taxa_igp
     investimento_corrigido = investimento * taxa_igp
   )
   return(plano_drenagem)

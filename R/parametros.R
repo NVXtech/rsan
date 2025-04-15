@@ -29,6 +29,7 @@ geral <- list(
   ano_corrente = 2023
 )
 
+taxa_igp <- get_taxa_igp(as.Date("2018-07-01"), as.Date("2022-01-01"))
 projecao <- list(
   fonte1 = "censo_2010",
   fonte2 = "censo_2022"
@@ -37,7 +38,8 @@ projecao <- list(
 agua <- list(
   fonte_nome = "sinisa",
   fonte_ano = 2023,
-  atendimento = "censo",
+  atendimento = "pnadc",
+  atendimento_ano = 2023,
   snis = "snis_2021",
   sinapi = "dt202112",
   meta_agua = 99,
@@ -47,14 +49,15 @@ agua <- list(
   fator_composicao = 26,
   fator_insumo = 18,
   vida_util = 50,
-  custo_rural_individual = 10682.16 * 1.6169335,
-  custo_rural_individual_sem = 14682.16 * 1.6169335
+  custo_rural_individual = 10682.16 * taxa_igp,
+  custo_rural_individual_sem = 14682.16 * taxa_igp
 )
 
 esgoto <- list(
   fonte_nome = "sinisa",
   fonte_ano = 2023,
-  atendimento = "censo",
+  atendimento = "pnadc",
+  atendimento_ano = 2023,
   snis = "snis_2021",
   sinapi = "dt202112",
   meta_esgoto = 90,
@@ -64,16 +67,16 @@ esgoto <- list(
   fator_composicao = 26,
   fator_insumo = 18,
   vida_util = 50,
-  custo_individual_esgoto_faixa1 = 3318.83 * 1.6169335,
-  custo_individual_esgoto_faixa2 = 3487.6 * 1.6169335,
-  custo_individual_esgoto_faixa3 = 3656.36 * 1.6169335,
-  custo_individual_esgoto_faixa4 = 3860.22 * 1.6169335,
-  custo_individual_esgoto_faixa5 = 4300.83 * 1.6169335,
-  custo_individual_esgoto_faixa6 = 4641.6 * 1.6169335,
-  custo_individual_esgoto_faixa7 = 4977.54 * 1.6169335,
-  custo_individual_esgoto_faixa8 = 5638.27 * 1.6169335,
-  custo_individual_esgoto_faixa9 = 1884.98 * 1.6169335,
-  custo_individual_esgoto_faixa10 = 1988.74 * 1.6169335
+  custo_individual_esgoto_faixa1 = 3318.83 * taxa_igp,
+  custo_individual_esgoto_faixa2 = 3487.6 * taxa_igp,
+  custo_individual_esgoto_faixa3 = 3656.36 * taxa_igp,
+  custo_individual_esgoto_faixa4 = 3860.22 * taxa_igp,
+  custo_individual_esgoto_faixa5 = 4300.83 * taxa_igp,
+  custo_individual_esgoto_faixa6 = 4641.6 * taxa_igp,
+  custo_individual_esgoto_faixa7 = 4977.54 * taxa_igp,
+  custo_individual_esgoto_faixa8 = 5638.27 * taxa_igp,
+  custo_individual_esgoto_faixa9 = 1884.98 * taxa_igp,
+  custo_individual_esgoto_faixa10 = 1988.74 * taxa_igp
 )
 
 valores_aterro <- c(
@@ -110,6 +113,7 @@ residuos <- list(
   fonte_nome = "sinisa",
   fonte_ano = 2023,
   atendimento = "censo",
+  antendimento_ano = 2022,
   snis = "snis_2021",
   snis_rs = "ano2021",
 

@@ -2,7 +2,8 @@
 % Please edit documentation in R/agua_rural.R
 \name{fracao_coletivo_individual_agua}
 \alias{fracao_coletivo_individual_agua}
-\title{Fração de investimentos em água coletivos e individuais}
+\title{Necessidade de Investimento - Componente Água - Situação Rural
+Fração de investimentos em água coletivos e individuais}
 \usage{
 fracao_coletivo_individual_agua(tabela)
 }

@@ -4,14 +4,14 @@
 \alias{get_taxa_igp}
 \title{Calculo da taxa de correção de preço - IGP}
 \usage{
-get_taxa_igp(igp, data_inicial, data_final)
+get_taxa_igp(data_inicial, data_final)
 }
 \arguments{
-\item{igp}{é um \code{data.frame} com a série histórica do IGP com as colunas data e igp(taxa).}
-
 \item{data_inicial}{é um \code{date} contendo a data em que o preço foi atribuido}
 
 \item{data_final}{é um \code{date} contendo uma data mais recente pra qual se quer corrigir o preço}
+
+\item{igp}{é um \code{data.frame} com a série histórica do IGP com as colunas data e igp(taxa).}
 }
 \value{
 um \code{double} que é a taxa pela qual o preço deve ser multiplicada para corrígi-lo.

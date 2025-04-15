@@ -39,7 +39,8 @@ get_igp <- function(){
 #' @examples
 #' data(igp)
 #' valor <- function(igp, as.Date("2016-01-01"), as.Date("2021-01-01"))
-get_taxa_igp <- function(igp, data_inicial, data_final){
+get_taxa_igp <- function(data_inicial, data_final){
+  igp <- get_igp()
   len_ini <- length(data_inicial)
   len_fin <- length(data_final)
   if (len_ini != len_fin){
