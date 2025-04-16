@@ -16,7 +16,7 @@ library(ipeadatar)
 #' @examples
 #' igp <- get_igp()
 get_igp <- function(){
-  igp_code <- "IGP12_IGPDI12"
+  igp_code <- "IGP12_INCC12" # INCC-DI
   igp <- ipeadatar::ipeadata(code=igp_code)
   igp <- igp[c("date", "value")]
   colnames(igp) <- c("data", "igp")
