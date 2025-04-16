@@ -546,8 +546,8 @@ rodar_modulo_rural_agua <- function(state) {
     input$geral$ano_corrente,
     input$agua$vida_util
   )
+  readr::write_excel_csv2(tabela, "tabela.csv")
   rlog::log_info("água:rural: consolidando necessidade")
-
   tabela <- consolida_investimentos_rural_agua(tabela)
 
   state$agua_rural <- adiciona_pais(tabela)

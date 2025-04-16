@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_sinapi.R
 \name{download_sinapi}
 \alias{download_sinapi}
-\title{Baixa dados do SINAPI}
+\title{Baixa dados do SINAPI para um determinado ano e mês}
 \usage{
 download_sinapi(year, month)
 }

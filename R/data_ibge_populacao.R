@@ -224,14 +224,14 @@ censo_2022 <- function() {
 #' @export
 preprocess_censo2022_data <- function() {
   tabela <- censo_2022()
-  readr::write_csv(
+  readr::write_excel_csv2(
     tabela,
     file.path(dir_base_calculo, "censo_2022_setor.csv"),
     quote = "needed",
     append = FALSE
   )
   tabela <- populacao_agrega_municipio(tabela)
-  readr::write_csv(
+  readr::write_excel_csv2(
     tabela,
     file.path(dir_base_calculo, "censo_2022.csv"),
     quote = "needed",
@@ -247,7 +247,7 @@ preprocess_censo2022_data <- function() {
 carrega_censo2022 <- function() {
   path <- file.path(dir_base_calculo, "censo_2022.csv")
   col_types <- "cccccccccccccccccccc"
-  tabela <- readr::read_csv(path, col_types = col_types)
+  tabela <- readr::read_csv2(path, col_types = col_types)
   integer_cols <- c(
     "populacao_rural",
     "populacao_urbana",
@@ -286,26 +286,26 @@ carrega_censo2022 <- function() {
 carrega_censo2022_setor <- function() {
   path <- file.path(dir_base_calculo, "censo_2022_setor.csv")
   col_types <- "cccccccccccccccccccc"
-  tabela <- readr::read_csv(path, col_types = col_types)
-  integer_cols <- c(
-    "codigo_situacao",
-    "populacao",
-    "domicilios",
-    "atendimento_agua",
-    "atendimento_esgoto",
-    "atendimento_coleta_lixo"
+  tabela <- readr::read_delim(
+    path,
+    delim = ";",
+    locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
+    col_types = list(
+      CD_setor = readr::col_character(),
+      codigo_municipio = readr::col_character(),
+      municipio = readr::col_character(),
+      situacao = readr::col_character(),
+      codigo_situacao = readr::col_integer(),
+      area_km2 = readr::col_double(),
+      densidade = readr::col_double(),
+      morador_per_domicilio = readr::col_double(),
+      populacao = readr::col_integer(),
+      domicilios = readr::col_integer(),
+      atendimento_agua = readr::col_integer(),
+      atendimento_esgoto = readr::col_integer(),
+      atendimento_coleta_lixo = readr::col_integer()
+    )
   )
-  double_cols <- c(
-    "area_km2",
-    "densidade",
-    "morador_per_domicilio"
-  )
-  for (col in double_cols) {
-    tabela[[col]] <- as.double(tabela[[col]])
-  }
-  for (col in integer_cols) {
-    tabela[[col]] <- as.integer(tabela[[col]])
-  }
   return(tabela)
 }
 

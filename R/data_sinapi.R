@@ -1,3 +1,4 @@
+sinapi_base_path <- file.path("dados", "brutos", "sinapi")
 #' Último ano e mês
 #'
 #' @return uma `list` com o último ano e mes
@@ -10,10 +11,8 @@ get_last_month_and_year <- function() {
   ))
 }
 
-#' Baixa dados do SINAPI
-#'
 #' Baixa dados do SINAPI para um determinado ano e mês
-
+#'
 #' @param year é um `number` com o ano desejado
 #' @param month é um `number` com o mês desejado
 #'
@@ -23,22 +22,53 @@ download_sinapi <- function(year, month) {
   month <- sprintf("%02.f", as.integer(month))
   type <- "NaoDesonerado"
   z <- 0
+  h <- curl::new_handle()
+  caixa_url <- "https://www.caixa.gov.br/site/Paginas/downloads.aspx"
+  req <- curl::curl_fetch_memory(caixa_url, handle = h)
+  curl::handle_cookies(h)
   for (state in states_acronym()) {
-    url <- paste0(
-      "https://www.caixa.gov.br/Downloads/sinapi-a-partir-jul-2009-",
-      tolower(state), "/SINAPI_ref_Insumos_Composicoes_",
-      state, "_", month, year, "_", type, ".zip"
-    )
+    if (year <= 2023) {
+      url <- paste0(
+        "https://www.caixa.gov.br/Downloads/sinapi-a-partir-jul-2009-",
+        tolower(state), "/SINAPI_ref_Insumos_Composicoes_",
+        state, "_", month, year, "_", type, ".zip"
+      )
+    } else {
+      url <- paste0(
+        "https://www.caixa.gov.br/Downloads/sinapi-a-partir-jul-2009-",
+        tolower(state), "/SINAPI_ref_Insumos_Composicoes_",
+        state, "_", year, month, "_", type, ".zip"
+      )
+    }
     rlog::log_info(sprintf("Baixando SINAPI do ESTADO %s", state))
     rlog::log_info(sprintf("SINAPI URL: %s", url))
-    tmp_file <- tempfile(fileext = ".zip")
+    tmp_file <- paste0("sinapi", year, month, state, ".zip")
+    path_out <- file.path(sinapi_base_path, tmp_file)
     tmp_dir <- tempdir()
-    curl::curl_download(url, tmp_file)
-    lista <- utils::unzip(tmp_file, list = TRUE)
+    if (!dir.exists(sinapi_base_path)) {
+      dir.create(sinapi_base_path, recursive = TRUE)
+    }
+    if (file.exists(path_out)) {
+      rlog::log_info(sprintf("Arquivo %s já existe", path_out))
+    } else {
+      req <- curl::curl_fetch_disk(url, path_out, handle = h)
+      if (req$status_code != 200) {
+        rlog::log_info(sprintf("Erro ao baixar o arquivo %s", url))
+        # first try to download retification trying to download the retification file
+        # remove the .zip from the url
+        url <- gsub(".zip", "_Retificacao01.zip", url)
+        req <- curl::curl_fetch_disk(url, path_out, handle = h)
+        if (req$status_code != 200) {
+          rlog::log_info(sprintf("Erro ao baixar o arquivo %s", url))
+          stop("Erro ao baixar o arquivo")
+        }
+      }
+    }
+    lista <- utils::unzip(path_out, list = TRUE)
     coluna_preco <- paste0("PRECO_", state)
     consolidada <- data.frame()
     for (arquivo in lista$Name) {
-      if (grepl("Sintetico.*NaoDesonerado(.XLS|.xls)", arquivo)) {
+      if (grepl("Sintetico.*NaoDesonerado(.XLS|.xls|.xlsx)", arquivo)) {
         colunas <- c(
           "CODIGO  DA COMPOSICAO", "DESCRICAO DA COMPOSICAO",
           "UNIDADE", "CUSTO TOTAL"
@@ -46,22 +76,22 @@ download_sinapi <- function(year, month) {
         nomes <- c("CODIGO", "DESCRICAO", "UNIDADE", coluna_preco)
         skip <- 4
         tipo <- "COMPOSICAO"
-      } else if (grepl("Insumos.*NaoDesonerado(.XLS|.xls)", arquivo)) {
+      } else if (grepl("Insumos.*NaoDesonerado(.XLS|.xls|.xlsx)", arquivo)) {
         colunas <- c(
           "CODIGO", "DESCRICAO DO INSUMO",
           "UNIDADE DE MEDIDA", "PRECO MEDIANO R$"
         )
         yearmonth <- paste0(year, month)
-        if (as.integer(yearmonth) >= 202206) {
-          colunas[3] <- "UNIDADE"
-        }
+        # if (as.integer(yearmonth) >= 202206) {
+        #  colunas[3] <- "UNIDADE"
+        # }
         nomes <- c("CODIGO", "DESCRICAO", "UNIDADE", coluna_preco)
         skip <- 6
         tipo <- "INSUMO"
       } else {
         next
       }
-      utils::unzip(tmp_file,
+      utils::unzip(path_out,
         exdir = tmp_dir,
         files = c(arquivo), unzip = "unzip"
       )
@@ -88,7 +118,6 @@ download_sinapi <- function(year, month) {
       consolidada <- dplyr::bind_rows(consolidada, tabela)
       unlink(arquivo)
     }
-    unlink(tmp_file)
     if (z == 0) {
       output <- consolidada
     } else {

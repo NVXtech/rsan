@@ -72,10 +72,7 @@ salva_base_calculo <- function(df, componente, fonte, ano) {
   path_out <- file.path(dir_base_calculo, file_name)
   # sort by codigo_municipio
   df <- dplyr::arrange(df, codigo_municipio)
-  readr::write_csv(df,
-    path_out,
-    quote = "needed", append = FALSE
-  )
+  readr::write_excel_csv2(df, path_out, quote = "needed", append = FALSE)
   rlog::log_info(sprintf("Base de Calculo salva em %s", path_out))
 }
 
@@ -93,7 +90,10 @@ carrega_base_calculo <- function(componente, fonte, ano) {
   }
   file_name <- paste0(componente, "_", fonte, "_", ano, ".csv")
   rlog::log_info(sprintf("Base de Calculo - Carregando %s", file_name))
-  df <- readr::read_csv(file.path(dir_base_calculo, file_name), col_types = "c")
+  df <- readr::read_csv2(
+    file.path(dir_base_calculo, file_name),
+    col_types = "c"
+  )
   rlog::log_info("Base de Calculo carregada com sucesso.")
   if (valida_base_calculo(df, componente)) {
     rlog::log_info("Base de Calculo - Validação OK")
