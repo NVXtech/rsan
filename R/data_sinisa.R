@@ -1,7 +1,5 @@
 # Base Path for Raw SNISA Data
 base_path <- file.path("dados", "brutos", "sinisa")
-# Base Path for Processed SNISA Data
-base_path_processed <- file.path("dados", "processados")
 
 #' Download SINISA data
 #'
