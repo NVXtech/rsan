@@ -296,7 +296,7 @@ processa_sinapi_v2025 <- function(ano, mes) {
   df <- dplyr::bind_rows(insumos, composicoes)
   arquivo_saida <- sprintf("sinapi_%04d%02d.csv", ano, mes)
   caminho <- file.path(sinapi_dir_base, arquivo_saida)
-  readr::write_excel_csv2(df, caminho, quote = "needed", append = FALSE)
+  readr::write_csv2(df, caminho, quote = "needed", append = FALSE)
 }
 
 #' Lista de Dados SINAPI disponiveis

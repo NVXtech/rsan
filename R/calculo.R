@@ -333,6 +333,17 @@ rodar_modelo <- function(state) {
   state$necessidade <- adiciona_pais(state$necessidade)
   state$deficit <- adiciona_pais(state$deficit)
 
+  readr::write_excel_csv2(
+    state$necessidade,
+    file = "dados/resultados/necessidade.csv",
+    append = FALSE
+  )
+  readr::write_excel_csv2(
+    state$deficit,
+    file = "dados/resultados/deficit.csv",
+    append = FALSE
+  )
+
   rlog::log_info("rodada terminada")
   return(state)
 }
