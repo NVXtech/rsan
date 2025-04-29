@@ -489,17 +489,17 @@ rodar_modulo_rural_agua <- function(state) {
   tabela <- adiciona_taxa_crescimento(tabela, taxas_projecao)
   tabela <- fazer_projecao_domicilio(tabela, ano_censo, ano_final)
 
-  if (input$agua$atendimento == "censo") {
-    rlog::log_info("água:rural: adicionando atendimento do CENSO")
-    tabela <- calcula_deficit_agua_relativo_censo(tabela)
-  }
   if (input$agua$atendimento == "pnadc") {
     rlog::log_info("água:rural: adicionando atendimento do PNADC")
     tabela <- calcula_deficit_agua_relativo_pnadc(
       tabela,
       input$agua$atendimento_ano
     )
+  } else {
+    rlog::log_info("água:rural: adicionando atendimento do CENSO")
+    tabela <- calcula_deficit_agua_relativo_censo(tabela)
   }
+
   rlog::log_info("água:rural: classificando setores")
   tabela <- classifica_densidade_setor(tabela)
   tabela <- classifica_deficit_setor(tabela)
@@ -546,7 +546,6 @@ rodar_modulo_rural_agua <- function(state) {
     input$geral$ano_corrente,
     input$agua$vida_util
   )
-  readr::write_excel_csv2(tabela, "tabela.csv")
   rlog::log_info("água:rural: consolidando necessidade")
   tabela <- consolida_investimentos_rural_agua(tabela)
 

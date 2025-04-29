@@ -807,7 +807,7 @@ rodar_modulo_financeiro_agua <- function(input, orcamentario) {
   custo <- orcamentario$custo
   tabela <- capacidade_instalada_agua(snis_data, custo)
   ano_final <- input$geral$ano
-  ano_inicial <- nome_para_ano(input$agua$snis) + 1
+  ano_inicial <- input$geral$ano_corrente
   rlog::log_info(sprintf("agua anoi=%s anof=%s", ano_inicial, ano_final))
   ano_corrente <- input$geral$ano_corrente
 

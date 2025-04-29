@@ -72,10 +72,4 @@ test_that("calculos estão rodando", {
   relativo <- dplyr::mutate(relativo, fator = round((total.x - total.y) / total.y * 100))
   print(relativo, n = 13)
   testthat::expect_equal(tibble::as_tibble(valores), expected, tolerance = 1.0)
-  by_subsistema <- dplyr::group_by(state$necessidade, subsistema)
-  by_subsistema <- dplyr::summarise(
-    by_subsistema,
-    total = sum(necessidade_investimento, na.rm = TRUE)
-  )
-  print(by_subsistema)
 })

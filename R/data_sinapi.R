@@ -325,6 +325,10 @@ carrega_sinapi <- function(nome) {
     sinapi_dir_base,
     paste0(nome, ".csv")
   )
-  sinapi <- readr::read_csv2(arquivo, col_types = "c")
+  sinapi <- readr::read_csv2(
+    arquivo,
+    locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
+    col_types = "c"
+  )
   return(sinapi)
 }

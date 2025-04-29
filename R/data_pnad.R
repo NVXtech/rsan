@@ -33,10 +33,10 @@ carrega_pnad_continua <- function(componente, ano) {
       stop(paste("Arquivo não encontrado:", path))
     }
     tabela <- readr::read_delim(path,
+      locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
       skip = 1,
       delim = ";",
-      col_types = "idddddd",
-      locale = readr::locale(decimal_mark = ",", grouping_mark = ".")
+      col_types = "idddddd"
     )
     tabela <- dplyr::filter(tabela, ANO == ano)
     if (nrow(tabela) == 0) {

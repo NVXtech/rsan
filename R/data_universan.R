@@ -92,6 +92,7 @@ carrega_base_calculo <- function(componente, fonte, ano) {
   rlog::log_info(sprintf("Base de Calculo - Carregando %s", file_name))
   df <- readr::read_csv2(
     file.path(dir_base_calculo, file_name),
+    locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
     col_types = "c"
   )
   rlog::log_info("Base de Calculo carregada com sucesso.")

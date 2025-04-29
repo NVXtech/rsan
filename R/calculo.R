@@ -56,9 +56,9 @@ rodar_projecao_populacional <- function(state) {
 #' }
 investimento_drenagem <- function(state) {
   input <- state$input$drenagem
-  ano_inicial <- nome_para_ano(input$snis_ap) + 1
-  ano_final <- state$input$geral$ano
+  ano_inicial <- state$input$geral$ano_corrente
   ano_corrente <- state$input$geral$ano_corrente
+  ano_final <- state$input$geral$ano
   depreciacao <- depreciacao_para_vida_util(input$deprec_drenagem)
   rlog::log_info(sprintf("drenagem anoi=%s anof=%s", ano_inicial, ano_final))
   tabela <- base_municipios()
