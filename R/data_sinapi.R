@@ -276,6 +276,8 @@ processa_sinapi_v2025 <- function(ano, mes) {
     col_names[i] <- paste0("PRECO_", col_names[i])
   }
   names(insumos) <- col_names
+  insumos <- dplyr::mutate(insumos, TIPO = "INSUMO")
+
   composicoes <- readxl::read_excel(
     caminho_xlsx,
     sheet = "CSD",
@@ -292,6 +294,7 @@ processa_sinapi_v2025 <- function(ano, mes) {
   names(composicoes) <- new_col_names
   composicoes <- dplyr::select(composicoes, -c("GRUPO"))
   composicoes <- dplyr::select(composicoes, -dplyr::starts_with("AS_"))
+  composicoes <- dplyr::mutate(composicoes, TIPO = "COMPOSICAO")
 
   df <- dplyr::bind_rows(insumos, composicoes)
   arquivo_saida <- sprintf("sinapi_%04d%02d.csv", ano, mes)
@@ -328,7 +331,13 @@ carrega_sinapi <- function(nome) {
   sinapi <- readr::read_csv2(
     arquivo,
     locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
-    col_types = "c"
+    col_types = readr::cols(
+      TIPO = readr::col_character(),
+      CODIGO = readr::col_character(),
+      DESCRICAO = readr::col_character(),
+      UNIDADE = readr::col_character(),
+      .default = readr::col_double()
+    )
   )
   return(sinapi)
 }
