@@ -166,8 +166,20 @@ get_default_input <- function() {
     residuos = residuos,
     drenagem = drenagem
   )
-  default_input$residuos <- adiciona_preco_unidade_residuos(default_input$residuos, "aterro", valores_aterro)
-  default_input$residuos <- adiciona_preco_unidade_residuos(default_input$residuos, "compostagem", valores_compostagem)
-  default_input$residuos <- adiciona_preco_unidade_residuos(default_input$residuos, "triagem", valores_triagem)
+  default_input$residuos <- adiciona_preco_unidade_residuos(
+    default_input$residuos,
+    "aterro",
+    valores_aterro
+  )
+  default_input$residuos <- adiciona_preco_unidade_residuos(
+    default_input$residuos,
+    "compostagem",
+    valores_compostagem
+  )
+  default_input$residuos <- adiciona_preco_unidade_residuos(
+    default_input$residuos,
+    "triagem",
+    valores_triagem
+  )
   return(default_input)
 }
