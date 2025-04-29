@@ -296,6 +296,11 @@ processa_sinapi_v2025 <- function(ano, mes) {
   df <- dplyr::bind_rows(insumos, composicoes)
   arquivo_saida <- sprintf("sinapi_%04d%02d.csv", ano, mes)
   caminho <- file.path(sinapi_dir_base, arquivo_saida)
+  for (col in names(df)) {
+    if (grepl("^PRECO_", col)) {
+      df[[col]] <- as.double(df[[col]])
+    }
+  }
   readr::write_csv2(df, caminho, quote = "needed", append = FALSE)
 }
 
