@@ -378,14 +378,17 @@ rodar_modulo_rural_esgoto <- function(state) {
   custo_coleta <- agua_esgoto_rural$custo_coleta
   custo_tratamento <- agua_esgoto_rural$custo_tratamento
 
-  tabela <- carrega_censo2022_setor()
+  tabela <- base_municipios()
+  tabela <- dplyr::left_join(
+    tabela,
+    carrega_censo2022_setor(),
+    by = "codigo_municipio"
+  )
   tabela <- filtra_setores_rurais(tabela)
   tabela <- adiciona_taxa_crescimento(tabela, taxas_projecao)
   tabela <- fazer_projecao_domicilio(tabela, ano_censo, ano)
   tabela <- classifica_densidade_setor(tabela)
   tabela <- classifica_deficit_setor(tabela)
-  tabela <- adiciona_estado(tabela)
-  tabela <- adiciona_regiao(tabela)
 
   # Usado para classificação coletivo_individual
   # tabela <- adiciona_deficit_rural_agua_pnad(tabela, agua_esgoto_rural$deficit_pnad)
@@ -399,7 +402,6 @@ rodar_modulo_rural_esgoto <- function(state) {
     tabela <- calcula_deficit_esgoto_relativo_pnadc(tabela, input$esgoto$atendimento_ano)
   }
 
-  tabela <- adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
   tabela <- fracao_coletivo_individual_esgoto(tabela)
 
   tabela <- custo_individual_esgoto(tabela, input$esgoto)

@@ -152,7 +152,6 @@ investimento_residuos <- function(state) {
   tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
   tabela <- adiciona_projecao_populacao(state$projecao, ano, tabela)
   tabela <- adiciona_tipo_disposicao(tabela)
-  tabela <- adiciona_classificacao_litoranea(tabela)
 
   # Densidade Veicular (per capita)
   tabela <- densidade_caminhoes_compactadores(tabela)

@@ -289,20 +289,6 @@ adiciona_deficit_rural_agua_pnad <- function(tabela, deficit) {
   tabela <- dplyr::left_join(tabela, deficit, by = "estado")
 }
 
-#' Segurança Hídrica
-#'
-#' Adiciona dados de segurança hídrica
-#'
-#' @param tabela um `data.frame` contendo a coluna `codigo_municipio`
-#' @param deficit um `data.frame` contendo a coluna `codigo_municipio`, `seguranca_hidrica` e `semiarido`.
-#' @export
-#'
-#' @return um `data.frame` contendo a coluna adicional `taxa_crescimento`.
-adiciona_seguranca_hidrica <- function(tabela, seguranca_hidrica) {
-  manter <- c("codigo_municipio", "seguranca_hidrica", "semiarido")
-  seguranca_hidrica <- dplyr::select(seguranca_hidrica, dplyr::all_of(manter))
-  tabela <- dplyr::left_join(tabela, seguranca_hidrica, by = "codigo_municipio")
-}
 
 #' Filtra setores censitarios
 #'
@@ -472,7 +458,6 @@ rodar_modulo_rural_agua <- function(state) {
   rlog::log_info("água:rural: carregando dados")
   data("agua_esgoto_rural", package = "rsan")
   agua_esgoto_rural <- get("agua_esgoto_rural")
-  seguranca_hidrica <- agua_esgoto_rural$seguranca_hidrica
   custo_producao <- agua_esgoto_rural$custo_producao
   custo_distribuicao <- agua_esgoto_rural$custo_distribuicao
 
@@ -503,7 +488,6 @@ rodar_modulo_rural_agua <- function(state) {
   rlog::log_info("água:rural: classificando setores")
   tabela <- classifica_densidade_setor(tabela)
   tabela <- classifica_deficit_setor(tabela)
-  tabela <- adiciona_seguranca_hidrica(tabela, seguranca_hidrica)
   tabela <- fracao_coletivo_individual_agua(tabela)
   rlog::log_info("água:rural: calculando custos")
   tabela <- custo_individual_agua(

@@ -62,28 +62,6 @@ adiciona_regiao <- function(tabela) {
   return(tabela)
 }
 
-#' Classificação litorânea
-#'
-#' Adiciona se o municipio é litorâneo ou não.
-#'
-#' @param tabela contendo coluna codigo_municipio
-#'
-#' @return tabela com coluna adicional `litoral`
-#' @export
-#'
-#' @examples
-#' codigo_municipio <- c("1200013", "1200054", "1200104", "1200138")
-#' input <- dplyr::tibble(codigo_municipio)
-#' tabela <- adiciona_classificacao_litoranea(input)
-adiciona_classificacao_litoranea <- function(tabela) {
-  data(municipio_litoraneos, package = "rsan")
-  original_colnames <- colnames(tabela)
-  output_cols <- c(original_colnames, "regiao")
-  municipio_litoraneos <- dplyr::select(municipio_litoraneos, c("codigo_municipio", "litoral"))
-  tabela <-
-    dplyr::left_join(tabela, municipio_litoraneos, by = "codigo_municipio")
-  return(tabela)
-}
 
 #' Adiciona coluna de País
 #'
@@ -133,8 +111,6 @@ codigo6_para_codigo_ibge <- function(tabela, nome_campo) {
 #' @return tabela com as localidades
 #' @export
 base_municipios <- function() {
-  data(municipio, package = "rsan")
-  municipio <- dplyr::rename(municipio, estado_nome = estado, estado = estado_sigla)
-  municipio <- adiciona_pais(municipio)
-  return(municipio)
+  municipios <- readr::read_csv2("dados/base_calculo/municipios.csv", col_types = "c")
+  return(municipios)
 }
