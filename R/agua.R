@@ -331,11 +331,13 @@ calcula_custo_relativo_producao <-
     tabela <-
       dplyr::full_join(projeto_producao, preco_unidade, by = "unidade")
 
-    # carrega dados predominancia do tipo de producao de água
-    data("projeto_predominancia_tipo_producao", package = "rsan")
+    projeto_tipo_producao <- carrega_dado_auxiliar(
+      "agua_projeto_producao_tipos"
+    )
+
     predominancia <-
       tidyr::pivot_longer(
-        projeto_predominancia_tipo_producao,
+        projeto_tipo_producao,
         all_of(c("superficial", "subterranea")),
         names_to = "tipo",
         values_to = "predominancia"
@@ -490,7 +492,7 @@ calcula_custo_extensao <- function(demanda, extensao, tipo) {
 calcula_custo_expansao_producao <-
   function(demanda, producao, perda_agua) {
     fator_perda <- fator_perda_agua(perda_agua)
-    data("projeto_producao_agua", package = "rsan")
+    projeto_producao_agua <- carrega_dado_auxiliar("agua_projeto_producao")
     custo_relativo <-
       calcula_custo_relativo_producao(producao, projeto_producao_agua)
     tabela <-
@@ -733,7 +735,7 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
 rodar_modulo_orcamentario_agua <- function(input, demografico) {
   sinapi <- carrega_sinapi(input$agua$sinapi)
 
-  data("projeto_distribuicao_agua", package = "rsan")
+  projeto_distribuicao_agua <- carrega_dado_auxiliar("agua_projeto_distribuicao")
 
   distribuicao <- calcula_precos_distribuicao(
     projeto_distribuicao_agua,
@@ -741,7 +743,7 @@ rodar_modulo_orcamentario_agua <- function(input, demografico) {
     input$agua$fator_servicos,
     input$agua$fator_materiais
   )
-  data("projeto_producao_agua_unidades", package = "rsan")
+  projeto_producao_agua_unidades <- carrega_dado_auxiliar("agua_projeto_producao_unidades")
   producao <- calcula_preco_unidades_producao(
     projeto_producao_agua_unidades,
     sinapi,

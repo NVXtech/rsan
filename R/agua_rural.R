@@ -456,10 +456,8 @@ rodar_modulo_rural_agua <- function(state) {
   ano_inicial <- input$agua$atendimento_ano
 
   rlog::log_info("água:rural: carregando dados")
-  data("agua_esgoto_rural", package = "rsan")
-  agua_esgoto_rural <- get("agua_esgoto_rural")
-  custo_producao <- agua_esgoto_rural$custo_producao
-  custo_distribuicao <- agua_esgoto_rural$custo_distribuicao
+  custo_producao <- carrega_dado_auxiliar("agua_rural_custo_producao")
+  custo_distribuicao <- carrega_dado_auxiliar("agua_rural_custo_distribuicao")
 
   rlog::log_info("água:rural: carregando setores censitários")
   tabela <- base_municipios()

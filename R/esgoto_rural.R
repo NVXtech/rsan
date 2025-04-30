@@ -372,11 +372,8 @@ rodar_modulo_rural_esgoto <- function(state) {
   ano_corrente <- input$geral$ano_corrente
   ano_censo <- nome_para_ano(input$projecao$fonte2)
 
-  data("agua_esgoto_rural", package = "rsan")
-  agua_esgoto_rural <- get("agua_esgoto_rural")
-  seguranca_hidrica <- agua_esgoto_rural$seguranca_hidrica
-  custo_coleta <- agua_esgoto_rural$custo_coleta
-  custo_tratamento <- agua_esgoto_rural$custo_tratamento
+  custo_coleta <- carrega_dado_auxiliar("esgoto_rural_custo_coleta")
+  custo_tratamento <- carrega_dado_auxiliar("esgoto_rural_custo_tratamento")
 
   tabela <- base_municipios()
   tabela <- dplyr::left_join(

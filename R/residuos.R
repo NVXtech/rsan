@@ -788,8 +788,7 @@ densidade_caminhoes_compactadores <- function(tabela) {
 #' @return um `data.frame` com as colunas adicionais `meta_coleta`, `meta_compostagem`e `meta_reaproveitamento`
 #' @export
 meta_plansab_residuo <- function(tabela) {
-  data("plansab", package = "rsan")
-  plansab <- get("plansab")
+  plansab <- carrega_dado_auxiliar("residuos_meta_plansab")
   vars <- c("regiao", "meta_coleta", "meta_compostagem", "meta_reaproveitamento")
   plansab <- dplyr::select(plansab, dplyr::all_of(vars))
   tabela <- dplyr::left_join(
@@ -806,8 +805,7 @@ meta_plansab_residuo <- function(tabela) {
 #' @return um `data.frame` com as colunas adicionais `meta_coleta`, `meta_compostagem`e `meta_reaproveitamento`
 #' @export
 adiciona_tipo_disposicao <- function(tabela) {
-  data("tipo_disposicao", package = "rsan")
-  tipo_disposicao <- get("tipo_disposicao")
+  tipo_disposicao <- carrega_dado_auxiliar("residuos_tipo_disposicao")
   vars <- c("codigo_municipio", "tipo_disposicao")
   tipo_disposicao <- dplyr::select(tipo_disposicao, dplyr::all_of(vars))
   tabela <- dplyr::left_join(
@@ -1170,7 +1168,9 @@ demanda_transbordo <- function(tabela) {
 #' @export
 regionaliza_transbordo <- function(tabela, cenario) {
   if (cenario == "C") {
-    data("potencial_regionalizacao", package = "rsan")
+    potencial_regionalizacao <- carrega_dado_auxiliar(
+      "residuos_potencial_regionalizacao"
+    )
     pesos <- dplyr::select(
       potencial_regionalizacao,
       all_of(c("regiao", "potencial_transbordo_c"))
@@ -1178,7 +1178,9 @@ regionaliza_transbordo <- function(tabela, cenario) {
     tabela <- dplyr::left_join(tabela, pesos, by = "regiao")
     tabela <- dplyr::rename(tabela, peso = potencial_transbordo_c)
   } else if (cenario == "B") {
-    data("potencial_regionalizacao", package = "rsan")
+    potencial_regionalizacao <- carrega_dado_auxiliar(
+      "residuos_potencial_regionalizacao"
+    )
     pesos <- dplyr::select(
       potencial_regionalizacao,
       all_of(c("regiao", "potencial_transbordo_b"))
@@ -1227,8 +1229,9 @@ regionaliza_triagem <- function(tabela, cenario) {
     tabela <- regionaliza100(tabela, campo = "demanda_triagem")
     return(tabela)
   } else if (cenario == "B") {
-    data("potencial_regionalizacao", package = "rsan")
-    potencial <- get("potencial_regionalizacao")
+    potencial <- carrega_dado_auxiliar(
+      "residuos_potencial_regionalizacao"
+    )
     tabela <- regionaliza_faixa1(
       tabela,
       potencial,
@@ -1255,8 +1258,9 @@ regionaliza_compostagem <- function(tabela, cenario) {
     tabela <- regionaliza100(tabela, campo = "demanda_compostagem")
     return(tabela)
   } else if (cenario == "B") {
-    data("potencial_regionalizacao", package = "rsan")
-    potencial <- get("potencial_regionalizacao")
+    potencial <- carrega_dado_auxiliar(
+      "residuos_potencial_regionalizacao"
+    )
     tabela <- regionaliza_faixa2e6(
       tabela,
       potencial,
@@ -1283,8 +1287,9 @@ regionaliza_compostagem <- function(tabela, cenario) {
     tabela <- regionaliza100(tabela, campo = "demanda_compostagem")
     return(tabela)
   } else if (cenario == "B") {
-    data("potencial_regionalizacao", package = "rsan")
-    potencial <- get("potencial_regionalizacao")
+    potencial <- carrega_dado_auxiliar(
+      "residuos_potencial_regionalizacao"
+    )
     tabela <- regionaliza_faixa2e6(
       tabela,
       potencial,
@@ -1311,8 +1316,9 @@ regionaliza_aterro <- function(tabela, cenario) {
     tabela <- regionaliza100(tabela, campo = "demanda_aterro")
     return(tabela)
   } else if (cenario == "B") {
-    data("potencial_regionalizacao", package = "rsan")
-    potencial <- get("potencial_regionalizacao")
+    potencial <- carrega_dado_auxiliar(
+      "residuos_potencial_regionalizacao"
+    )
     tabela <- regionaliza_faixa2e6(
       tabela,
       potencial,

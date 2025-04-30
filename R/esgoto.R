@@ -102,7 +102,7 @@ calcula_custo_relativo_tratamento <-
 #' custo_relativo <- calcula_custo_expansao_tratamento(demanda, tratamento)
 #' }
 calcula_custo_expansao_tratamento <- function(demanda, tratamento) {
-  data("projeto_tratamento_esgoto", package = "rsan")
+  projeto_tratamento_esgoto <- carrega_dado_auxiliar("esgoto_projeto_tratamento")
   custo_relativo <-
     calcula_custo_relativo_tratamento(tratamento, projeto_tratamento_esgoto)
   tabela <-
@@ -273,7 +273,7 @@ tbl_longa_deficit_esgoto <- function(tabela) {
 rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
   sinapi <- carrega_sinapi(input$esgoto$sinapi)
 
-  data("projeto_coleta_esgoto", package = "rsan")
+  projeto_coleta_esgoto <- carrega_dado_auxiliar("esgoto_projeto_coleta")
   coleta <- calcula_precos_distribuicao(
     projeto_coleta_esgoto,
     sinapi,
@@ -281,9 +281,11 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
     input$esgoto$fator_materiais
   )
 
-  data("projeto_tratamento_esgoto_unidades", package = "rsan")
+  projeto_tratamento_unidades <- carrega_dado_auxiliar(
+    "esgoto_projeto_tratamento_unidades"
+  )
   tratamento <- calcula_preco_unidades_producao(
-    projeto_tratamento_esgoto_unidades,
+    projeto_tratamento_unidades,
     sinapi,
     input$esgoto$fator_insumo,
     input$esgoto$fator_composicao

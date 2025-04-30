@@ -72,8 +72,9 @@ tbl_longa_investimento_drenagem <- function(tabela) {
 #' tabela <- capacidade_instalada_drenagem(tabela)
 #' }
 capacidade_instalada_drenagem <- function(tabela) {
-  data("investimento_existente", package = "rsan")
-  investimento_existente <- get("investimento_existente")
+  investimento_existente <- carrega_dado_auxiliar(
+    "drenagem_investimento_existente"
+  )
   tabela <- dplyr::left_join(
     tabela, investimento_existente,
     by = "codigo_municipio"
@@ -164,7 +165,9 @@ regressao_multipla_drenagem <- function(plano) {
 #' @return o `data.frame` do plano drenagem com os preços corrigidos
 #' @export
 corrige_plano_drenagem <- function(data) {
-  data(plano_drenagem, package = "rsan")
+  plano_drenagem <- carrega_dado_auxiliar(
+    "drenagem_plano"
+  )
   plano_drenagem <- dplyr::mutate(
     plano_drenagem,
     data_inicial = as.Date(paste0(as.character(ano_plano), "-06-30")),
@@ -210,7 +213,9 @@ coeficiente_pd <- function(tabela) {
 #' tabela <- precipitacao(tabela)
 #' }
 precipitacao <- function(tabela) {
-  data(pluviometria, package = "rsan")
+  pluviometria <- carrega_dado_auxiliar(
+    "drenagem_pluviometria"
+  )
   pluviometria <- dplyr::select(
     pluviometria,
     codigo_municipio,
@@ -257,8 +262,15 @@ densidade_urbana <- function(tabela) {
 #' tabela <- area_urbana(tabela)
 #' }
 area_urbana <- function(tabela) {
-  data("area_urbana_municipio", package = "rsan")
-  area_urbana_municipio <- get("area_urbana_municipio")
+  # TODO: use data from censo
+  area_urbana_municipio <- carrega_dado_auxiliar(
+    "drenagem_area_urbana"
+  )
+  area_urbana_municipio <- dplyr::select(
+    area_urbana_municipio,
+    codigo_municipio,
+    area_urbana
+  )
   tabela <- dplyr::left_join(
     tabela, area_urbana_municipio,
     by = "codigo_municipio"
@@ -275,7 +287,9 @@ area_urbana <- function(tabela) {
 #' @return a tabela de entrada com os campos adicionais dos índices (`caracteriticas_fisicas` e `infraestrutura`)
 #' @export
 adiciona_indices_drenagem <- function(tabela) {
-  data("indices_drenagem", package = "rsan")
+  indices_drenagem <- carrega_dado_auxiliar(
+    "drenagem_indices"
+  )
   tabela <- dplyr::left_join(tabela, indices_drenagem, by = "codigo_municipio")
   return(tabela)
 }
@@ -303,8 +317,9 @@ investimento_cadastro <- function(tabela, valor) {
 #' @return a tabela de entrada mantendo apenas os municípios críticos
 #' @export
 remove_nao_criticos <- function(tabela) {
-  data("drenagem_municipios_criticos", package = "rsan")
-  criticos <- get("drenagem_municipios_criticos")
+  criticos <- carrega_dado_auxiliar(
+    "drenagem_municipios_acriticos"
+  )
   names(criticos) <- c("codigo_municipio", "regiao", "municipio", "estado", "critico", "populacao_total", "populacao_urbana", "populacao_rural", "coleta_snis")
   criticos <- dplyr::filter(criticos, critico == "Sim")
   criticos <- dplyr::select(criticos, c("codigo_municipio"))
