@@ -104,3 +104,18 @@ carrega_base_calculo <- function(componente, fonte, ano) {
   }
   return(df)
 }
+
+
+carrega_dado_auxiliar <- function(nome) {
+  path <- file.path("dados", "base_calculo", paste0(nome, ".csv"))
+  if (!file.exists(path)) {
+    rlog::log_error(sprintf("Arquivo auxiliar %s não encontrado", nome))
+    return(NULL)
+  }
+  df <- readr::read_csv2(
+    path,
+    locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
+    show_col_types = FALSE
+  )
+  return(df)
+}
