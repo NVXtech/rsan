@@ -117,5 +117,8 @@ carrega_dado_auxiliar <- function(nome) {
     locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
     show_col_types = FALSE
   )
+  if ("codigo_municipio" %in% names(df)) {
+    df$codigo_municipio <- as.character(df$codigo_municipio)
+  }
   return(df)
 }
