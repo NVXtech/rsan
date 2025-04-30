@@ -318,7 +318,7 @@ investimento_cadastro <- function(tabela, valor) {
 #' @export
 remove_nao_criticos <- function(tabela) {
   criticos <- carrega_dado_auxiliar(
-    "drenagem_municipios_acriticos"
+    "drenagem_municipios_criticos"
   )
   names(criticos) <- c("codigo_municipio", "regiao", "municipio", "estado", "critico", "populacao_total", "populacao_urbana", "populacao_rural", "coleta_snis")
   criticos <- dplyr::filter(criticos, critico == "Sim")
