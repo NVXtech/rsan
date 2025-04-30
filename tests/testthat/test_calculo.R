@@ -70,6 +70,12 @@ test_that("calculos estão rodando", {
     by = c("componente", "situacao", "destino"),
   )
   relativo <- dplyr::mutate(relativo, fator = round((total.x - total.y) / total.y * 100))
+  # format cols total.x e total.y com separador de milhar . e decimal ,
+  relativo <- dplyr::mutate(
+    relativo,
+    total.x = format(total.x, big.mark = ".", decimal.mark = ",", scientific = FALSE),
+    total.y = format(total.y, big.mark = ".", decimal.mark = ",", scientific = FALSE)
+  )
   print(relativo, n = 13)
   testthat::expect_equal(tibble::as_tibble(valores), expected, tolerance = 1.0)
 })
