@@ -13,19 +13,29 @@ get_last_month_and_year <- function() {
   ))
 }
 
+
 #' Baixa dados do SINAPI para um determinado ano e mês
 #'
-#' @param year é um `number` com o ano desejado
-#' @param month é um `number` com o mês desejado
+#' @param year é um `character` com o ano desejado
+#' @param month é um `character` com o mês desejado
 #'
 #' @return um `data.frame` com os dados do SINAPI
 #' @export
 download_sinapi <- function(year, month) {
-  month <- sprintf("%02.f", as.integer(month))
+  year_month <- paste0(year, month)
+  if (as.integer(year_month) >= 202501) {
+    rlog::log_info("Baixando SINAPI 2025")
+    return(processa_sinapi_v2025(year, month))
+  } else {
+    rlog::log_info("Baixando SINAPI 2009")
+    return(download_extract_sinapi_v2009(year, month))
+  }
+}
+
+download_sinapi_v2009 <- function(year, month) {
   type <- "NaoDesonerado"
-  z <- 0
-  h <- curl::new_handle()
   caixa_url <- "https://www.caixa.gov.br/site/Paginas/downloads.aspx"
+  h <- curl::new_handle()
   req <- curl::curl_fetch_memory(caixa_url, handle = h)
   curl::handle_cookies(h)
   for (state in states_acronym()) {
@@ -44,13 +54,16 @@ download_sinapi <- function(year, month) {
     }
     rlog::log_info(sprintf("Baixando SINAPI do ESTADO %s", state))
     rlog::log_info(sprintf("SINAPI URL: %s", url))
-    tmp_file <- paste0("sinapi", year, month, state, ".zip")
-    path_out <- file.path(sinapi_dir_bruto, tmp_file)
-    tmp_dir <- tempdir()
+
+    zip_filename <- paste0("sinapi", year, month, state, ".zip")
+    path_out <- file.path(sinapi_dir_bruto, zip_filename)
     if (!dir.exists(sinapi_dir_bruto)) {
       dir.create(sinapi_dir_bruto, recursive = TRUE)
     }
-    if (file.exists(path_out)) {
+
+    zip_already_exists <- file.exists(path_out)
+
+    if (zip_already_exists) {
       rlog::log_info(sprintf("Arquivo %s já existe", path_out))
     } else {
       req <- curl::curl_fetch_disk(url, path_out, handle = h)
@@ -66,71 +79,140 @@ download_sinapi <- function(year, month) {
         }
       }
     }
-    lista <- utils::unzip(path_out, list = TRUE)
-    coluna_preco <- paste0("PRECO_", state)
-    consolidada <- data.frame()
+  }
+}
+
+extract_sinapi_v2009 <- function(year, month) {
+  extract_dir <- file.path("dados", "brutos", "sinapi", paste0(year, month))
+  if (!dir.exists(extract_dir)) {
+    dir.create(extract_dir, recursive = TRUE)
+  }
+  month <- sprintf("%02.f", as.integer(month))
+  for (state in states_acronym()) {
+    zip_filename <- paste0("sinapi", year, month, state, ".zip")
+    zip_path <- file.path(sinapi_dir_bruto, zip_filename)
+    lista <- utils::unzip(zip_path, list = TRUE)
     for (arquivo in lista$Name) {
-      if (grepl("Sintetico.*NaoDesonerado(.XLS|.xls|.xlsx)", arquivo)) {
-        colunas <- c(
-          "CODIGO  DA COMPOSICAO", "DESCRICAO DA COMPOSICAO",
-          "UNIDADE", "CUSTO TOTAL"
-        )
-        nomes <- c("CODIGO", "DESCRICAO", "UNIDADE", coluna_preco)
-        skip <- 4
-        tipo <- "COMPOSICAO"
-      } else if (grepl("Insumos.*NaoDesonerado(.XLS|.xls|.xlsx)", arquivo)) {
-        colunas <- c(
-          "CODIGO", "DESCRICAO DO INSUMO",
-          "UNIDADE DE MEDIDA", "PRECO MEDIANO R$"
-        )
-        # yearmonth <- paste0(year, month)
-        # if (as.integer(yearmonth) >= 202206) {
-        #  colunas[3] <- "UNIDADE"
-        # }
-        nomes <- c("CODIGO", "DESCRICAO", "UNIDADE", coluna_preco)
-        skip <- 6
-        tipo <- "INSUMO"
-      } else {
-        next
-      }
-      utils::unzip(path_out,
-        exdir = tmp_dir,
-        files = c(arquivo), unzip = "unzip"
-      )
-      caminho <- file.path(tmp_dir, arquivo)
-      tabela <- readxl::read_excel(
-        caminho,
-        sheet = 1, skip = skip, col_types = "text"
-      )
-      tabela <- dplyr::select(tabela, dplyr::all_of(colunas))
-      rlog::log_info("Removing NA")
-      tabela <- tabela[complete.cases(tabela), ] # REMOVE LINHAS COM NA
-      names(tabela) <- nomes
-      tabela[["TIPO"]] <- tipo
-      tabela[[coluna_preco]] <- as.double(
-        gsub(
-          pattern = ",", replacement = ".",
-          gsub(
-            pattern = "\\.", replacement = "",
-            tabela[[coluna_preco]]
+      file_ext <- tolower(tools::file_ext(arquivo))
+      is_composicao <- grepl("Sintetico.*NaoDesonerado(.XLS|.xls|.xlsx)", arquivo)
+      is_insumo <- grepl("Insumos.*NaoDesonerado(.XLS|.xls|.xlsx)", arquivo)
+      if (is_composicao || is_insumo) {
+        if (is_composicao) {
+          rlog::log_info("Extraindo Composicoes")
+          fname <- sprintf("Composicoes_%s.%s", state, file_ext)
+        } else if (is_insumo) {
+          fname <- sprintf("Insumos_%s.%s", state, file_ext)
+        }
+        output_path <- file.path(extract_dir, fname)
+        if (file.exists(output_path)) {
+          rlog::log_info(sprintf("Arquivo %s já existe", fname))
+        } else {
+          rlog::log_info(sprintf("Extraindo arquivo %s", arquivo))
+          utils::unzip(zip_path,
+            exdir = extract_dir,
+            files = c(arquivo), unzip = "unzip"
           )
-        )
-      )
-      rlog::log_info("Consolidando Insumos e Composicoes")
-      consolidada <- dplyr::bind_rows(consolidada, tabela)
-      unlink(arquivo)
+          file.rename(file.path(extract_dir, arquivo), output_path)
+        }
+      }
     }
+  }
+  return(extract_dir)
+}
+
+processa_composicoes <- function(state, year, month) {
+  fname <- sprintf("Composicoes_%s.xls", state)
+  extract_dir <- file.path("dados", "brutos", "sinapi", paste0(year, month))
+  file_name <- tools::file_path_sans_ext(fname)
+  state <- strsplit(file_name, "_")[[1]][2]
+  coluna_preco <- paste0("PRECO_", state)
+  file_path <- file.path(extract_dir, fname)
+  if (!file.exists(file_path)) {
+    file_path <- paste0(file_path, "x")
+  }
+  composicoes <- readxl::read_excel(file_path, sheet = 1, skip = 4, col_types = "text")
+  colunas <- c(
+    "CODIGO  DA COMPOSICAO", "DESCRICAO DA COMPOSICAO",
+    "UNIDADE", "CUSTO TOTAL"
+  )
+  nomes <- c("CODIGO", "DESCRICAO", "UNIDADE", coluna_preco)
+  print(nomes)
+  composicoes <- dplyr::select(composicoes, dplyr::all_of(colunas))
+  names(composicoes) <- nomes
+  composicoes <- dplyr::mutate(composicoes, TIPO = "COMPOSICAO")
+  composicoes <- composicoes[complete.cases(composicoes), ] # REMOVE LINHAS COM NA
+  composicoes[[coluna_preco]] <- as.double(
+    gsub(
+      pattern = ",", replacement = ".",
+      gsub(
+        pattern = "\\.", replacement = "",
+        composicoes[[coluna_preco]]
+      )
+    )
+  )
+  return(composicoes)
+}
+
+processa_insumos <- function(state, year, month) {
+  fname <- sprintf("Insumos_%s.xls", state)
+  extract_dir <- file.path("dados", "brutos", "sinapi", paste0(year, month))
+  file_name <- tools::file_path_sans_ext(fname)
+  state <- strsplit(file_name, "_")[[1]][2]
+  coluna_preco <- paste0("PRECO_", state)
+  file_path <- file.path(extract_dir, fname)
+  if (!file.exists(file_path)) {
+    file_path <- paste0(file_path, "x")
+  }
+  insumos <- readxl::read_excel(file_path, sheet = 1, skip = 6, col_types = "text")
+  colunas <- c(
+    "CODIGO", "DESCRICAO DO INSUMO",
+    "UNIDADE DE MEDIDA", "PRECO MEDIANO R$"
+  )
+  nomes <- c("CODIGO", "DESCRICAO", "UNIDADE", coluna_preco)
+  insumos <- dplyr::select(insumos, dplyr::all_of(colunas))
+  names(insumos) <- nomes
+  insumos <- dplyr::mutate(insumos, TIPO = "INSUMO")
+  insumos <- insumos[complete.cases(insumos), ] # REMOVE LINHAS COM NA
+  insumos[[coluna_preco]] <- as.double(
+    gsub(
+      pattern = ",", replacement = ".",
+      gsub(
+        pattern = "\\.", replacement = "",
+        insumos[[coluna_preco]]
+      )
+    )
+  )
+  return(insumos)
+}
+
+processa_sinapi_v2009 <- function(year, month) {
+  consolidada <- data.frame()
+  z <- 0
+  for (state in states_acronym()) {
+    composicoes <- processa_composicoes(state, year, month)
+    insumos <- processa_insumos(state, year, month)
+    tabela <- dplyr::bind_rows(composicoes, insumos)
     if (z == 0) {
-      output <- consolidada
+      consolidada <- tabela
     } else {
       rlog::log_info("Juntando estados")
-      vars <- c("CODIGO", coluna_preco)
-      consolidada <- dplyr::select(consolidada, dplyr::all_of(vars))
-      output <- dplyr::left_join(output, consolidada, by = "CODIGO")
+      consolidada <- dplyr::left_join(consolidada, tabela, by = "CODIGO")
     }
     z <- z + 1
   }
-  return(output)
+  return(consolidada)
+}
+
+download_extract_sinapi_v2009 <- function(year, month) {
+  if (!is.character(month)) {
+    month <- sprintf("%02.f", as.integer(month))
+  }
+  if (!is.character(year)) {
+    year <- as.character(year)
+  }
+  download_sinapi_v2009(year, month)
+  extract_sinapi_v2009(year, month)
+  return(processa_sinapi_v2009(year, month))
 }
 
 

@@ -26,7 +26,7 @@ salva_parametros <- function(state, input, name) {
 
 geral <- list(
   ano = 2033,
-  ano_corrente = 2023
+  ano_corrente = 2022
 )
 
 taxa_igp <- get_taxa_igp(as.Date("2018-07-01"), as.Date("2022-01-01"))
@@ -38,8 +38,8 @@ projecao <- list(
 agua <- list(
   fonte_nome = "sinisa",
   fonte_ano = 2023,
-  atendimento = "pnadc",
-  atendimento_ano = 2023,
+  atendimento = "censo",
+  atendimento_ano = 2022,
   sinapi = "sinapi_202112",
   meta_agua = 99,
   perda_agua = 25,
@@ -55,8 +55,8 @@ agua <- list(
 esgoto <- list(
   fonte_nome = "sinisa",
   fonte_ano = 2023,
-  atendimento = "pnadc",
-  atendimento_ano = 2023,
+  atendimento = "censo",
+  atendimento_ano = 2022,
   sinapi = "sinapi_202112",
   meta_esgoto = 90,
   proporcao = 80,

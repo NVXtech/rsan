@@ -7,9 +7,9 @@
 download_sinapi(year, month)
 }
 \arguments{
-\item{year}{é um \code{number} com o ano desejado}
+\item{year}{é um \code{character} com o ano desejado}
 
-\item{month}{é um \code{number} com o mês desejado}
+\item{month}{é um \code{character} com o mês desejado}
 }
 \value{
 um \code{data.frame} com os dados do SINAPI
