@@ -272,13 +272,18 @@ tbl_longa_deficit_esgoto <- function(tabela) {
 #' }
 rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
   sinapi <- carrega_sinapi(input$esgoto$sinapi)
-
+  ano_corrente <- input$geral$ano_corrente
+  fator_correcao <- calcula_fator_correcao_sinapi(
+    input$agua$sinapi,
+    ano_corrente
+  )
   projeto_coleta_esgoto <- carrega_dado_auxiliar("esgoto_projeto_coleta")
   coleta <- calcula_precos_distribuicao(
     projeto_coleta_esgoto,
     sinapi,
     input$esgoto$fator_servicos,
-    input$esgoto$fator_materiais
+    input$esgoto$fator_materiais,
+    fator_correcao
   )
   salva_resultado_intermediario(
     tidyr::pivot_wider(
@@ -287,7 +292,7 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
       values_from = "preco"
     ), "esgoto_custo_coleta",
     "base"
-    )
+  )
   projeto_tratamento_unidades <- carrega_dado_auxiliar(
     "esgoto_projeto_tratamento_unidades"
   )
@@ -295,7 +300,8 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
     projeto_tratamento_unidades,
     sinapi,
     input$esgoto$fator_insumo,
-    input$esgoto$fator_composicao
+    input$esgoto$fator_composicao,
+    fator_correcao
   )
   salva_resultado_intermediario(
     tidyr::pivot_wider(
@@ -304,7 +310,7 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
       values_from = "preco"
     ), "esgoto_custo_unidade_tratamento",
     "base"
-    )
+  )
 
   custo <- calcula_custo_expansao_esgoto(
     demografico,

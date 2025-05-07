@@ -207,6 +207,7 @@ verifica_codigos_faltantes <- function(df, sinapi) {
 #' @param sinapi o `data.frame` com os preços do SINAPI
 #' @param taxa_servico fator de correção do preço para serviços
 #' @param taxa_materiais fator de correção do preço para materiais
+#' @param fator_correcao fator de correção monetária (1+% de correção)
 #'
 #' @return um `data.frame` com preços por projeto e por estado
 #' @export
@@ -219,7 +220,8 @@ calcula_precos_distribuicao <-
   function(df_projeto,
            sinapi,
            taxa_servico = 26,
-           taxa_materiais = 18) {
+           taxa_materiais = 18,
+           fator_correcao = 1.0) {
     lista_projetos <- c("07a", "07b", "08a", "08b", "09a", "09b")
     taxa_servico <- taxa_servico / 100.0 + 1.0
     taxa_materiais <- taxa_materiais / 100.0 + 1.0
@@ -248,12 +250,13 @@ calcula_precos_distribuicao <-
       names_to = "projeto",
       values_to = "porcento"
     )
+
     for (projeto in lista_projetos) {
       for (state in states) {
         name <- paste(projeto, state, sep = "_")
         price_column <- paste0("PRECO_", state)
         df[[name]] <-
-          consolidate[[projeto]] * consolidate[[price_column]] * consolidate$fator
+          consolidate[[projeto]] * consolidate[[price_column]] * consolidate$fator * fator_correcao
       }
     }
 
@@ -413,6 +416,7 @@ fator_perda_agua <- function(perda) {
 #' @param sinapi tabela com os dados do SINAPI
 #' @param fator_insumo fator de correção do preços na categoria insumo (%)
 #' @param fator_composicao fator de correção do preços na categoria composição (%)
+#' @param fator_correcao fator de correção monetária (1+% de correção)
 #' @param sub_total Se FALSE a porcentagem é calculada como juros sobre juros. Se TRUE a porcentagem é a soma dos juros.
 #'
 #' @return uma tabela com os preços das unidades de produção de água por estado e cenário
@@ -427,6 +431,7 @@ calcula_preco_unidades_producao <-
            sinapi,
            fator_insumo = 26,
            fator_composicao = 18,
+           fator_correcao = 1.0,
            sub_total = TRUE) {
     fator_insumo <- fator_insumo / 100.0 + 1
     fator_composicao <- fator_composicao / 100.0 + 1
@@ -472,7 +477,7 @@ calcula_preco_unidades_producao <-
           fator_composicao,
           ifelse(TIPO == "INSUMO", fator_insumo, 1.0)
         ),
-        preco = quantidade * preco * fator / (vazao * lsTom3ano)
+        preco = quantidade * preco * fator / (vazao * lsTom3ano) * fator_correcao
       )
     df <- dplyr::group_by(df, unidade, estado)
     df <-
@@ -759,6 +764,31 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
   return(tabela)
 }
 
+
+#' Calcula o fator de correção monetária baseado no índice IGP
+#'
+#' Esta função calcula o fator de correção monetária para ajustar os preços de acordo com o índice IGP (Índice Geral de Preços).
+#'
+#' @param sinapi Uma string representando o nome do arquivo SINAPI, que inclui o ano e o mês no formato "SINAPI_YYYYMM".
+#' @param ano_corrente Um número representando o ano corrente para o cálculo do fator de correção.
+#'
+#' @return Um valor numérico representando o fator de correção monetária.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' fator <- calcula_fator_correcao_sinapi("SINAPI_202112", 2025)
+#' }
+calcula_fator_correcao_sinapi <- function(sinapi, ano_corrente) {
+  sinapi_anomes <- strsplit(sinapi, "_")[[1]][2]
+  sinapi_ano <- as.numeric(substr(sinapi_anomes, 1, 4))
+  sinapi_mes <- as.numeric(substr(sinapi_anomes, 5, 6))
+  initial_date <- as.Date(paste0(sinapi_ano, "-", sinapi_mes, "-01"))
+  current_date <- as.Date(paste0(ano_corrente, "-12-31"))
+  taxa <- get_taxa_igp(initial_date, current_date)
+  return(taxa)
+}
+
 #' Módulo orçamentário para água
 #'
 #' @param input estrutura de dados (`reactive`) que guarda os parâmetros da interface gráfica
@@ -773,14 +803,16 @@ rodar_modulo_demografico <- function(input, projecao, tema) {
 #' }
 rodar_modulo_orcamentario_agua <- function(input, demografico) {
   sinapi <- carrega_sinapi(input$agua$sinapi)
-
+  ano_corrente <- input$geral$ano_corrente
+  fator_correcao <- calcula_fator_correcao_sinapi(input$agua$sinapi, ano_corrente)
   projeto_distribuicao_agua <- carrega_dado_auxiliar("agua_projeto_distribuicao")
 
   distribuicao <- calcula_precos_distribuicao(
     projeto_distribuicao_agua,
     sinapi,
-    input$agua$fator_servicos,
-    input$agua$fator_materiais
+    taxa_servico = input$agua$fator_servicos,
+    taxa_materiais = input$agua$fator_materiais,
+    fator_correcao = fator_correcao
   )
   salva_resultado_intermediario(
     tidyr::pivot_wider(
@@ -795,7 +827,8 @@ rodar_modulo_orcamentario_agua <- function(input, demografico) {
     projeto_producao_agua_unidades,
     sinapi,
     input$agua$fator_insumo,
-    input$agua$fator_composicao
+    input$agua$fator_composicao,
+    fator_correcao
   )
   salva_resultado_intermediario(
     tidyr::pivot_wider(
