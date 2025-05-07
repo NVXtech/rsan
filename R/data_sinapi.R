@@ -196,7 +196,7 @@ processa_sinapi_v2009 <- function(year, month) {
       consolidada <- tabela
     } else {
       rlog::log_info("Juntando estados")
-      consolidada <- dplyr::left_join(consolidada, tabela, by = "CODIGO")
+      consolidada <- dplyr::left_join(consolidada, tabela, by = c("CODIGO", "DESCRICAO", "UNIDADE", "TIPO"))
     }
     z <- z + 1
   }
