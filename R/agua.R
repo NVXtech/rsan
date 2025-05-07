@@ -164,6 +164,43 @@ calculate_demografico_agua <- function(df, meta_agua) {
   )
 }
 
+
+#' Verifica códigos faltantes no SINAPI
+#'
+#' Esta função verifica se há códigos no dataframe de projeto que não estão presentes no dataframe do SINAPI.
+#'
+#' @param df Um `data.frame` contendo os códigos do projeto.
+#' @param sinapi Um `data.frame` contendo os códigos e descrições do SINAPI.
+#'
+#' @return Um valor lógico. Retorna `TRUE` se todos os códigos estão presentes no SINAPI, caso contrário, retorna `FALSE` e registra os códigos faltantes.
+#' @export
+#'
+#' @examples
+#'
+#' projeto <- data.frame(codigo = c("001", "002", "003"))
+#' sinapi <- data.frame(CODIGO = c("001", "002"), DESCRICAO = c("Desc1", "Desc2"))
+#' verifica_codigos_faltantes(projeto, sinapi)
+verifica_codigos_faltantes <- function(df, sinapi) {
+  df <- dplyr::select(df, c("codigo"))
+  df <- dplyr::filter(df, codigo != "PORCENTAGEM")
+  df <- dplyr::distinct(df)
+  sinapi <- dplyr::select(sinapi, c("CODIGO", "DESCRICAO"))
+  junto <- dplyr::left_join(df, sinapi, by = c("codigo" = "CODIGO"))
+  faltantes <- dplyr::filter(junto, is.na(DESCRICAO))
+  nrow_faltantes <- nrow(faltantes)
+  if (nrow_faltantes > 0) {
+    rlog::log_error(
+      sprintf(
+        "Faltam %d códigos no SINAPI: %s",
+        nrow_faltantes,
+        paste(faltantes$codigo, collapse = ", ")
+      )
+    )
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
 #' Calcula preços distribuicao de água e coleta de esgoto
 #'
 #' @param df_projeto um `data.frame` contendo os itens do projeto coluna quantidade e codigo sinapi
@@ -187,6 +224,7 @@ calcula_precos_distribuicao <-
     taxa_servico <- taxa_servico / 100.0 + 1.0
     taxa_materiais <- taxa_materiais / 100.0 + 1.0
     states <- states_acronym()
+    verifica_codigos_faltantes(df_projeto, sinapi)
 
     consolidate <- dplyr::left_join(
       df_projeto,
@@ -394,6 +432,8 @@ calcula_preco_unidades_producao <-
     fator_composicao <- fator_composicao / 100.0 + 1
     lsTom3ano <- 365.25 * 86400 * 1e-3
 
+    verifica_codigos_faltantes(df_projeto, sinapi)
+
     consolidate <-
       dplyr::left_join(df_projeto, sinapi, by = c("codigo" = "CODIGO"))
 
@@ -416,7 +456,6 @@ calcula_preco_unidades_producao <-
     df <- dplyr::select(df, -dplyr::all_of(fields_to_remove))
 
     fields_to_ignore <- c("unidade", "quantidade", "TIPO", "vazao")
-
     df <-
       tidyr::pivot_longer(
         df, -dplyr::all_of(fields_to_ignore),
@@ -743,12 +782,28 @@ rodar_modulo_orcamentario_agua <- function(input, demografico) {
     input$agua$fator_servicos,
     input$agua$fator_materiais
   )
+  salva_resultado_intermediario(
+    tidyr::pivot_wider(
+      distribuicao,
+      names_from = "projeto",
+      values_from = "preco"
+    ), "agua_custo_distribuicao",
+    "base"
+  )
   projeto_producao_agua_unidades <- carrega_dado_auxiliar("agua_projeto_producao_unidades")
   producao <- calcula_preco_unidades_producao(
     projeto_producao_agua_unidades,
     sinapi,
     input$agua$fator_insumo,
     input$agua$fator_composicao
+  )
+  salva_resultado_intermediario(
+    tidyr::pivot_wider(
+      producao,
+      names_from = "unidade",
+      values_from = "preco"
+    ), "agua_custo_unidade_producao",
+    "base"
   )
 
   custo <- calcula_custo_expansao_agua(

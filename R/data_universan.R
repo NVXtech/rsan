@@ -122,3 +122,23 @@ carrega_dado_auxiliar <- function(nome) {
   }
   return(df)
 }
+
+
+#' Salva resultados intermediários do calculo da necessidade de investimento
+#'
+#' @param df Data frame com os dados a serem salvos
+#' @param nome Nome do arquivo a ser salvo
+#' @param cenario Cenário de cálculo
+#'
+#' @return Nenhum valor retornado
+#' @export
+salva_resultado_intermediario <- function(df, nome, cenario="base") {
+  dir_resultado <- file.path("dados", "resultados", cenario)
+  if (!dir.exists(dir_resultado)) {
+    dir.create(dir_resultado, recursive = TRUE)
+  }
+  file_name <- paste0(nome, ".csv")
+  path_out <- file.path(dir_resultado, file_name)
+  readr::write_excel_csv2(df, path_out, quote = "needed", append = FALSE)
+  rlog::log_info(paste0("Salvando resultado intermediário: ", path_out))
+}

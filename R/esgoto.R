@@ -280,7 +280,14 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
     input$esgoto$fator_servicos,
     input$esgoto$fator_materiais
   )
-
+  salva_resultado_intermediario(
+    tidyr::pivot_wider(
+      coleta,
+      names_from = "projeto",
+      values_from = "preco"
+    ), "esgoto_custo_coleta",
+    "base"
+    )
   projeto_tratamento_unidades <- carrega_dado_auxiliar(
     "esgoto_projeto_tratamento_unidades"
   )
@@ -290,6 +297,14 @@ rodar_modulo_orcamentario_esgoto <- function(input, demografico) {
     input$esgoto$fator_insumo,
     input$esgoto$fator_composicao
   )
+  salva_resultado_intermediario(
+    tidyr::pivot_wider(
+      tratamento,
+      names_from = "unidade",
+      values_from = "preco"
+    ), "esgoto_custo_unidade_tratamento",
+    "base"
+    )
 
   custo <- calcula_custo_expansao_esgoto(
     demografico,
