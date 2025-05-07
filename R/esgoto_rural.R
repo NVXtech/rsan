@@ -367,7 +367,6 @@ rodar_modulo_rural_esgoto <- function(state) {
   input <- state$input
   taxas_projecao <- state$taxas_projecao
   ano <- input$geral$ano
-  ano_inicial <- 2022
 
   ano_corrente <- input$geral$ano_corrente
   ano_censo <- nome_para_ano(input$projecao$fonte2)
@@ -390,13 +389,12 @@ rodar_modulo_rural_esgoto <- function(state) {
   # Usado para classificação coletivo_individual
   # tabela <- adiciona_deficit_rural_agua_pnad(tabela, agua_esgoto_rural$deficit_pnad)
   # tabela <- adiciona_deficit_rural_esgoto_pnad(tabela, agua_esgoto_rural$deficit_pnad)
-  if (input$agua$atendimento == "censo") {
-    tabela <- calcula_deficit_agua_relativo_censo(tabela)
-    tabela <- calcula_deficit_esgoto_relativo_censo(tabela)
-  }
   if (input$esgoto$atendimento == "pnadc") {
     tabela <- calcula_deficit_agua_relativo_pnadc(tabela, input$agua$atendimento_ano)
     tabela <- calcula_deficit_esgoto_relativo_pnadc(tabela, input$esgoto$atendimento_ano)
+  } else {
+    tabela <- calcula_deficit_agua_relativo_censo(tabela)
+    tabela <- calcula_deficit_esgoto_relativo_censo(tabela)
   }
 
   tabela <- fracao_coletivo_individual_esgoto(tabela)
