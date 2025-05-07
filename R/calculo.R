@@ -332,17 +332,65 @@ rodar_modelo <- function(state) {
   state$necessidade <- adiciona_pais(state$necessidade)
   state$deficit <- adiciona_pais(state$deficit)
 
-  readr::write_excel_csv2(
+  # remover linhas com NA
+  state$necessidade <- dplyr::filter(
     state$necessidade,
-    file = "dados/resultados/necessidade.csv",
-    append = FALSE
+    !is.na(estado)
+  )
+  state$deficit <- dplyr::filter(
+    state$deficit,
+    !is.na(estado)
   )
   readr::write_excel_csv2(
-    state$deficit,
-    file = "dados/resultados/deficit.csv",
+    state$necessidade,
+    file = "dados/resultados/necessidade_por_estado.csv",
+    append = FALSE
+  )
+  necessidade_regiao <- dplyr::group_by(
+    state$necessidade,
+    regiao, destino, subsistema, componente, situacao
+  )
+  necessidade_regiao <- dplyr::summarise(
+    necessidade_regiao,
+    necessidade_investimento = sum(necessidade_investimento, na.rm = TRUE)
+  )
+  readr::write_excel_csv2(
+    necessidade_regiao,
+    file = "dados/resultados/necessidade_por_regiao.csv",
+    append = FALSE
+  )
+  necessidade_componente <- dplyr::group_by(
+    state$necessidade,
+    componente, situacao, destino
+  )
+  necessidade_componente <- dplyr::summarise(
+    necessidade_componente,
+    necessidade_investimento = sum(necessidade_investimento, na.rm = TRUE)
+  )
+  readr::write_excel_csv2(
+    necessidade_componente,
+    file = "dados/resultados/necessidade_por_componente.csv",
     append = FALSE
   )
 
+  readr::write_excel_csv2(
+    state$deficit,
+    file = "dados/resultados/deficit_por_estado.csv",
+    append = FALSE
+  )
+  deficit_regiao <- dplyr::group_by(
+    state$deficit,
+    regiao, subsistema, componente, situacao
+  )
+  deficit_regiao <- dplyr::summarise(
+    deficit_regiao,
+    deficit = sum(deficit, na.rm = TRUE)
+  )
+  readr::write_excel_csv2(
+    deficit_regiao,
+    file = "dados/resultados/deficit_por_regiao.csv",
+    append = FALSE
+  )
   rlog::log_info("rodada terminada")
   return(state)
 }
