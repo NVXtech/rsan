@@ -785,7 +785,7 @@ calcula_fator_correcao_sinapi <- function(sinapi, ano_corrente) {
   sinapi_mes <- as.numeric(substr(sinapi_anomes, 5, 6))
   initial_date <- as.Date(paste0(sinapi_ano, "-", sinapi_mes, "-01"))
   current_date <- as.Date(paste0(ano_corrente, "-12-31"))
-  taxa <- get_taxa_igp(initial_date, current_date)
+  taxa <- fator_correcao_incc(initial_date, current_date)
   return(taxa)
 }
 

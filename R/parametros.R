@@ -29,7 +29,24 @@ geral <- list(
   ano_corrente = 2022
 )
 
-taxa_igp <- get_taxa_igp(as.Date("2018-07-01"), as.Date("2022-01-01"))
+taxa_igp <- fator_correcao_incc(
+  as.Date("2018-07-01"),
+  as.Date(paste0(geral$ano_corrente, "-12-31"))
+)
+
+taxa_residuos <- fator_correcao_incc(
+  as.Date("2021-12-31"),
+  as.Date(paste0(geral$ano_corrente, "-12-31"))
+)
+taxa_drenagem <- fator_correcao_ipca(
+  as.Date("2021-12-31"),
+  as.Date(paste0(geral$ano_corrente, "-12-31"))
+)
+taxa_veiculos <- fator_correcao_ipca(
+  as.Date("2021-12-31"),
+  as.Date(paste0(geral$ano_corrente, "-12-31"))
+)
+
 projecao <- list(
   fonte1 = "censo_2010",
   fonte2 = "censo_2022"
@@ -78,33 +95,33 @@ esgoto <- list(
 )
 
 valores_aterro <- c(
-  43.24,
-  19.45,
-  23.78,
-  23.78,
-  19.45,
-  8.65,
-  8.65
+  43.24 * taxa_residuos,
+  19.45 * taxa_residuos,
+  23.78 * taxa_residuos,
+  23.78 * taxa_residuos,
+  19.45 * taxa_residuos,
+  8.65 * taxa_residuos,
+  8.65 * taxa_residuos
 )
 
 valores_compostagem <- c(
-  18.37,
-  5.4,
-  6.92,
-  6.92,
-  11.89,
-  8,
-  8
+  18.37 * taxa_residuos,
+  5.4 * taxa_residuos,
+  6.92 * taxa_residuos,
+  6.92 * taxa_residuos,
+  11.89 * taxa_residuos,
+  8 * taxa_residuos,
+  8 * taxa_residuos
 )
 
 valores_triagem <- c(
-  70.25,
-  34.58,
-  37.82,
-  37.82,
-  23.78,
-  12.97,
-  12.97
+  70.25 * taxa_residuos,
+  34.58 * taxa_residuos,
+  37.82 * taxa_residuos,
+  37.82 * taxa_residuos,
+  23.78 * taxa_residuos,
+  12.97 * taxa_residuos,
+  12.97 * taxa_residuos
 )
 
 residuos <- list(
@@ -114,10 +131,10 @@ residuos <- list(
   antendimento_ano = 2022,
 
   # coleta comum
-  valor_caminhao = 484709.23,
+  valor_caminhao = 484709.23 * taxa_veiculos,
   deprec_coleta_indiferenciada = 10,
   # coleta seletiva
-  valor_caminhao_bau = 336490.00,
+  valor_caminhao_bau = 336490.00 * taxa_veiculos,
   deprec_coleta_seletiva = 10,
   # aterro
   vida_util_aterro = 20,
@@ -131,7 +148,7 @@ residuos <- list(
   # regionalização
   cenario_regionalizacao = "A", # A, B ou C
   # transbordo
-  custo_transbordo = 857816.82
+  custo_transbordo = 857816.82 * taxa_residuos
 )
 
 drenagem <- list(
@@ -140,7 +157,7 @@ drenagem <- list(
   modo = 2,
   deprec_drenagem = 2,
   investimento_per_capita = 10000,
-  custo_cadastro = 7738.89,
+  custo_cadastro = 7738.89 * taxa_drenagem,
   peso_pluviometria = 0.063933104088543,
   peso_densidade = -0.189155004725778,
   peso_fisicas = 3477.79720206452,

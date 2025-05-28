@@ -9,6 +9,7 @@ calcula_preco_unidades_producao(
   sinapi,
   fator_insumo = 26,
   fator_composicao = 18,
+  fator_correcao = 1,
   sub_total = TRUE
 )
 }
@@ -20,6 +21,8 @@ calcula_preco_unidades_producao(
 \item{fator_insumo}{fator de correção do preços na categoria insumo (\%)}
 
 \item{fator_composicao}{fator de correção do preços na categoria composição (\%)}
+
+\item{fator_correcao}{fator de correção monetária (1+\% de correção)}
 
 \item{sub_total}{Se FALSE a porcentagem é calculada como juros sobre juros. Se TRUE a porcentagem é a soma dos juros.}
 }

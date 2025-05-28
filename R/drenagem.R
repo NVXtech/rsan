@@ -172,7 +172,7 @@ corrige_plano_drenagem <- function(data) {
     plano_drenagem,
     data_inicial = as.Date(paste0(as.character(ano_plano), "-06-30")),
     data_final = as.Date(data),
-    taxa_igp = get_taxa_igp(data_inicial, data_final), # fix get_taxa_igp
+    taxa_igp = fator_correcao_incc(data_inicial, data_final), # fix fator_correcao_incc
     investimento_corrigido = investimento * taxa_igp
   )
   return(plano_drenagem)

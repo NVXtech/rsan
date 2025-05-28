@@ -271,7 +271,7 @@ carrega_censo2022 <- function() {
     "area_km2_total"
   )
   for (col in double_cols) {
-    tabela[[col]] <- as.double(tabela[[col]])
+    tabela[[col]] <- as.double(sub(",", ".", tabela[[col]]))
   }
   for (col in integer_cols) {
     tabela[[col]] <- as.integer(tabela[[col]])

@@ -8,7 +8,8 @@ calcula_precos_distribuicao(
   df_projeto,
   sinapi,
   taxa_servico = 26,
-  taxa_materiais = 18
+  taxa_materiais = 18,
+  fator_correcao = 1
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ calcula_precos_distribuicao(
 \item{taxa_servico}{fator de correção do preço para serviços}
 
 \item{taxa_materiais}{fator de correção do preço para materiais}
+
+\item{fator_correcao}{fator de correção monetária (1+\% de correção)}
 }
 \value{
 um \code{data.frame} com preços por projeto e por estado
