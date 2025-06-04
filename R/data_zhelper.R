@@ -77,15 +77,6 @@ check_dataset_integrity <- function(name) {
 #' @return NULL
 #' @export
 check_and_create_datasets <- function() {
-  for (dataset in datasets) {
-    if (!dataset_exists(dataset)) {
-      create_dataset(dataset)
-    } else {
-      if (!check_dataset_integrity(dataset)) {
-        rlog::log_warn(sprintf("Data integrity checked failed for %s", dataset))
-        # clean_dataset(dataset)
-        # create_dataset(dataset)
-      }
-    }
-  }
+  load_base_calculo_data()
+  # TODO: verificar integridade dos dados
 }
