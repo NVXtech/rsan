@@ -26,11 +26,16 @@ load_base_calculo_data <- function(output_dir = file.path("dados", "base_calculo
   env <- new.env()
   data("base_calculo", package = "rsan", envir = env)
   base_calculo <- env$base_calculo
-  if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+  if (!dir.exists(output_dir)) {
+    rlog::log_info(sprintf("Creating output directory: %s", output_dir))
+    dir.create(output_dir, recursive = TRUE)
+  }
   for (name in names(base_calculo)) {
     out_path <- file.path(output_dir, paste0(name, ".csv"))
     if (!file.exists(out_path) || overwrite) {
       readr::write_csv2(base_calculo[[name]], out_path)
+    } else {
+      rlog::log_info(sprintf("File %s already exists, skipping.", out_path))
     }
   }
   return(NULL)

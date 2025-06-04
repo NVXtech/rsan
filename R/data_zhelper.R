@@ -77,6 +77,7 @@ check_dataset_integrity <- function(name) {
 #' @return NULL
 #' @export
 check_and_create_datasets <- function() {
+  rlog::log_info("Checking and creating datasets..")
   load_base_calculo_data()
   # TODO: verificar integridade dos dados
 }
