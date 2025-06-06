@@ -452,7 +452,7 @@ rodar_modulo_rural_agua <- function(state) {
   taxas_projecao <- state$taxas_projecao
   ano_final <- input$geral$ano
   param <- input$agua # parametros
-  ano_censo <- nome_para_ano(input$agua$atendimento_ano)
+  ano_censo <- input$agua$atendimento_ano
   ano_inicial <- input$agua$atendimento_ano
 
   rlog::log_info("água:rural: carregando dados")
