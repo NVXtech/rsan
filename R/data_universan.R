@@ -105,7 +105,15 @@ carrega_base_calculo <- function(componente, fonte, ano) {
   return(df)
 }
 
-
+#' Carrega um dado auxiliar da pasta dados/base_calculo
+#'
+#' Esta função lê um arquivo CSV auxiliar localizado em 'dados/base_calculo' e retorna um data frame.
+#' Caso a coluna 'codigo_municipio' exista, ela será convertida para caractere.
+#'
+#' @param nome Nome do arquivo (sem extensão .csv) a ser carregado.
+#'
+#' @return Um data frame com os dados do arquivo auxiliar, ou NULL se o arquivo não for encontrado.
+#' @export
 carrega_dado_auxiliar <- function(nome) {
   path <- file.path("dados", "base_calculo", paste0(nome, ".csv"))
   if (!file.exists(path)) {
@@ -132,7 +140,7 @@ carrega_dado_auxiliar <- function(nome) {
 #'
 #' @return Nenhum valor retornado
 #' @export
-salva_resultado_intermediario <- function(df, nome, cenario="base") {
+salva_resultado_intermediario <- function(df, nome, cenario = "base") {
   dir_resultado <- file.path("dados", "resultados", cenario)
   if (!dir.exists(dir_resultado)) {
     dir.create(dir_resultado, recursive = TRUE)
@@ -141,4 +149,16 @@ salva_resultado_intermediario <- function(df, nome, cenario="base") {
   path_out <- file.path(dir_resultado, file_name)
   readr::write_excel_csv2(df, path_out, quote = "needed", append = FALSE)
   rlog::log_info(paste0("Salvando resultado intermediário: ", path_out))
+}
+
+
+#' Retorna lista de dados sinapi disponíveis
+get_sinapi_labels <- function() {
+  # get list of files in base_calculo directory that start with "sinapi_"
+  files <- list.files(file.path("dados", "base_calculo"), pattern = "^sinapi_", full.names = TRUE)
+  # get only the file names without the path and extension
+  file_names <- tools::file_path_sans_ext(basename(files))
+  # return a named list with file names as labels
+  labels <- setNames(file_names, file_names)
+  return(labels)
 }

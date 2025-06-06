@@ -246,6 +246,7 @@ preprocess_censo2022_data <- function() {
 #' @export
 carrega_censo2022 <- function() {
   path <- file.path(dir_base_calculo, "censo_2022.csv")
+  rlog::log_info(sprintf("Carregando dados do censo 2022 de %s", path))
   col_types <- "cccccccccccccccccccc"
   tabela <- readr::read_csv2(path, col_types = col_types)
   integer_cols <- c(
@@ -285,7 +286,7 @@ carrega_censo2022 <- function() {
 #' @export
 carrega_censo2022_setor <- function() {
   path <- file.path(dir_base_calculo, "censo_2022_setor.csv")
-  col_types <- "cccccccccccccccccccc"
+  rlog::log_info(sprintf("Carregando dados do censo 2022 de %s", path))
   tabela <- readr::read_delim(
     path,
     delim = ";",

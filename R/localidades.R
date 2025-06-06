@@ -111,6 +111,11 @@ codigo6_para_codigo_ibge <- function(tabela, nome_campo) {
 #' @return tabela com as localidades
 #' @export
 base_municipios <- function() {
-  municipios <- readr::read_csv2("dados/base_calculo/municipios.csv", col_types = "c")
+  path <- file.path(dir_base_calculo, "municipios.csv")
+  municipios <- readr::read_delim(path,
+    delim = ";",
+    locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
+    col_types = "c"
+  )
   return(municipios)
 }

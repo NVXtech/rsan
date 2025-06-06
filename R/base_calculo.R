@@ -8,7 +8,9 @@ save_base_calculo_data <- function() {
   base_calculo <- list()
   for (f in files) {
     name <- tools::file_path_sans_ext(basename(f))
-    base_calculo[[name]] <- readr::read_csv2(f,
+    base_calculo[[name]] <- readr::read_delim(
+      f,
+      delim = ";",
       locale = readr::locale(encoding = "UTF-8", decimal_mark = ",", grouping_mark = ".", date_names = "pt"),
       show_col_types = FALSE
     )
