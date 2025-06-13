@@ -298,6 +298,175 @@ investimento_residuos <- function(state) {
   return(state)
 }
 
+
+#' Exporta os dados para Power BI
+#'
+#' @param tabela tabela de dados com as necessidades de investimentos com o seguintes campos:
+#' "estado";"regiao";"destino";"subsistema";"necessidade_investimento";"componente";"situacao";"pais"
+#' @param file caminho do arquivo de saída
+#'
+#' @return Não retorna nada, apenas salva o arquivo
+#' @export
+to_power_bi <- function(tabela, file) {
+  rlog::log_info("exportando dados para Power BI")
+  componentes <- unique(tabela$componente)
+  # Criar uma planilha por componente
+  sheets <- list()
+  for (comp in componentes) {
+    tabela_componente <- dplyr::filter(tabela, componente == comp)
+    tabela_componente <- dplyr::select(tabela_componente, -c(componente, pais))
+    if (comp == "residuos" || comp == "drenagem") {
+      colunas_para_larga <- c("destino", "subsistema")
+      tabela_componente <- dplyr::select(tabela_componente, -situacao)
+    } else {
+      colunas_para_larga <- c("destino", "subsistema", "situacao")
+    }
+
+    tabela_total <- dplyr::group_by(tabela_componente, estado)
+    tabela_total <- dplyr::summarise(
+      tabela_total,
+      total = sum(necessidade_investimento, na.rm = TRUE)
+    )
+    tabela_larga <- tidyr::pivot_wider(
+      tabela_componente,
+      names_from = colunas_para_larga,
+      values_from = "necessidade_investimento",
+      values_fill = 0
+    )
+    tabela_destino <- tidyr::pivot_wider(
+      tabela_componente,
+      names_from = "destino",
+      values_from = "necessidade_investimento",
+      values_fill = 0
+    )
+    tabela_destino <- dplyr::select(tabela_destino, -dplyr::any_of(c("regiao", "subsistema", "situacao")))
+    tabela_destino <- dplyr::group_by(tabela_destino, estado)
+    tabela_destino <- dplyr::summarise(tabela_destino, across(is.numeric, sum))
+
+
+    tabela_final <- dplyr::left_join(tabela_total, tabela_larga, by = dplyr::join_by("estado"))
+    tabela_final <- dplyr::left_join(tabela_final, tabela_destino, by = dplyr::join_by("estado"))
+
+    if (comp == "agua" || comp == "esgoto") {
+      tabela_situacao <- tidyr::pivot_wider(
+        tabela_componente,
+        names_from = "situacao",
+        values_from = "necessidade_investimento",
+        values_fill = 0
+      )
+      tabela_situacao <- dplyr::select(tabela_situacao, -dplyr::all_of(c("regiao", "destino", "subsistema")))
+      tabela_situacao <- dplyr::group_by(tabela_situacao, estado)
+      tabela_situacao <- dplyr::summarise(tabela_situacao, across(is.numeric, sum))
+      tabela_final <- dplyr::left_join(tabela_final, tabela_situacao, by = dplyr::join_by("estado"))
+
+      tabela_repo_situ <- tidyr::pivot_wider(
+        tabela_componente,
+        names_from = c("destino", "situacao"),
+        values_from = "necessidade_investimento",
+        values_fill = 0
+      )
+      tabela_repo_situ <- dplyr::select(tabela_repo_situ, -dplyr::any_of(c("regiao", "subsistema")))
+      tabela_repo_situ <- dplyr::group_by(tabela_repo_situ, estado)
+      tabela_repo_situ <- dplyr::summarise(tabela_repo_situ, across(is.numeric, sum))
+      tabela_final <- dplyr::left_join(tabela_final, tabela_repo_situ, by = dplyr::join_by("estado"))
+    }
+
+    # Renomear as colunas
+    residuos <- c(
+      "UF" = "estado",
+      "Nome Região" = "regiao",
+      "Expansão da coleta indiferenciada" = "expansao_coleta_indiferenciada",
+      "Reposição da coleta indiferenciada" = "reposicao_coleta_indiferenciada",
+      "Expansão da coleta seletiva" = "expansao_coleta_seletiva",
+      "Reposição da coleta seletiva" = "reposicao_coleta_seletiva",
+      "Expansão da triagem" = "expansao_triagem",
+      "Reposição da triagem" = "reposicao_triagem",
+      "Expansão do transbordo" = "expansao_transbordo",
+      "Reposição do transbordo" = "reposicao_transbordo",
+      "Reposição de aterros" = "reposicao_aterro",
+      "Expansão de aterros" = "expansao_aterro",
+      "Reposição da compostagem" = "reposicao_compostagem",
+      "Expansão da compostagem" = "expansao_compostagem",
+      "Expansão" = "expansao",
+      "Reposição" = "reposicao",
+      "RSU Total" = "total"
+    )
+    drenagem <- c(
+      "UF" = "estado",
+      "Nome Região" = "regiao",
+      "Expansão das infraestruturas de drenagem" = "expansao",
+      "Reposição das Infraestruturas de drenagem" = "reposicao",
+      "Cadastro técnico da drenagem" = "cadastro",
+      "Investimento total em DMAPU" = "total"
+    )
+    agua <- c(
+      "UF" = "estado",
+      "Nome Região" = "regiao",
+      "Expansão da produção - U" = "expansao_producao_agua_urbana",
+      "Reposição da produção - U" = "reposicao_producao_agua_urbana",
+      "Expansão da produção - R" = "expansao_producao_agua_rural",
+      "Reposição da produção - R" = "reposicao_producao_agua_rural",
+      "Expansão da distribuição - U" = "expansao_distribuicao_agua_urbana",
+      "Reposição da distribuição - U" = "reposicao_distribuicao_agua_urbana",
+      "Expansão da distribuição - R" = "expansao_distribuicao_agua_rural",
+      "Reposição da distribuição - R" = "reposicao_distribuicao_agua_rural",
+      "Expansão da solução individual - R" = "expansao_individual_rural",
+      "Expansão total - U" = "expansao_urbana",
+      "Expansão total - R" = "expansao_rural",
+      "Reposição total - U" = "reposicao_urbana",
+      "Reposição total - R" = "reposicao_rural",
+      "Expansão" = "expansao",
+      "Reposição" = "reposicao",
+      "Investimento total em AA rural" = "rural",
+      "Investimento total em AA urbano" = "urbana",
+      "Investimento total em AA" = "total"
+    )
+    esgoto <- c(
+      "UF" = "estado",
+      "Nome Região" = "regiao",
+      "Expansão" = "expansao",
+      "Reposição" = "reposicao",
+      "Expansão da coleta - U" = "expansao_coleta_esgoto_urbana",
+      "Expansão da coleta - R" = "expansao_coleta_esgoto_rural",
+      "Reposição da coleta - U" = "reposicao_coleta_esgoto_urbana",
+      "Reposição da coleta - R" = "reposicao_coleta_esgoto_rural",
+      "Expansão do tratamento - U" = "expansao_tratamento_esgoto_urbana",
+      "Expansão do tratamento - R" = "expansao_tratamento_esgoto_rural",
+      "Reposição do tratamento - U" = "reposicao_tratamento_esgoto_urbana",
+      "Reposição do tratamento - R" = "reposicao_tratamento_esgoto_rural",
+      "Expansão total - U" = "expansao_urbana",
+      "Expansão total - R" = "expansao_rural",
+      "Reposição total - U" = "reposicao_urbana",
+      "Reposição total - R" = "reposicao_rural",
+      "Expansão da solução individual - R" = "expansao_individual_rural",
+      "Investimento total em ES - R" = "rural",
+      "Investimento total em ES - U" = "urbana",
+      "Invenstimento total em ES" = "total"
+    )
+
+    col_renamer <- list("residuos" = residuos, "drenagem" = drenagem, "agua" = agua, "esgoto" = esgoto)
+    to_rename <- col_renamer[[comp]]
+    tabela_final <- dplyr::rename(tabela_final, dplyr::any_of(to_rename))
+
+    # Create new column Regiao based on Nome Região
+    map_regiao <- c(
+      "Norte" = "N",
+      "Nordeste" = "NE",
+      "Centro-Oeste" = "CO",
+      "Sudeste" = "SE",
+      "Sul" = "S"
+    )
+    tabela_final <- dplyr::mutate(tabela_final, Região = map_regiao[`Nome Região`])
+    sheets[[comp]] <- tabela_final
+  }
+  # salva a tabela no arquivo xlsx
+  writexl::write_xlsx(
+    sheets,
+    path = file,
+    col_names = TRUE
+  )
+}
+
 #' Roda todos os modelos de cálculo de investimento
 #'
 #' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
@@ -346,6 +515,9 @@ rodar_modelo <- function(state) {
     file = "dados/resultados/necessidade_por_estado.csv",
     append = FALSE
   )
+  # Export necessidades to excel Power BI format
+  to_power_bi(state$necessidade, "dados/resultados/power_bi.xlsx")
+
   necessidade_regiao <- dplyr::group_by(
     state$necessidade,
     regiao, destino, subsistema, componente, situacao
@@ -389,6 +561,16 @@ rodar_modelo <- function(state) {
   readr::write_excel_csv2(
     deficit_regiao,
     file = "dados/resultados/deficit_por_regiao.csv",
+    append = FALSE
+  )
+  readr::write_excel_csv2(
+    state$agua_rural,
+    file = "dados/resultados/agua_rural.csv",
+    append = FALSE
+  )
+  readr::write_excel_csv2(
+    state$esgoto_rural,
+    file = "dados/resultados/esgoto_rural.csv",
     append = FALSE
   )
   rlog::log_info("rodada terminada")
