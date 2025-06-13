@@ -36,7 +36,7 @@ salva_parametros <- function(state, input, name) {
 get_default_input <- function() {
   geral <- list(
     ano = 2033,
-    ano_corrente = 2022
+    ano_corrente = 2023
   )
 
   taxa_igp <- fator_correcao_incc(
