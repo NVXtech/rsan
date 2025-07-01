@@ -467,6 +467,60 @@ to_power_bi <- function(tabela, file) {
   )
 }
 
+
+# Adiciona colunas com nomes por extenso
+# respectivos aos destinos, situação, subsistemas e componentes
+#'
+#' @param tabela tabela de dados com as necessidades de investimentos
+#' com os seguintes campos: "destino";"situacao";"subsistema";"componente"
+#'
+#' @return tabela com as colunas adicionais "Destino", "Situação", "Subsistema" e "Componente"
+add_colunas_por_extenso <- function(tabela) {
+  tabela <- dplyr::mutate(
+    tabela,
+    RegiãoNome = regiao,
+    regiao = dplyr::case_when(
+      regiao == "Norte" ~ "N",
+      regiao == "Nordeste" ~ "NE",
+      regiao == "Centro-Oeste" ~ "CO",
+      regiao == "Sudeste" ~ "SE",
+      regiao == "Sul" ~ "S",
+    ),
+    DestinoNome = dplyr::case_when(
+      destino == "expansao" ~ "Expansão",
+      destino == "reposicao" ~ "Reposição",
+      destino == "cadastro" ~ "Cadastro técnico",
+    ),
+    SituaçãoNome = dplyr::case_when(
+      situacao == "rural" ~ "Rural",
+      situacao == "urbana" ~ "Urbana",
+    ),
+    SubsistemaNome = dplyr::case_when(
+      subsistema == "aterro" ~ "Aterro sanitário",
+      subsistema == "coleta_indiferenciada" ~ "Coleta indiferenciada",
+      subsistema == "coleta_seletiva" ~ "Coleta seletiva",
+      subsistema == "compostagem" ~ "Compostagem",
+      subsistema == "drenagem_urbana" ~ "Drenagem urbana",
+      subsistema == "producao_agua" ~ "Produção de água",
+      subsistema == "distribuicao_agua" ~ "Distribuição de água",
+      subsistema == "tratamento_esgoto" ~ "Tratamento de esgoto",
+      subsistema == "coleta_esgoto" ~ "Coleta de esgoto",
+      subsistema == "individual" ~ "Solução individual",
+      subsistema == "transbordo" ~ "Transbordo",
+      subsistema == "triagem" ~ "Unidade de Triagem",
+    ),
+    ComponenteNome = dplyr::case_when(
+      componente == "agua" ~ "Abastecimento de água",
+      componente == "esgoto" ~ "Esgotamento sanitário",
+      componente == "residuos" ~ "Resíduos sólidos",
+      componente == "drenagem" ~ "Drenagem urbana",
+    )
+  )
+
+  return(tabela)
+}
+
+
 #' Roda todos os modelos de cálculo de investimento
 #'
 #' @param state estrutura de dados (`list`) que guarda o estado atual da aplicação
@@ -510,13 +564,14 @@ rodar_modelo <- function(state) {
     state$deficit,
     !is.na(estado)
   )
+
+  por_estado <- state$necessidade
+  por_estado <- add_colunas_por_extenso(por_estado)
   readr::write_excel_csv2(
-    state$necessidade,
+    por_estado,
     file = "dados/resultados/necessidade_por_estado.csv",
     append = FALSE
   )
-  # Export necessidades to excel Power BI format
-  to_power_bi(state$necessidade, "dados/resultados/power_bi.xlsx")
 
   necessidade_regiao <- dplyr::group_by(
     state$necessidade,
