@@ -931,6 +931,18 @@ rodar_modulo_financeiro_agua <- function(input, orcamentario) {
   return(tabela)
 }
 
+filtro_cobertura_rede <- function(input, tabela) {
+  indicador <- carrega_cobertura_rede()
+  tabela <- dplyr::left_join(tabela, indicador, by = "codigo_municipio")
+  tabela <- dplyr::mutate(
+    tabela,
+    custo_expansao_distribuicao_agua = ifelse(indicador_cobertura_rede_agua == 1, 0, custo_expansao_distribuicao_agua),
+    custo_expansao_producao_agua = ifelse(indicador_cobertura_rede_agua == 1, 0, custo_expansao_producao_agua)
+  )
+  # tabela <- dplyr::select(tabela, -c("indicador_cobertura_rede_agua"))
+  return(tabela)
+}
+
 #' Calcula a necessidade de investimento para água
 #'
 #' @param state estado da aplicação
@@ -955,9 +967,12 @@ investimento_agua <- function(state) {
   orcamentario <- rodar_modulo_orcamentario_agua(input, demografico)
   rlog::log_info("água: rodando módulo financeiro")
   financeiro <- rodar_modulo_financeiro_agua(input, orcamentario)
-  tabela <- consolida_investimentos_agua(financeiro)
+  tabela <- filtro_cobertura_rede(input, financeiro)
+  tabela <- financeiro
+  tabela <- consolida_investimentos_agua(tabela)
   tabela <- adiciona_pais(tabela)
   tabela <- adiciona_regiao(tabela)
+
   state$agua <- tabela
 
   state$necessidade <- dplyr::bind_rows(
@@ -967,6 +982,15 @@ investimento_agua <- function(state) {
   state$deficit <- dplyr::bind_rows(
     tbl_longa_deficit_agua(tabela),
     state$deficit
+  )
+
+  tabela <- dplyr::left_join(tabela, base_municipios(), by = "codigo_municipio")
+  readr::write_excel_csv2(
+    tabela,
+    file = "teste.csv",
+    na = "",
+    append = FALSE,
+    col_names = TRUE
   )
   return(state)
 }
