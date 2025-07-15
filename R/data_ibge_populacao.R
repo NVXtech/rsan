@@ -138,11 +138,34 @@ populacao_agrega_municipio <- function(tabela) {
   return(tabela)
 }
 
+#' Cria indicador de cobertura de rede de água
+#' indicador = tem_rede /populacao
+#'
+#' @param tabela é um `data.frame` com os dados agregados por setor censitário da população
+#'
+#' @return um `data.frame` com os dados agregados por município e o indicador de cobertura de rede de água
+#' @export
+indicador_cobertura_rede_agua <- function(tabela) {
+  tabela <- dplyr::select(tabela, codigo_municipio, populacao, tem_rede)
+  tabela <- dplyr::group_by(tabela, codigo_municipio)
+  tabela <- dplyr::summarise(tabela,
+    populacao = sum(populacao, na.rm = TRUE),
+    tem_rede = sum(tem_rede, na.rm = TRUE)
+  )
+  tabela <- dplyr::ungroup(tabela)
+  tabela <- dplyr::mutate(tabela,
+    indicador_cobertura_rede_agua = dplyr::if_else(tem_rede / populacao >= 0.99, 1, 0),
+    indicador_cobertura_rede_agua = dplyr::if_else(is.na(indicador_cobertura_rede_agua), 0, indicador_cobertura_rede_agua),
+  )
+  tabela <- dplyr::select(tabela, codigo_municipio, indicador_cobertura_rede_agua)
+  return(tabela)
+}
+
 # ´ Cria conjunto de indicadores domícilos IBGE 2022
 #'
 #' @return um `data.frame` com o índice de atendimento de água, esgoto e resíduos sólidos
 censo_2022_atendimento <- function() {
-  url <- "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_caracteristicas_domicilio3_BR.zip"
+  url <- "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_caracteristicas_domicilio3_BR_20250417.zip"
   dest <- file.path(raw_data_dir(), "ibge", "censo", "censo_2022_domicilios3.csv")
   if (!file.exists(dest)) {
     if (!dir.exists(dirname(dest))) {
@@ -156,17 +179,19 @@ censo_2022_atendimento <- function() {
     file.rename(file.path(dirname(dest), lista[1]), dest)
   }
   tabela <- data.table::fread(dest, dec = ",", integer64 = "double", na.strings = "X")
-  tabela <- dplyr::select(tabela, CD_setor, V00508, V00509, V00510, V00511, V00513, V00540, V00580, V00581, V00582, V00612, V00613)
+  tabela <- dplyr::select(tabela, setor, V00508, V00509, V00510, V00511, V00513, V00540, V00580, V00581, V00582, V00612, V00613, V00636, V00637)
   tabela <- dplyr::mutate_if(tabela, is.character, as.double)
   tabela <- dplyr::mutate_all(tabela, \(x) dplyr::if_else(is.na(x), 0, x))
   tabela <- dplyr::mutate(tabela,
+    CD_setor = setor,
     atendimento_agua = V00508 + V00509 + V00510 + V00511 + V00513,
     atendimento_encanada = V00540,
+    tem_rede = V00508 + V00636,
     atendimento_esgoto = V00580 + V00581 + V00582,
     atendimento_coleta_lixo = V00612 + V00613
   )
   tabela <- dplyr::mutate(tabela, atendimento_agua = pmin(atendimento_agua, atendimento_encanada, na.rm = TRUE))
-  tabela <- dplyr::select(tabela, c(CD_setor, atendimento_agua, atendimento_esgoto, atendimento_coleta_lixo))
+  tabela <- dplyr::select(tabela, c(CD_setor, atendimento_agua, atendimento_esgoto, atendimento_coleta_lixo, tem_rede))
   return(tabela)
 }
 
@@ -184,7 +209,7 @@ adiciona_atendimento <- function(tabela) {
 #' @examples
 #' censo_2022()
 censo_2022 <- function() {
-  url <- "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR.zip"
+  url <- "https://ftp.ibge.gov.br/Censos/Censo_Demografico_2022/Agregados_por_Setores_Censitarios/Agregados_por_Setor_csv/Agregados_por_setores_basico_BR_20250417.zip"
   dest <- file.path(raw_data_dir(), "ibge", "censo", "censo_2022_basico.csv")
   if (!file.exists(dest)) {
     if (!dir.exists(dirname(dest))) {
@@ -230,14 +255,40 @@ preprocess_censo2022_data <- function() {
     quote = "needed",
     append = FALSE
   )
-  tabela <- populacao_agrega_municipio(tabela)
+  por_municipio <- populacao_agrega_municipio(tabela)
   readr::write_excel_csv2(
-    tabela,
+    por_municipio,
     file.path(dir_base_calculo, "censo_2022.csv"),
     quote = "needed",
     append = FALSE
   )
+  cobertura <- indicador_cobertura_rede_agua(tabela)
+  readr::write_excel_csv2(
+    cobertura,
+    file.path(dir_base_calculo, "censo_2022_cobertura_rede_agua.csv"),
+    quote = "needed",
+    append = FALSE
+  )
   return(NULL)
+}
+
+
+#' Carrega dados de cobertura de rede de água do censo IBGE 2022
+#' @return um `data.frame` com a cobertura de rede de água por município
+#' @export
+carrega_cobertura_rede <- function() {
+  path <- file.path(dir_base_calculo, "agua_cobertura_rede.csv")
+  tabela <- readr::read_delim(
+    path,
+    delim = ";",
+    locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
+    col_types = list(
+      codigo_municipio = readr::col_character(),
+      indicador_cobertura_rede_agua = readr::col_integer()
+    )
+  )
+
+  return(tabela)
 }
 
 #' Carrega dados do censo IBGE 2022 agregado por municipio
@@ -318,6 +369,7 @@ carrega_censo2022_setor <- function() {
 #' @export
 adiciona_atendimento_censo_2022 <- function(tabela, componente) {
   df <- carrega_censo2022()
+  readr::write_csv2(df, "atendimento.csv")
   if (componente == "agua") {
     cols <- c("codigo_municipio", "atendimento_tot_agua_hab", "atendimento_urb_agua_hab", "atendimento_rur_agua_hab")
   } else if (componente == "esgoto") {
@@ -336,7 +388,7 @@ adiciona_atendimento_censo_2022 <- function(tabela, componente) {
 
 #' Cria conjunto de dados do censo IBGE
 #'
-#' @param year ano que deseja baixar
+#' @param year ano que deseja baixa`1
 #'
 #' @return um `data.frame` com a estimativa populacional pelo Censo
 #' @export
