@@ -131,6 +131,37 @@ carrega_dado_auxiliar <- function(nome) {
   return(df)
 }
 
+##' Carrega dados populacionais de um arquivo auxiliar
+#'
+#' Esta função lê um arquivo CSV de dados populacionais localizado em 'dados/base_calculo' e retorna um data frame
+#' contendo apenas as colunas permitidas: codigo_municipio, municipio, populacao_rural, populacao_urbana, populacao_total.
+#' Caso a coluna 'codigo_municipio' exista, ela será convertida para caractere.
+#'
+#' @param nome Nome do arquivo (sem extensão .csv) a ser carregado.
+#'
+#' @return Um data frame com os dados populacionais filtrados, ou NULL se o arquivo não for encontrado.
+#' @export
+carrega_dado_populacao <- function(nome) {
+  path <- file.path("dados", "base_calculo", paste0(nome, ".csv"))
+  if (!file.exists(path)) {
+    rlog::log_error(sprintf("Dados %s não encontrado", nome))
+    return(NULL)
+  }
+  df <- readr::read_csv2(
+    path,
+    locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
+    show_col_types = FALSE
+  )
+  if ("codigo_municipio" %in% names(df)) {
+    df$codigo_municipio <- as.character(df$codigo_municipio)
+  }
+  allowed_cols <- c("codigo_municipio", "municipio", "populacao_rural", "populacao_urbana", "populacao_total")
+  current_cols <- names(df)
+  cols_to_keep <- intersect(allowed_cols, current_cols)
+  df <- df[cols_to_keep]
+  return(df)
+}
+
 
 #' Salva resultados intermediários do calculo da necessidade de investimento
 #'
@@ -153,6 +184,12 @@ salva_resultado_intermediario <- function(df, nome, cenario = "base") {
 
 
 #' Retorna lista de dados sinapi disponíveis
+#'
+#' Esta função retorna uma lista nomeada com os arquivos disponíveis na pasta 'dados/base_calculo' que
+#' começam com o prefixo "sinapi_". Os nomes dos arquivos são retornados sem o caminho e sem a extensão.
+#'
+#' @return Uma lista nomeada com os nomes dos arquivos sinapi disponíveis.
+#' @export
 get_sinapi_labels <- function() {
   # get list of files in base_calculo directory that start with "sinapi_"
   files <- list.files(file.path("dados", "base_calculo"), pattern = "^sinapi_", full.names = TRUE)

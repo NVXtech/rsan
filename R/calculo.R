@@ -11,9 +11,9 @@
 #' }
 rodar_projecao_populacional <- function(state) {
   input <- state$input$projecao
-  fonte1 <- load_ibge(input$fonte1)
+  fonte1 <- carrega_dado_populacao(input$fonte1)
   fonte2_nao_censo <- !grepl(".*censo.*", input$fonte2)
-  fonte2 <- load_ibge(input$fonte2)
+  fonte2 <- carrega_dado_populacao(input$fonte2)
   if (fonte2_nao_censo) {
     fonte2 <- preenche_situacao(fonte1, fonte2)
   }
