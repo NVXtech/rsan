@@ -199,3 +199,51 @@ get_sinapi_labels <- function() {
   labels <- setNames(file_names, file_names)
   return(labels)
 }
+
+#' Retorna os rótulos dos dados do IBGE disponíveis (somente censo)
+#'
+#' @return um vetor com os dados disponiveis
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' df <- get_sinapi_data(sinapi)
+#' }
+
+#' Retorna os rótulos dos arquivos de censo disponíveis na base de cálculo
+#'
+#' Esta função lista os arquivos na pasta 'dados/base_calculo' que contêm o padrão "censo" no nome.
+#'
+#' @return Um vetor com os nomes dos arquivos de censo disponíveis (sem extensão).
+#' @export
+get_censo_labels <- function() {
+  # Lista arquivos que contenham 'censo' seguido de 4 dígitos e extensão .csv (case-insensitive)
+  files <- list.files(
+    file.path("dados", "base_calculo"),
+    pattern = "censo_[0-9]{4}\\.csv$",
+    full.names = FALSE
+  )
+  file_names <- tools::file_path_sans_ext(files)
+  return(file_names)
+}
+
+
+#' Retorna os rótulos dos dados do IBGE disponíveis
+#'
+#' @return um vetor com os dados disponiveis
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' df <- get_sinapi_data(sinapi)
+#' }
+get_populacao_labels <- function() {
+  # Lista arquivos que contenham 'estimativa_' seguido de 4 dígitos e extensão .csv
+  files <- list.files(
+    file.path("dados", "base_calculo"),
+    pattern = "estimativa_[0-9]{4}\\.csv$",
+    full.names = FALSE
+  )
+  file_names <- tools::file_path_sans_ext(files)
+  return(file_names)
+}
