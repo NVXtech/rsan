@@ -7,7 +7,7 @@
 download_censo_raw(year)
 }
 \arguments{
-\item{year}{ano que deseja baixar}
+\item{year}{ano que deseja baixa`1}
 }
 \value{
 um \code{data.frame} com a estimativa populacional pelo Censo
