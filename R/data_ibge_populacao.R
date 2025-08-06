@@ -633,15 +633,6 @@ ibge_id_to_name <- function(id) {
   return(paste(year, name, sep = " - "))
 }
 
-#' Carrega conjunto de dados do IBGE
-#
-#' @param id um `character` com o id
-#'
-#' @return o conjunto de dados do SINAPI
-#' @export
-load_ibge <- function(id) {
-  load_data(ibge_tag)[[id]]
-}
 
 #' Atualiza dados do censo IBGE
 #'
