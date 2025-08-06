@@ -452,8 +452,8 @@ rodar_modulo_rural_agua <- function(state) {
   taxas_projecao <- state$taxas_projecao
   ano_final <- input$geral$ano
   param <- input$agua # parametros
-  ano_censo <- input$agua$atendimento_ano
-  ano_inicial <- input$agua$atendimento_ano
+  ano_censo <- as.integer(input$agua$atendimento_ano)
+  ano_inicial <- as.integer(input$agua$atendimento_ano)
 
   rlog::log_info("água:rural: carregando dados")
   custo_producao <- carrega_dado_auxiliar("agua_rural_custo_producao")
@@ -470,6 +470,8 @@ rodar_modulo_rural_agua <- function(state) {
 
   rlog::log_info("água:rural: projecao de domicilios")
   tabela <- adiciona_taxa_crescimento(tabela, taxas_projecao)
+  rlog::log_info(paste("ano_censo: ", ano_censo))
+  rlog::log_info(paste("ano_final: ", ano_final))
   tabela <- fazer_projecao_domicilio(tabela, ano_censo, ano_final)
 
   if (input$agua$atendimento == "pnadc") {
