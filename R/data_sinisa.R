@@ -306,7 +306,7 @@ preprocess_sinisa_data <- function(year) {
   )
   salva_base_calculo(
     aguas_pluviais_preprocess(year),
-    "aguas_pluviais", "sinisa", year
+    "drenagem", "sinisa", year
   )
   return(NULL)
 }

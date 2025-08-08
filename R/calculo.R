@@ -64,7 +64,7 @@ investimento_drenagem <- function(state) {
   tabela <- base_municipios()
   tabela <- dplyr::left_join(
     tabela,
-    carrega_base_calculo("aguas_pluviais", input$fonte_nome, input$fonte_ano),
+    carrega_base_calculo("drenagem", input$fonte_nome, input$fonte_ano),
     by = "codigo_municipio"
   )
   tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
@@ -520,6 +520,87 @@ add_colunas_por_extenso <- function(tabela) {
   return(tabela)
 }
 
+gera_necessidade_por_municipio <- function(state) {
+  rlog::log_info("gerando necessidade por município")
+
+  agua <- state$agua
+  agua <- dplyr::select(agua, codigo_municipio, investimento_expansao, investimento_reposicao, investimento_total)
+  agua <- dplyr::rename(
+    agua,
+    "AA Investimento Expansão Urbana" = investimento_expansao,
+    "AA Investimento Reposição Urbana" = investimento_reposicao,
+    "AA Investimento Total Urbana" = investimento_total
+  )
+  agua <- dplyr::left_join(base_municipios(), agua, by = "codigo_municipio")
+  agua_rural <- state$agua_rural
+  agua_rural <- dplyr::select(agua_rural, codigo_municipio, investimento_expansao, investimento_reposicao, investimento_total)
+  agua_rural <- somar_por_campo(agua_rural, "codigo_municipio")
+  agua_rural <- dplyr::rename(
+    agua_rural,
+    "AA Investimento Expansão Rural" = investimento_expansao,
+    "AA Investimento Reposição Rural" = investimento_reposicao,
+    "AA Investimento Total Rural" = investimento_total
+  )
+  agua <- dplyr::left_join(agua, agua_rural, by = "codigo_municipio")
+  # calcular investimento total somando por linha
+  agua <- dplyr::mutate(
+    agua,
+    "AA Investimento Total" = `AA Investimento Total Urbana` + `AA Investimento Total Rural`,
+    "AA Investimento Expansão" = `AA Investimento Expansão Urbana` + `AA Investimento Expansão Rural`,
+    "AA Investimento Reposição" = `AA Investimento Reposição Urbana` + `AA Investimento Reposição Rural`
+  )
+
+  esgoto <- state$esgoto
+  esgoto <- dplyr::select(esgoto, codigo_municipio, investimento_expansao, investimento_reposicao, investimento_total)
+  esgoto <- dplyr::rename(
+    esgoto,
+    "ES Investimento Expansão" = investimento_expansao,
+    "ES Investimento Reposição" = investimento_reposicao,
+    "ES Investimento Total" = investimento_total
+  )
+  esgoto <- dplyr::left_join(base_municipios(), esgoto, by = "codigo_municipio")
+  esgoto_rural <- state$esgoto_rural
+  esgoto_rural <- dplyr::select(esgoto_rural, codigo_municipio, investimento_expansao, investimento_reposicao, investimento_total)
+  # group by codigo_municipio and sum the values
+  esgoto_rural <- somar_por_campo(esgoto_rural, "codigo_municipio")
+  esgoto_rural <- dplyr::rename(
+    esgoto_rural,
+    "ES Investimento Expansão Rural" = investimento_expansao,
+    "ES Investimento Reposição Rural" = investimento_reposicao,
+    "ES Investimento Total Rural" = investimento_total
+  )
+  esgoto <- dplyr::left_join(esgoto, esgoto_rural, by = "codigo_municipio")
+
+  # calcular investimento total
+  esgoto <- dplyr::mutate(
+    esgoto,
+    "ES Investimento Total" = `ES Investimento Total` + `ES Investimento Total Rural`,
+    "ES Investimento Expansão" = `ES Investimento Expansão` + `ES Investimento Expansão Rural`,
+    "ES Investimento Reposição" = `ES Investimento Reposição` + `ES Investimento Reposição Rural`
+  )
+  # juntar as tabelas de água e esgoto
+
+  keys <- c(
+    "codigo_municipio", "municipio", "regiao", "regiao_sigla", "estado_nome",
+    "estado", "pais"
+  )
+  tabela <- dplyr::left_join(agua, esgoto, by = keys)
+  tabela <- dplyr::select(
+    tabela,
+    codigo_municipio, municipio, regiao, regiao_sigla, estado_nome, estado, pais,
+    "AA Investimento Expansão", "AA Investimento Reposição", "AA Investimento Total",
+    "ES Investimento Expansão", "ES Investimento Reposição", "ES Investimento Total",
+    "AA Investimento Expansão Urbana", "AA Investimento Reposição Urbana", "AA Investimento Total Urbana",
+    "AA Investimento Expansão Rural", "AA Investimento Reposição Rural", "AA Investimento Total Rural",
+    "ES Investimento Expansão Rural", "ES Investimento Reposição Rural", "ES Investimento Total Rural",
+    "ES Investimento Expansão", "ES Investimento Reposição", "ES Investimento Total"
+  )
+  readr::write_csv2(
+    tabela,
+    file = "dados/resultados/necessidade_por_municipio.csv",
+    append = FALSE
+  )
+}
 
 #' Roda todos os modelos de cálculo de investimento
 #'
@@ -564,6 +645,8 @@ rodar_modelo <- function(state) {
     state$deficit,
     !is.na(estado)
   )
+
+  gera_necessidade_por_municipio(state)
 
   por_estado <- state$necessidade
   por_estado <- add_colunas_por_extenso(por_estado)

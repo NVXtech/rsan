@@ -40,7 +40,7 @@ valida_base_calculo <- function(df, componente) {
       "quantidade_caminhoes_compactadores",
       "quantidade_caminhoes_basculantes"
     )
-  } else if (componente == "aguas_pluviais") {
+  } else if (componente == "drenagem") {
     cols <- c("codigo_municipio", "tem_cadastro_tecnico")
   } else {
     rlog::log_error(sprintf("Componente %s não faz parte da base de cálculo", componente))
@@ -85,7 +85,7 @@ salva_base_calculo <- function(df, componente, fonte, ano) {
 #' @return Data frame com os dados da base de cálculo
 #' @export
 carrega_base_calculo <- function(componente, fonte, ano) {
-  if (!componente %in% c("agua", "esgoto", "residuos", "aguas_pluviais")) {
+  if (!componente %in% c("agua", "esgoto", "residuos", "drenagem")) {
     stop(sprintf("Base de cálculo inválida para o componente %s", componente))
   }
   file_name <- paste0(componente, "_", fonte, "_", ano, ".csv")
@@ -245,5 +245,6 @@ get_populacao_labels <- function() {
     full.names = FALSE
   )
   file_names <- tools::file_path_sans_ext(files)
-  return(file_names)
+  censo_files <- get_censo_labels()
+  return(c(file_names, censo_files))
 }

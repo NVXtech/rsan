@@ -592,32 +592,7 @@ integrity_populacao <- function() {
   return(TRUE)
 }
 
-#' Retorna os rótulos dos dados do IBGE disponíveis
-#'
-#' @return um vetor com os dados disponiveis
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' df <- get_sinapi_data(sinapi)
-#' }
-get_populacao_labels <- function() {
-  return(names(load_data(ibge_tag)))
-}
 
-#' Retorna os rótulos dos dados do IBGE disponíveis (somente censo)
-#'
-#' @return um vetor com os dados disponiveis
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' df <- get_sinapi_data(sinapi)
-#' }
-get_censo_labels <- function() {
-  output <- names(load_data(ibge_tag))
-  return(output[grepl("censo.*", output)])
-}
 
 #' Transforma id IBGE em nome legível
 #'

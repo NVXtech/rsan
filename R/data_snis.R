@@ -190,7 +190,7 @@ prepara_snis <- function(ano) {
   df <- dplyr::left_join(df, df_ap, by = "codigo_municipio")
   salva_base_calculo(
     snis_prepara_aguas_pluviais(df),
-    "aguas_pluviais", "snis", ano
+    "drenagem", "snis", ano
   )
   salva_base_calculo(snis_prepara_residuos(ano), "residuos", "snis", ano)
 }

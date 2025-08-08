@@ -1,4 +1,4 @@
-pnad_base_path <- file.path("dados", "brutos", "pnadc")
+pnad_base_path <- file.path("dados", "base_calculo")
 
 #' Carrega PNAD continua
 #'
