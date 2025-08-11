@@ -133,7 +133,8 @@ investimento_residuos <- function(state) {
   ano_final <- ano
   rlog::log_info(sprintf("residuos anoi=%s anof=%s", ano_inicial, ano_final))
   ano_corrente <- state$input$geral$ano_corrente
-  cenario_regionalizacao <- "A"
+  cenario_regionalizacao <- input$cenario_regionalizacao
+
 
   # Consolidação dos dados para classificação
   rlog::log_info("residuos: consolidando dados para classificação")
