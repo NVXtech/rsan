@@ -469,8 +469,8 @@ to_power_bi <- function(tabela, file) {
 }
 
 
-# Adiciona colunas com nomes por extenso
-# respectivos aos destinos, situação, subsistemas e componentes
+#' Adiciona colunas com nomes por extenso
+#' respectivos aos destinos, situação, subsistemas e componentes
 #'
 #' @param tabela tabela de dados com as necessidades de investimentos
 #' com os seguintes campos: "destino";"situacao";"subsistema";"componente"

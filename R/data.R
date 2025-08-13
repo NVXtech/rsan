@@ -132,22 +132,6 @@
 #' @source \url{https://biblioteca.ibge.gov.br/index.php/biblioteca-catalogo?view=detalhes&id=2100639}
 "area_urbana_municipio"
 
-#' SNIS - Resíduos sólidos dados por prestador
-#'
-#' Dataset contendo informaçoes das unidades de resíduos sólidos por prestador
-#'
-#' @format Uma lista de data frame indexados por ano de referência.
-#' \describe{
-#'   \item{Código}{Código IBGE do município}
-#'   \item{Nome}{nome do munícipio}
-#'   \item{UF}{estado}
-#'   \item{Ano}{ano de referência}
-#'   \item{UndCod}{código do prestador}
-#'   \item{YYXXXX}{Indicadores e informações}
-#' }
-#' @source \url{http://www.snis.gov.br/}
-"snis_rs"
-
 
 #' CPRM - dados de pluviometria por município
 #'

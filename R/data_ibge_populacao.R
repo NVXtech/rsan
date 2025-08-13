@@ -161,7 +161,7 @@ indicador_cobertura_rede_agua <- function(tabela) {
   return(tabela)
 }
 
-# ´ Cria conjunto de indicadores domícilos IBGE 2022
+#' Cria conjunto de indicadores domícilos IBGE 2022
 #'
 #' @return um `data.frame` com o índice de atendimento de água, esgoto e resíduos sólidos
 censo_2022_atendimento <- function() {
@@ -201,7 +201,7 @@ adiciona_atendimento <- function(tabela) {
   return(tabela)
 }
 
-# ´ Cria conjunto de dados populacionais do censo IBGE 2022
+#' Cria conjunto de dados populacionais do censo IBGE 2022
 #'
 #' @return um `data.frame` com a estimativa populacional pelo Censo
 #' @export
