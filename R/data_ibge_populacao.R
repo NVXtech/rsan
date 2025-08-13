@@ -50,8 +50,8 @@ list_files_from_ftp <- function(url) {
 #' @export
 #'
 #' @examples
-#' get_censo_years()
-get_censo_years <- function() {
+#' anos_do_censo_disponiveis_para_download
+anos_do_censo_disponiveis_para_download <- function() {
   files <- list_files_from_ftp(censo_url)
   output <- c()
   for (file in files) {
@@ -616,6 +616,10 @@ ibge_id_to_name <- function(id) {
 #' @return um `logical` dizendo se a atualização ocorreu com sucesso
 #' @export
 update_ibge_censo <- function(ano) {
+  if (ano == 2022) {
+    preprocess_censo2022_data()
+    return(TRUE)
+  }
   id <- paste0("censo_", ano)
   ibge_populacao <- load_data(ibge_tag)
   try({

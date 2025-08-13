@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_universan.R
 \name{get_populacao_labels}
 \alias{get_populacao_labels}
-\title{Retorna os rótulos dos dados do IBGE disponíveis}
+\title{Retorna os rótulos dos dados do FIBGE disponíveis}
 \usage{
 get_populacao_labels()
 }
@@ -10,7 +10,7 @@ get_populacao_labels()
 um vetor com os dados disponiveis
 }
 \description{
-Retorna os rótulos dos dados do IBGE disponíveis
+Retorna os rótulos dos dados do FIBGE disponíveis
 }
 \examples{
 \dontrun{

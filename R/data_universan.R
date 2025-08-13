@@ -200,16 +200,6 @@ get_sinapi_labels <- function() {
   return(labels)
 }
 
-#' Retorna os rótulos dos dados do IBGE disponíveis (somente censo)
-#'
-#' @return um vetor com os dados disponiveis
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' df <- get_sinapi_data(sinapi)
-#' }
-
 #' Retorna os rótulos dos arquivos de censo disponíveis na base de cálculo
 #'
 #' Esta função lista os arquivos na pasta 'dados/base_calculo' que contêm o padrão "censo" no nome.
@@ -227,8 +217,41 @@ get_censo_labels <- function() {
   return(file_names)
 }
 
+#' Retorna os anos dos censos disponíveis na base de cálculo
+#'
+#' Esta função lista os arquivos na pasta 'dados/base_calculo' que contêm o padrão "censo" no nome
+#' e extrai os anos correspondentes.
+#' @return Um vetor com os anos dos censos disponíveis.
+#' @export
+anos_censo_base_calculo <- function() {
+  # Lista arquivos que contenham 'censo' seguido de 4 dígitos e extensão .csv
+  files <- list.files(
+    file.path("dados", "base_calculo"),
+    pattern = "censo_[0-9]{4}\\.csv$",
+    full.names = FALSE
+  )
+  anos <- gsub("censo_|\\.csv", "", files)
+  return(as.integer(anos))
+}
 
-#' Retorna os rótulos dos dados do IBGE disponíveis
+
+#' Retorna os anos dos censos disponíveis na base de cálculo por setor
+#'
+#' Esta função lista os arquivos na pasta 'dados/base_calculo' que contêm o padrão "censo_YYYY_setor" no nome
+#'
+#' @return Um vetor com os anos dos censos disponíveis por setor.
+#' @export
+anos_censo_setor_base_calculo <- function() {
+  files <- list.files(
+    file.path("dados", "base_calculo"),
+    pattern = "censo_[0-9]{4}_setor.csv$",
+    full.names = FALSE
+  )
+  anos <- gsub("censo_|_setor.csv", "", files)
+  return(as.integer(anos))
+}
+
+#' Retorna os rótulos dos dados do FIBGE disponíveis
 #'
 #' @return um vetor com os dados disponiveis
 #' @export

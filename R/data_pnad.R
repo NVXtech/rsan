@@ -24,6 +24,13 @@ carrega_pnad_continua <- function(componente, ano) {
       "atendimento_esgoto_relativo_urbano",
       "atendimento_esgoto_relativo_rural"
     )
+  } else if (componente == "residuos") {
+    files <- c("pnadc_r1.csv", "pnadc_r2.csv", "pnadc_r3.csv")
+    labels <- c(
+      "atendimento_coleta_indiferenciada_relativo_total",
+      "atendimento_coleta_indiferenciada_relativo_urbano",
+      "atendimento_coleta_indiferenciada_relativo_rural"
+    )
   } else {
     stop(sprintf("Carrega PNADc Componente %s inválido.", componente))
   }
@@ -117,4 +124,40 @@ adiciona_atendimento_relativo_pnadc <- function(tabela, componente, ano) {
   pnad <- carrega_pnad_continua(componente, ano)
   tabela <- dplyr::left_join(tabela, pnad, by = "regiao_sigla")
   return(tabela)
+}
+
+
+#' Extrai os anos disponiveis na PNADC para um componente
+#'
+#' @param componente Componente a ser verificado ("agua", "esgoto", residuos")
+#'
+#' @return Vetor de anos disponíveis
+#' @export
+anos_disponiveis_pnadc <- function(componente) {
+  if (componente == "agua") {
+    files <- c("pnadc_a1.csv", "pnadc_a2.csv", "pnadc_a3.csv")
+  } else if (componente == "esgoto") {
+    files <- c("pnadc_e1.csv", "pnadc_e2.csv", "pnadc_e3.csv")
+  } else if (componente == "residuos") {
+    files <- c("pnadc_r1.csv", "pnadc_r2.csv", "pnadc_r3.csv")
+  } else {
+    stop(sprintf("Componente %s inválido.", componente))
+  }
+  # keep only year that appear in all files
+  anos_list <- list()
+  for (file in files) {
+    path <- file.path(pnad_base_path, file)
+    if (!file.exists(path)) {
+      stop(paste("Arquivo não encontrado:", path))
+    }
+    tabela <- readr::read_delim(path,
+      locale = readr::locale(decimal_mark = ",", grouping_mark = "."),
+      skip = 1,
+      delim = ";",
+      col_types = "idddddd"
+    )
+    anos_list[[file]] <- unique(tabela$ANO)
+  }
+  anos <- Reduce(intersect, anos_list)
+  return(sort(anos, decreasing = TRUE))
 }
