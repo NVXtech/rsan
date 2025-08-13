@@ -615,6 +615,7 @@ gera_necessidade_por_municipio <- function(state) {
 #' rodar_modelo(state)
 #' }
 rodar_modelo <- function(state) {
+  clean_logs()
   rlog::log_info("iniciando módulo de projecao populacional")
   state <- rodar_projecao_populacional(state)
 
@@ -651,6 +652,14 @@ rodar_modelo <- function(state) {
 
   por_estado <- state$necessidade
   por_estado <- add_colunas_por_extenso(por_estado)
+
+  json_path <- file.path("dados", "resultados", "parametros.json")
+  jsonlite::write_json(
+    state$input,
+    json_path,
+    auto_unbox = TRUE,
+    pretty = TRUE
+  )
   readr::write_excel_csv2(
     por_estado,
     file = "dados/resultados/necessidade_por_estado.csv",

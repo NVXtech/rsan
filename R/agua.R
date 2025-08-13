@@ -165,6 +165,17 @@ calculate_demografico_agua <- function(df, meta_agua) {
 }
 
 
+
+log_path <- file.path("dados", "resultados", "faltantes_sinapi.txt")
+#' Clean logs
+#'
+#' @return NULL
+clean_logs <- function() {
+  if (file.exists(log_path)) {
+    file.remove(log_path)
+  }
+}
+
 #' Verifica códigos faltantes no SINAPI
 #'
 #' Esta função verifica se há códigos no dataframe de projeto que não estão presentes no dataframe do SINAPI.
@@ -181,10 +192,6 @@ calculate_demografico_agua <- function(df, meta_agua) {
 #' sinapi <- data.frame(CODIGO = c("001", "002"), DESCRICAO = c("Desc1", "Desc2"))
 #' verifica_codigos_faltantes(projeto, sinapi)
 verifica_codigos_faltantes <- function(df, sinapi) {
-  log_path <- file.path("dados", "resultados", "faltantes_sinapi.txt")
-  if (file.exists(log_path)) {
-    file.remove(log_path)
-  }
   df <- dplyr::select(df, c("codigo"))
   df <- dplyr::filter(df, codigo != "PORCENTAGEM")
   df <- dplyr::distinct(df)
@@ -200,9 +207,11 @@ verifica_codigos_faltantes <- function(df, sinapi) {
         paste(faltantes$codigo, collapse = ", ")
       )
     )
+    #
     write.table(
       faltantes$codigo,
       file = log_path,
+      append = TRUE,
       row.names = FALSE,
       col.names = FALSE,
       quote = FALSE
