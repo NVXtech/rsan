@@ -212,7 +212,10 @@ download_extract_sinapi_v2009 <- function(year, month) {
   }
   download_sinapi_v2009(year, month)
   extract_sinapi_v2009(year, month)
-  return(processa_sinapi_v2009(year, month))
+  consolidada <- processa_sinapi_v2009(year, month)
+  arquivo_saida <- sprintf("sinapi_%04d%02d.csv", ano, mes)
+  caminho <- file.path(sinapi_dir_base, arquivo_saida)
+  readr::write_csv2(consolidada, caminho, quote = "needed", append = FALSE)
 }
 
 
@@ -255,10 +258,7 @@ integrity_sinapi <- function() {
 #' @export
 update_sinapi <- function(ano, mes) {
   id <- paste0("dt", ano, mes)
-  sinapi <- load_data("sinapi")
-  try({
-    sinapi[[id]] <- download_sinapi(ano, mes)
-  })
+  download_sinapi(ano, mes)
   return(!is.null(sinapi[[id]]))
 }
 
