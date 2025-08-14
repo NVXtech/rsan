@@ -258,22 +258,8 @@ update_sinapi <- function(ano, mes) {
   sinapi <- load_data("sinapi")
   try({
     sinapi[[id]] <- download_sinapi(ano, mes)
-    save(sinapi, file = get_data_path("sinapi"))
   })
   return(!is.null(sinapi[[id]]))
-}
-
-#' Retorna os rótulos dos dados do SINAPI disponívei
-#'
-#' @return um vetor com os dados disponiveis
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' df <- get_sinapi_data(sinapi)
-#' }
-get_sinapi_labels <- function() {
-  return(names(load_data("sinapi")))
 }
 
 #' Transforma id SINAPI em nome legível
