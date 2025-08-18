@@ -57,7 +57,8 @@ check_and_create_data_folder <- function() {
 
 #' Salva o estado da aplicação
 #'
-#' @param app_state
+#' @param app_state estrutura de dados (`list`) que guarda o estado atual da aplicação
+#' @param is_run um `logical` que indica se o estado está sendo salvo após a execução do cálculo
 #'
 #' @return NULL
 #' @export
@@ -66,10 +67,13 @@ check_and_create_data_folder <- function() {
 #' \dontrun{
 #' save_state(app_state)
 #' }
-save_state <- function(app_state) {
+save_state <- function(app_state, is_run = FALSE) {
   if (!saving) {
     saving <- TRUE
     check_and_create_data_folder()
+    if (is_run) {
+      app_state$was_run <- TRUE
+    }
     save(app_state, file = app_state_filename())
     saving <- FALSE
   } else {
