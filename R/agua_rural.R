@@ -365,7 +365,11 @@ tbl_longa_investimentos_agua_rural <- function(tabela) {
   tabela <- dplyr::mutate(
     tabela,
     componente = "agua",
-    situacao = "rural"
+    situacao = "rural",
+    subsistema = dplyr::case_when(
+      subsistema == "individual" ~ "individual_agua",
+      TRUE ~ subsistema
+    )
   )
 }
 
