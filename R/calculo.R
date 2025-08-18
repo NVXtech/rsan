@@ -115,7 +115,9 @@ investimento_drenagem <- function(state) {
 #' app_state <- investimento_residuos(app_state)
 #' }
 investimento_residuos <- function(state) {
-  ano <- state$input$geral$ano
+  ano_inicial <- state$input$geral$ano_corrente
+  ano_corrente <- state$input$geral$ano_corrente
+  ano_final <- state$input$geral$ano
   input <- state$input$residuos
 
   valor_caminhao <- input$valor_caminhao
@@ -129,8 +131,6 @@ investimento_residuos <- function(state) {
   preco_unidade_triagem <- tabela_preco_unidade_residuos(input, "triagem")
   vida_util_triagem <- input$vida_util_triagem
 
-  ano_inicial <- input$fonte_ano + 1
-  ano_final <- ano
   rlog::log_info(sprintf("residuos anoi=%s anof=%s", ano_inicial, ano_final))
   ano_corrente <- state$input$geral$ano_corrente
   cenario_regionalizacao <- input$cenario_regionalizacao
@@ -151,7 +151,7 @@ investimento_residuos <- function(state) {
     tabela <- adiciona_atendimento_pnadc(tabela, "residuos", input$atendimento_ano)
   }
   tabela <- adiciona_populacao_corrente(state$projecao, ano_corrente, tabela)
-  tabela <- adiciona_projecao_populacao(state$projecao, ano, tabela)
+  tabela <- adiciona_projecao_populacao(state$projecao, ano_final, tabela)
   tabela <- adiciona_tipo_disposicao(tabela)
 
   # Densidade Veicular (per capita)
