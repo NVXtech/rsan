@@ -636,11 +636,30 @@ update_ibge_censo <- function(ano) {
 #' @return um `logical` dizendo se a atualização ocorreu com sucesso
 #' @export
 update_ibge_estimativa <- function(ano) {
-  id <- paste0("estimativa_", ano)
-  ibge_populacao <- load_data(ibge_tag)
-  try({
-    ibge_populacao[[id]] <- download_estimativa_populacao(ano)
-    save(ibge_populacao, file = get_data_path(ibge_tag))
-  })
-  return(!is.null(ibge_populacao[[id]]))
+  # if ano is string convert to number
+  if (is.character(ano)) {
+    ano <- as.numeric(ano)
+  }
+  # check if estimated population already exists at base_calculo estimativa_YYYY.csv
+  path <- file.path(dir_base_calculo, paste0("estimativa_", ano, ".csv"))
+  if (file.exists(path)) {
+    rlog::log_info(sprintf("Estimativa populacional %s já existe em %s", ano, path))
+    return(TRUE)
+  }
+  rlog::log_info(sprintf("Atualizando estimativa populacional %s", ano))
+  estimativa <- download_estimativa_populacao(ano)
+  if (is.null(estimativa)) {
+    rlog::log_error(sprintf("Não foi possível baixar estimativa populacional %s", ano))
+    return(FALSE)
+  }
+  if (!dir.exists(dir_base_calculo)) {
+    dir.create(dir_base_calculo, recursive = TRUE)
+  }
+  readr::write_excel_csv2(
+    estimativa,
+    path,
+    quote = "needed",
+    append = FALSE
+  )
+  return(TRUE)
 }

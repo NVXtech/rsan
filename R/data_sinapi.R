@@ -22,7 +22,18 @@ get_last_month_and_year <- function() {
 #' @return um `data.frame` com os dados do SINAPI
 #' @export
 download_sinapi <- function(year, month) {
+  if (!dir.exists(sinapi_dir_bruto)) {
+    dir.create(sinapi_dir_bruto, recursive = TRUE)
+  }
+  if (!is.character(month)) {
+    month <- sprintf("%02.f", as.integer(month))
+  }
+  if (!is.character(year)) {
+    year <- as.character(year)
+  }
   year_month <- paste0(year, month)
+  year <- as.integer(year)
+  month <- as.integer(month)
   if (as.integer(year_month) >= 202501) {
     rlog::log_info("Baixando SINAPI 2025")
     return(processa_sinapi_v2025(year, month))
@@ -257,9 +268,7 @@ integrity_sinapi <- function() {
 #' @return um `logical` dizendo se a atualização ocorreu com sucesso
 #' @export
 update_sinapi <- function(ano, mes) {
-  id <- paste0("dt", ano, mes)
-  download_sinapi(ano, mes)
-  return(!is.null(sinapi[[id]]))
+  return(!is.null(download_sinapi(ano, mes)))
 }
 
 #' Transforma id SINAPI em nome legível
