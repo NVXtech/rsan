@@ -156,7 +156,6 @@ investimento_residuos <- function(state) {
 
   # Densidade Veicular (per capita)
   tabela <- densidade_caminhoes_compactadores(tabela)
-  # densidade_caminhoes_bau(tabela)
 
   # Classificação por faixas populacionais
   rlog::log_info("residuos: classificando por faixa populacional")
