@@ -84,6 +84,7 @@ save_state <- function(app_state) {
 #' @export
 get_default_state <- function() {
   default_state <- list(
+    was_run = FALSE,
     input = get_default_input()
   )
   return(default_state)
