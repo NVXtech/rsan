@@ -7,7 +7,7 @@
 save_state(app_state)
 }
 \arguments{
-\item{app_state}{}
+\item{app_state}{estrutura de dados (\code{list}) que guarda o estado atual da aplicação}
 }
 \description{
 Salva o estado da aplicação

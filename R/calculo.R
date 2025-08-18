@@ -21,8 +21,8 @@ rodar_projecao_populacional <- function(state) {
   ano_final <- state$input$geral$ano
   ano_fonte1 <- nome_para_ano(input$fonte1)
   ano_fonte2 <- nome_para_ano(input$fonte2)
-  state$input$geral$ano_populacao_fonte1 <- ano_fonte1
-  state$input$geral$ano_populacao_fonte2 <- ano_fonte2
+  # state$input$geral$ano_populacao_fonte1 <- ano_fonte1
+  # state$input$geral$ano_populacao_fonte2 <- ano_fonte2
 
   rlog::log_info("projecao: consolidando fontes")
   consolidado <- junta_fontes_populacao(fonte1, fonte2)
@@ -654,12 +654,6 @@ rodar_modelo <- function(state) {
   por_estado <- add_colunas_por_extenso(por_estado)
 
   json_path <- file.path("dados", "resultados", "parametros.json")
-  jsonlite::write_json(
-    state$input,
-    json_path,
-    auto_unbox = TRUE,
-    pretty = TRUE
-  )
   readr::write_excel_csv2(
     por_estado,
     file = "dados/resultados/necessidade_por_estado.csv",
@@ -721,6 +715,14 @@ rodar_modelo <- function(state) {
     file = "dados/resultados/esgoto_rural.csv",
     append = FALSE
   )
+  jsonlite::write_json(
+    state$input,
+    json_path,
+    digit = 12,
+    auto_unbox = TRUE,
+    pretty = TRUE
+  )
+  state$was_run <- TRUE
   rlog::log_info("rodada terminada")
   return(state)
 }
